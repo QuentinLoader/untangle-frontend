@@ -29,7 +29,7 @@ function Result() {
       <header className="sticky top-0 z-10 bg-paper px-5 pt-7 pb-3">
         <div className="mx-auto flex max-w-md items-center gap-3">
           <Link
-            to="/"
+            to="/upload"
             className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper-2"
             aria-label="Go back"
           >
@@ -62,7 +62,7 @@ function Result() {
         <BlockCard title="Key date" className="mt-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[14px] font-semibold text-ink">Payment deadline</span>
-            <span className="rounded-full bg-[#FBEAE5] px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.04em] text-stamp-red">
+            <span className="rounded-full bg-tint-red px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.04em] text-stamp-red">
               14 JUL
             </span>
           </div>
