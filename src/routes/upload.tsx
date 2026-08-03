@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 
 export const Route = createFileRoute("/upload")({
@@ -22,31 +22,45 @@ export const Route = createFileRoute("/upload")({
 function Upload() {
   const navigate = useNavigate();
 
+  const startProcessing = () => {
+    navigate({ to: "/processing" });
+  };
+
   return (
-    <div className="min-h-screen bg-paper">
-      <div className="mx-auto max-w-md px-5 pt-7">
-        <button
-          onClick={() => navigate({ to: "/" })}
-          className="font-display text-[19px] font-semibold text-ink"
-        >
-          ← New document
-        </button>
+    <div className="flex min-h-screen flex-col bg-paper">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5">
+        <header className="flex items-center gap-3 pt-7">
+          <Link
+            to="/"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper-2"
+            aria-label="Go back"
+          >
+            <span className="text-[19px]">←</span>
+          </Link>
+          <h1 className="font-display text-[17px] font-semibold text-ink">New document</h1>
+        </header>
 
-        <div className="mt-10 grid aspect-square place-items-center rounded-[22px] border-[2.5px] border-dashed border-teal bg-teal-dim text-4xl">
-          📷
-        </div>
+        <div className="flex flex-1 flex-col items-center justify-center py-10">
+          <button
+            onClick={startProcessing}
+            className="grid h-[210px] w-[210px] place-items-center rounded-[24px] border-[3px] border-dashed border-teal bg-teal-dim text-5xl transition-transform active:scale-[0.98]"
+            aria-label="Snap or upload your document"
+          >
+            📷
+          </button>
 
-        <h1 className="mt-8 text-center font-display text-[26px] font-semibold leading-snug">
-          Snap or upload your document
-        </h1>
-        <p className="mt-3 text-center text-[14.5px] leading-relaxed text-ink-soft">
-          Works for SARS letters, leases, purchase agreements or job offers — you don't need to tell
-          us which.
-        </p>
+          <h2 className="mt-8 text-center font-display text-[20px] font-semibold leading-snug text-ink">
+            Snap or upload your document
+          </h2>
+          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
+            Works for SARS letters, leases, purchase agreements or job offers — you don't need to tell
+            us which.
+          </p>
 
-        <div className="mt-7 space-y-3 pb-12">
-          <PrimaryButton>Take a photo</PrimaryButton>
-          <SecondaryButton>Choose from files</SecondaryButton>
+          <div className="mt-8 w-full max-w-[280px] space-y-3">
+            <PrimaryButton onClick={startProcessing}>Take a photo</PrimaryButton>
+            <SecondaryButton onClick={startProcessing}>Choose from files</SecondaryButton>
+          </div>
         </div>
       </div>
     </div>
