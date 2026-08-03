@@ -14,6 +14,7 @@ import { Route as LandingRouteImport } from './routes/landing'
 import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RemindersRouteImport } from './routes/reminders'
+import { Route as ResultRouteImport } from './routes/result'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as VaultRouteImport } from './routes/vault'
 
@@ -42,6 +43,11 @@ const RemindersRoute = RemindersRouteImport.update({
   path: '/reminders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResultRoute = ResultRouteImport.update({
+  id: '/result',
+  path: '/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminders': typeof RemindersRoute
+  '/result': typeof ResultRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminders': typeof RemindersRoute
+  '/result': typeof ResultRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminders': typeof RemindersRoute
+  '/result': typeof ResultRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/processing'
     | '/profile'
     | '/reminders'
+    | '/result'
     | '/upload'
     | '/vault'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/processing'
     | '/profile'
     | '/reminders'
+    | '/result'
     | '/upload'
     | '/vault'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/processing'
     | '/profile'
     | '/reminders'
+    | '/result'
     | '/upload'
     | '/vault'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   ProcessingRoute: typeof ProcessingRoute
   ProfileRoute: typeof ProfileRoute
   RemindersRoute: typeof RemindersRoute
+  ResultRoute: typeof ResultRoute
   UploadRoute: typeof UploadRoute
   VaultRoute: typeof VaultRoute
 }
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/result': {
+      id: '/result'
+      path: '/result'
+      fullPath: '/result'
+      preLoaderRoute: typeof ResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/upload': {
       id: '/upload'
       path: '/upload'
@@ -181,9 +201,20 @@ const rootRouteChildren: RootRouteChildren = {
   ProcessingRoute: ProcessingRoute,
   ProfileRoute: ProfileRoute,
   RemindersRoute: RemindersRoute,
+  ResultRoute: ResultRoute,
   UploadRoute: UploadRoute,
   VaultRoute: VaultRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
