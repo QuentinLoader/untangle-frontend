@@ -309,9 +309,13 @@ function Landing() {
 
       {/* MOBILE STICKY CTA */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] min-[720px]:hidden">
-        <Link to="/upload" className="block">
-          <PrimaryButton>📷 Upload a document — free</PrimaryButton>
+        <Link
+          to="/upload"
+          className="block w-full rounded-[14px] bg-teal px-4 py-[14px] text-center text-[15px] font-semibold text-white"
+        >
+          📷 Upload a document — free
         </Link>
+
       </div>
     </div>
   );
