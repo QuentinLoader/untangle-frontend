@@ -32,7 +32,7 @@ const MODULES = [
   {
     name: "TaxSnap",
     icon: "📨",
-    iconBg: "#FBEAE5",
+    iconBg: "var(--tint-red)",
     tag: "SARS letters",
     color: "var(--stamp-red)",
     desc: "Assessments, penalties and letters of demand explained — what's owed, by when, and what happens if you wait.",
@@ -48,7 +48,7 @@ const MODULES = [
   {
     name: "DealCheck",
     icon: "📝",
-    iconBg: "#F3EBDC",
+    iconBg: "var(--tint-sand)",
     tag: "Agreements",
     color: "var(--stamp-amber)",
     desc: "Purchase and sale agreements read line by line so you know what you're signing before you sign it.",
@@ -56,7 +56,7 @@ const MODULES = [
   {
     name: "WorkCheck",
     icon: "💼",
-    iconBg: "#E6EAF6",
+    iconBg: "var(--tint-blue)",
     tag: "Job offers",
     color: "var(--module-blue)",
     desc: "Probation, restraint of trade and notice terms in an offer of employment, flagged in plain language.",

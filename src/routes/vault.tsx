@@ -39,7 +39,7 @@ function Vault() {
             <div className="mt-3">
               <DocCard
                 icon="📨"
-                iconBg="#FBEAE5"
+                iconBg="var(--tint-red)"
                 title="Letter of Demand"
                 subtitle="Due 14 Jul"
               />
@@ -67,7 +67,7 @@ function Vault() {
             <div className="mt-3">
               <DocCard
                 icon="💼"
-                iconBg="#F3EBDC"
+                iconBg="var(--tint-sand)"
                 title="Offer of Employment"
                 subtitle="1 flag · probation clause"
               />

@@ -42,7 +42,7 @@ function Index() {
         <div className="mt-3 space-y-3">
           <DocCard
             icon="📨"
-            iconBg="#FBEAE5"
+            iconBg="var(--tint-red)"
             title="SARS Letter of Demand"
             subtitle="R4,200 due 14 Jul"
             stampLabel="Urgent"
@@ -58,7 +58,7 @@ function Index() {
           />
           <DocCard
             icon="💼"
-            iconBg="#F3EBDC"
+            iconBg="var(--tint-sand)"
             title="Offer of Employment — Nandi Co."
             subtitle="Probation clause flagged"
             stampLabel="Check this"
