@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LandingRouteImport } from './routes/landing'
+import { Route as RemindersRouteImport } from './routes/reminders'
 import { Route as UploadRouteImport } from './routes/upload'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const LandingRoute = LandingRouteImport.update({
   path: '/landing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RemindersRoute = RemindersRouteImport.update({
+  id: '/reminders',
+  path: '/reminders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
@@ -32,30 +38,34 @@ const UploadRoute = UploadRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/landing': typeof LandingRoute
+  '/reminders': typeof RemindersRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/landing': typeof LandingRoute
+  '/reminders': typeof RemindersRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/landing': typeof LandingRoute
+  '/reminders': typeof RemindersRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/landing' | '/upload'
+  fullPaths: '/' | '/landing' | '/reminders' | '/upload'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/landing' | '/upload'
-  id: '__root__' | '/' | '/landing' | '/upload'
+  to: '/' | '/landing' | '/reminders' | '/upload'
+  id: '__root__' | '/' | '/landing' | '/reminders' | '/upload'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LandingRoute: typeof LandingRoute
+  RemindersRoute: typeof RemindersRoute
   UploadRoute: typeof UploadRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reminders': {
+      id: '/reminders'
+      path: '/reminders'
+      fullPath: '/reminders'
+      preLoaderRoute: typeof RemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/upload': {
       id: '/upload'
       path: '/upload'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LandingRoute: LandingRoute,
+  RemindersRoute: RemindersRoute,
   UploadRoute: UploadRoute,
 }
 export const routeTree = rootRouteImport
