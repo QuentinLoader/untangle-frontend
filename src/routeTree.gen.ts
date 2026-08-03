@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LandingRouteImport } from './routes/landing'
 import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ReminderRouteImport } from './routes/reminder'
 import { Route as RemindersRouteImport } from './routes/reminders'
 import { Route as ResultRouteImport } from './routes/result'
 import { Route as UploadRouteImport } from './routes/upload'
@@ -36,6 +37,11 @@ const ProcessingRoute = ProcessingRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReminderRoute = ReminderRouteImport.update({
+  id: '/reminder',
+  path: '/reminder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RemindersRoute = RemindersRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/landing': typeof LandingRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
+  '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
   '/result': typeof ResultRoute
   '/upload': typeof UploadRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/landing': typeof LandingRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
+  '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
   '/result': typeof ResultRoute
   '/upload': typeof UploadRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/landing': typeof LandingRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
+  '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
   '/result': typeof ResultRoute
   '/upload': typeof UploadRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/landing'
     | '/processing'
     | '/profile'
+    | '/reminder'
     | '/reminders'
     | '/result'
     | '/upload'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/landing'
     | '/processing'
     | '/profile'
+    | '/reminder'
     | '/reminders'
     | '/result'
     | '/upload'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/landing'
     | '/processing'
     | '/profile'
+    | '/reminder'
     | '/reminders'
     | '/result'
     | '/upload'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   LandingRoute: typeof LandingRoute
   ProcessingRoute: typeof ProcessingRoute
   ProfileRoute: typeof ProfileRoute
+  ReminderRoute: typeof ReminderRoute
   RemindersRoute: typeof RemindersRoute
   ResultRoute: typeof ResultRoute
   UploadRoute: typeof UploadRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reminder': {
+      id: '/reminder'
+      path: '/reminder'
+      fullPath: '/reminder'
+      preLoaderRoute: typeof ReminderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reminders': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   LandingRoute: LandingRoute,
   ProcessingRoute: ProcessingRoute,
   ProfileRoute: ProfileRoute,
+  ReminderRoute: ReminderRoute,
   RemindersRoute: RemindersRoute,
   ResultRoute: ResultRoute,
   UploadRoute: UploadRoute,
