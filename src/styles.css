@@ -76,7 +76,18 @@
 }
 
 :root {
+  --paper: #eef1ed;
+  --paper-2: #e3e8e1;
+  --ink: #1f2a24;
+  --ink-soft: #5b6b66;
+  --teal: #0f6e5c;
+  --teal-dim: #d8e8e2;
+  --stamp-red: #c1432d;
+  --stamp-amber: #c98a2e;
+  --module-blue: #3b5ba9;
+  --line: #d8ddd6;
   --radius: 0.625rem;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
