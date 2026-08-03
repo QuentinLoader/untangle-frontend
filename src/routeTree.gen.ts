@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LandingRouteImport } from './routes/landing'
 import { Route as RemindersRouteImport } from './routes/reminders'
 import { Route as UploadRouteImport } from './routes/upload'
+import { Route as VaultRouteImport } from './routes/vault'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const UploadRoute = UploadRouteImport.update({
   path: '/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VaultRoute = VaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/landing': typeof LandingRoute
   '/reminders': typeof RemindersRoute
   '/upload': typeof UploadRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/landing': typeof LandingRoute
   '/reminders': typeof RemindersRoute
   '/upload': typeof UploadRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/landing': typeof LandingRoute
   '/reminders': typeof RemindersRoute
   '/upload': typeof UploadRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/landing' | '/reminders' | '/upload'
+  fullPaths: '/' | '/landing' | '/reminders' | '/upload' | '/vault'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/landing' | '/reminders' | '/upload'
-  id: '__root__' | '/' | '/landing' | '/reminders' | '/upload'
+  to: '/' | '/landing' | '/reminders' | '/upload' | '/vault'
+  id: '__root__' | '/' | '/landing' | '/reminders' | '/upload' | '/vault'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +76,7 @@ export interface RootRouteChildren {
   LandingRoute: typeof LandingRoute
   RemindersRoute: typeof RemindersRoute
   UploadRoute: typeof UploadRoute
+  VaultRoute: typeof VaultRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vault': {
+      id: '/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof VaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   LandingRoute: LandingRoute,
   RemindersRoute: RemindersRoute,
   UploadRoute: UploadRoute,
+  VaultRoute: VaultRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
