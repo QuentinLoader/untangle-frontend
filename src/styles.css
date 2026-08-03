@@ -19,6 +19,20 @@
  */
 
 @theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-teal: var(--teal);
+  --color-teal-dim: var(--teal-dim);
+  --color-stamp-red: var(--stamp-red);
+  --color-stamp-amber: var(--stamp-amber);
+  --color-module-blue: var(--module-blue);
+  --color-line: var(--line);
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
