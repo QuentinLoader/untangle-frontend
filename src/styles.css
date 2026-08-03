@@ -19,6 +19,20 @@
  */
 
 @theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-teal: var(--teal);
+  --color-teal-dim: var(--teal-dim);
+  --color-stamp-red: var(--stamp-red);
+  --color-stamp-amber: var(--stamp-amber);
+  --color-module-blue: var(--module-blue);
+  --color-line: var(--line);
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,7 +76,18 @@
 }
 
 :root {
+  --paper: #eef1ed;
+  --paper-2: #e3e8e1;
+  --ink: #1f2a24;
+  --ink-soft: #5b6b66;
+  --teal: #0f6e5c;
+  --teal-dim: #d8e8e2;
+  --stamp-red: #c1432d;
+  --stamp-amber: #c98a2e;
+  --module-blue: #3b5ba9;
+  --line: #d8ddd6;
   --radius: 0.625rem;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
@@ -138,7 +163,9 @@
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
   }
+
 }
