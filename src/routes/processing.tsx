@@ -1,3 +1,4 @@
+import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/processing")({
       },
     ],
   }),
-  component: Processing,
+  component: withAuth(Processing),
 });
 
 function Processing() {

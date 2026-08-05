@@ -10,12 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LandingRouteImport } from './routes/landing'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReminderRouteImport } from './routes/reminder'
 import { Route as RemindersRouteImport } from './routes/reminders'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ResultRouteImport } from './routes/result'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as VaultRouteImport } from './routes/vault'
 
@@ -24,9 +28,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LandingRoute = LandingRouteImport.update({
   id: '/landing',
   path: '/landing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProcessingRoute = ProcessingRouteImport.update({
@@ -49,9 +63,19 @@ const RemindersRoute = RemindersRouteImport.update({
   path: '/reminders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResultRoute = ResultRouteImport.update({
   id: '/result',
   path: '/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UploadRoute = UploadRouteImport.update({
@@ -67,35 +91,47 @@ const VaultRoute = VaultRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/landing': typeof LandingRoute
+  '/login': typeof LoginRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/result': typeof ResultRoute
+  '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/landing': typeof LandingRoute
+  '/login': typeof LoginRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/result': typeof ResultRoute
+  '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/landing': typeof LandingRoute
+  '/login': typeof LoginRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/result': typeof ResultRoute
+  '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
 }
@@ -103,46 +139,62 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
     | '/landing'
+    | '/login'
     | '/processing'
     | '/profile'
     | '/reminder'
     | '/reminders'
+    | '/reset-password'
     | '/result'
+    | '/signup'
     | '/upload'
     | '/vault'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
     | '/landing'
+    | '/login'
     | '/processing'
     | '/profile'
     | '/reminder'
     | '/reminders'
+    | '/reset-password'
     | '/result'
+    | '/signup'
     | '/upload'
     | '/vault'
   id:
     | '__root__'
     | '/'
+    | '/forgot-password'
     | '/landing'
+    | '/login'
     | '/processing'
     | '/profile'
     | '/reminder'
     | '/reminders'
+    | '/reset-password'
     | '/result'
+    | '/signup'
     | '/upload'
     | '/vault'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LandingRoute: typeof LandingRoute
+  LoginRoute: typeof LoginRoute
   ProcessingRoute: typeof ProcessingRoute
   ProfileRoute: typeof ProfileRoute
   ReminderRoute: typeof ReminderRoute
   RemindersRoute: typeof RemindersRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ResultRoute: typeof ResultRoute
+  SignupRoute: typeof SignupRoute
   UploadRoute: typeof UploadRoute
   VaultRoute: typeof VaultRoute
 }
@@ -156,11 +208,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/landing': {
       id: '/landing'
       path: '/landing'
       fullPath: '/landing'
       preLoaderRoute: typeof LandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/processing': {
@@ -191,11 +257,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/result': {
       id: '/result'
       path: '/result'
       fullPath: '/result'
       preLoaderRoute: typeof ResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/upload': {
@@ -217,12 +297,16 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LandingRoute: LandingRoute,
+  LoginRoute: LoginRoute,
   ProcessingRoute: ProcessingRoute,
   ProfileRoute: ProfileRoute,
   ReminderRoute: ReminderRoute,
   RemindersRoute: RemindersRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ResultRoute: ResultRoute,
+  SignupRoute: SignupRoute,
   UploadRoute: UploadRoute,
   VaultRoute: VaultRoute,
 }

@@ -1,3 +1,4 @@
+import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { StampBadge } from "@/components/untangle/StampBadge";
 import { BlockCard } from "@/components/untangle/BlockCard";
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/result")({
       },
     ],
   }),
-  component: Result,
+  component: withAuth(Result),
 });
 
 function Result() {

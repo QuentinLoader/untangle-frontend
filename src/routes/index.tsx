@@ -1,3 +1,4 @@
+import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute } from "@tanstack/react-router";
 import { DocCard } from "@/components/untangle/DocCard";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: Index,
+  component: withAuth(Index),
 });
 
 function Index() {

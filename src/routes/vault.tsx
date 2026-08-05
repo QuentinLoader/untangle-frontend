@@ -1,3 +1,4 @@
+import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute } from "@tanstack/react-router";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { DocCard } from "@/components/untangle/DocCard";
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/vault")({
       },
     ],
   }),
-  component: Vault,
+  component: withAuth(Vault),
 });
 
 function Vault() {
