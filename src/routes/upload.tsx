@@ -1,3 +1,4 @@
+import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/upload")({
       },
     ],
   }),
-  component: Upload,
+  component: withAuth(Upload),
 });
 
 function Upload() {
