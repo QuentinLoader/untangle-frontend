@@ -92,7 +92,13 @@ export async function createDocumentRecord(
   });
 }
 
-export type DirectUploadStatus = "idle" | "requesting-url" | "uploading" | "uploaded" | "failed";
+export type DirectUploadStatus =
+  | "idle"
+  | "requesting-url"
+  | "uploading"
+  | "verifying"
+  | "queued"
+  | "failed";
 
 export type CreateUploadUrlResponse = {
   success: true;
@@ -168,7 +174,12 @@ const CODE_MESSAGES: Record<string, string> = {
   DOCUMENT_ALREADY_UPLOADED: "This document has already been uploaded.",
   DOCUMENT_UPLOAD_STATE_INVALID: "This document cannot be uploaded in its current state.",
   STORAGE_NOT_CONFIGURED: "Secure document storage is temporarily unavailable.",
-  STORAGE_UNAVAILABLE: "Untangle could not prepare the secure upload. Please try again.",
+  STORAGE_UNAVAILABLE: "Untangle could not verify the file. Please try again.",
+  UPLOADED_OBJECT_NOT_FOUND: "We could not find the uploaded file. Please upload it again.",
+  UPLOAD_SIZE_MISMATCH: "The uploaded file did not match the selected document.",
+  UPLOAD_CONTENT_TYPE_MISSING: "The uploaded file type could not be verified.",
+  UPLOAD_CONTENT_TYPE_MISMATCH: "The uploaded file type did not match the selected document.",
+  DOCUMENT_UPLOAD_STATE_CONFLICT: "The upload status changed. Refresh and try again.",
 };
 
 /** Never surfaces raw API errors, JSON, XML or tokens. */
@@ -187,4 +198,94 @@ export function friendlyDocumentError(error: unknown): string {
     return "The upload was interrupted. Check your connection and try again.";
   }
   return "We could not prepare this document. Please try again.";
+}
+
+export type DocumentUploadStatus = "UPLOADED" | "VALIDATING" | "ACCEPTED";
+
+export type DocumentProcessingStatus =
+  | "QUEUED"
+  | "DETECTING_MODULE"
+  | "CLASSIFYING"
+  | "EXTRACTING"
+  | "VALIDATING_RESULT"
+  | "MATCHING_RULES"
+  | "COMPLETED"
+  | "NEEDS_REVIEW"
+  | "FAILED"
+  | "CANCELLED";
+
+export type CompleteUploadResponse = {
+  success: true;
+  data: {
+    document: {
+      id: string;
+      uploadStatus: DocumentUploadStatus;
+      processingStatus: DocumentProcessingStatus;
+      uploadedAt: string | null;
+    };
+    verification: {
+      sizeBytes: number;
+      contentType: string;
+      eTag: string | null;
+      lastModified: string | null;
+    };
+    processing: {
+      queued: boolean;
+      jobId: string | null;
+      jobType: "VALIDATE_DOCUMENT_UPLOAD";
+    };
+  };
+};
+
+/** Verifies the uploaded object with the backend. No request body is sent. */
+export async function completeUpload(documentId: string): Promise<CompleteUploadResponse> {
+  return apiRequest<CompleteUploadResponse>(`/api/v1/documents/${documentId}/upload-complete`, {
+    method: "POST",
+  });
+}
+
+export type DocumentStatusResponse = {
+  success: true;
+  data: {
+    document: {
+      id: string;
+      uploadStatus: DocumentUploadStatus;
+      processingStatus: DocumentProcessingStatus;
+      detectedModule?: string | null;
+      detectedDocumentType?: string | null;
+      updatedAt?: string;
+    };
+  };
+};
+
+export async function fetchDocumentStatus(documentId: string): Promise<DocumentStatusResponse> {
+  return apiRequest<DocumentStatusResponse>(`/api/v1/documents/${documentId}/status`);
+}
+
+export const TERMINAL_PROCESSING_STATUSES: DocumentProcessingStatus[] = [
+  "COMPLETED",
+  "NEEDS_REVIEW",
+  "FAILED",
+  "CANCELLED",
+];
+
+export function isTerminalProcessingStatus(status: DocumentProcessingStatus): boolean {
+  return TERMINAL_PROCESSING_STATUSES.includes(status);
+}
+
+const PROCESSING_COPY: Record<DocumentProcessingStatus, { title: string; body: string }> = {
+  QUEUED: { title: "Your document is queued", body: "Untangle is preparing it for analysis." },
+  DETECTING_MODULE: { title: "Identifying document type", body: "Working out what this document is." },
+  CLASSIFYING: { title: "Classifying your document", body: "Sorting it into the right category." },
+  EXTRACTING: { title: "Extracting key details", body: "Pulling out dates, amounts and names." },
+  VALIDATING_RESULT: { title: "Checking the details", body: "Making sure what we found is correct." },
+  MATCHING_RULES: { title: "Checking your rights", body: "Matching the document against known rules." },
+  COMPLETED: { title: "Your document is ready", body: "Untangle has finished reading it." },
+  NEEDS_REVIEW: { title: "This one needs a closer look", body: "Some details could not be confirmed automatically." },
+  FAILED: { title: "We could not read this document", body: "Something went wrong while processing it." },
+  CANCELLED: { title: "Processing was cancelled", body: "This document was not processed." },
+};
+
+export function processingCopy(status: DocumentProcessingStatus) {
+  return PROCESSING_COPY[status];
 }
