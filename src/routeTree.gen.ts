@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LandingRouteImport } from './routes/landing'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReminderRouteImport } from './routes/reminder'
 import { Route as RemindersRouteImport } from './routes/reminders'
@@ -41,11 +40,6 @@ const LandingRoute = LandingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProcessingRoute = ProcessingRouteImport.update({
-  id: '/processing',
-  path: '/processing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -94,7 +88,6 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
-  '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
@@ -109,7 +102,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
-  '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
@@ -125,7 +117,6 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
-  '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
@@ -142,7 +133,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/landing'
     | '/login'
-    | '/processing'
     | '/profile'
     | '/reminder'
     | '/reminders'
@@ -157,7 +147,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/landing'
     | '/login'
-    | '/processing'
     | '/profile'
     | '/reminder'
     | '/reminders'
@@ -172,7 +161,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/landing'
     | '/login'
-    | '/processing'
     | '/profile'
     | '/reminder'
     | '/reminders'
@@ -188,7 +176,6 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LandingRoute: typeof LandingRoute
   LoginRoute: typeof LoginRoute
-  ProcessingRoute: typeof ProcessingRoute
   ProfileRoute: typeof ProfileRoute
   ReminderRoute: typeof ReminderRoute
   RemindersRoute: typeof RemindersRoute
@@ -227,13 +214,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/processing': {
-      id: '/processing'
-      path: '/processing'
-      fullPath: '/processing'
-      preLoaderRoute: typeof ProcessingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -300,7 +280,6 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LandingRoute: LandingRoute,
   LoginRoute: LoginRoute,
-  ProcessingRoute: ProcessingRoute,
   ProfileRoute: ProfileRoute,
   ReminderRoute: ReminderRoute,
   RemindersRoute: RemindersRoute,
@@ -313,3 +292,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
