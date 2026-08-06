@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LandingRouteImport } from './routes/landing'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReminderRouteImport } from './routes/reminder'
 import { Route as RemindersRouteImport } from './routes/reminders'
@@ -22,6 +21,7 @@ import { Route as ResultRouteImport } from './routes/result'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as VaultRouteImport } from './routes/vault'
+import { Route as ProcessingDocumentIdRouteImport } from './routes/processing.$documentId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -41,11 +41,6 @@ const LandingRoute = LandingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProcessingRoute = ProcessingRouteImport.update({
-  id: '/processing',
-  path: '/processing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -88,13 +83,17 @@ const VaultRoute = VaultRouteImport.update({
   path: '/vault',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProcessingDocumentIdRoute = ProcessingDocumentIdRouteImport.update({
+  id: '/processing/$documentId',
+  path: '/processing/$documentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
-  '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
@@ -103,13 +102,13 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
+  '/processing/$documentId': typeof ProcessingDocumentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
-  '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
@@ -118,6 +117,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
+  '/processing/$documentId': typeof ProcessingDocumentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,7 +125,6 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
-  '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
   '/reminder': typeof ReminderRoute
   '/reminders': typeof RemindersRoute
@@ -134,6 +133,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
+  '/processing/$documentId': typeof ProcessingDocumentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -142,7 +142,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/landing'
     | '/login'
-    | '/processing'
     | '/profile'
     | '/reminder'
     | '/reminders'
@@ -151,13 +150,13 @@ export interface FileRouteTypes {
     | '/signup'
     | '/upload'
     | '/vault'
+    | '/processing/$documentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/forgot-password'
     | '/landing'
     | '/login'
-    | '/processing'
     | '/profile'
     | '/reminder'
     | '/reminders'
@@ -166,13 +165,13 @@ export interface FileRouteTypes {
     | '/signup'
     | '/upload'
     | '/vault'
+    | '/processing/$documentId'
   id:
     | '__root__'
     | '/'
     | '/forgot-password'
     | '/landing'
     | '/login'
-    | '/processing'
     | '/profile'
     | '/reminder'
     | '/reminders'
@@ -181,6 +180,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/upload'
     | '/vault'
+    | '/processing/$documentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -188,7 +188,6 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LandingRoute: typeof LandingRoute
   LoginRoute: typeof LoginRoute
-  ProcessingRoute: typeof ProcessingRoute
   ProfileRoute: typeof ProfileRoute
   ReminderRoute: typeof ReminderRoute
   RemindersRoute: typeof RemindersRoute
@@ -197,6 +196,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   UploadRoute: typeof UploadRoute
   VaultRoute: typeof VaultRoute
+  ProcessingDocumentIdRoute: typeof ProcessingDocumentIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -227,13 +227,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/processing': {
-      id: '/processing'
-      path: '/processing'
-      fullPath: '/processing'
-      preLoaderRoute: typeof ProcessingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -292,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VaultRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/processing/$documentId': {
+      id: '/processing/$documentId'
+      path: '/processing/$documentId'
+      fullPath: '/processing/$documentId'
+      preLoaderRoute: typeof ProcessingDocumentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -300,7 +300,6 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LandingRoute: LandingRoute,
   LoginRoute: LoginRoute,
-  ProcessingRoute: ProcessingRoute,
   ProfileRoute: ProfileRoute,
   ReminderRoute: ReminderRoute,
   RemindersRoute: RemindersRoute,
@@ -309,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   UploadRoute: UploadRoute,
   VaultRoute: VaultRoute,
+  ProcessingDocumentIdRoute: ProcessingDocumentIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
