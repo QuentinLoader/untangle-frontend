@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
+import { ApiError } from "@/lib/api-client";
 import {
   MAX_UPLOAD_BYTES,
   SUPPORTED_MIME_TYPES,
@@ -11,6 +12,7 @@ import {
   isSupportedMimeType,
   requestUploadUrl,
   resolveMimeType,
+  completeUpload,
   uploadFileToSignedUrl,
   type DirectUploadStatus,
   type PendingDocumentUpload,
@@ -37,6 +39,7 @@ export const Route = createFileRoute("/upload")({
 const ACCEPT = [...SUPPORTED_MIME_TYPES, ".heic", ".heif", ".tif", ".tiff"].join(",");
 
 function Upload() {
+  const navigate = useNavigate();
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,6 +52,8 @@ function Upload() {
   const [error, setError] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<DirectUploadStatus>("idle");
   const [uploadProgressMessage, setUploadProgressMessage] = useState<string | null>(null);
+  // True once the file bytes are in storage; lets a retry skip straight to verification.
+  const s3UploadedRef = useRef(false);
 
   const prepare = async (file: File) => {
     if (busy) return;
@@ -56,6 +61,7 @@ function Upload() {
     setPending(null);
     setUploadStatus("idle");
     setUploadProgressMessage(null);
+    s3UploadedRef.current = false;
 
 
     const mimeType = resolveMimeType(file);
@@ -106,20 +112,36 @@ function Upload() {
 
   const startUpload = async () => {
     if (!pending) return;
-    if (uploadStatus === "requesting-url" || uploadStatus === "uploading") return;
+    if (uploadStatus === "requesting-url" || uploadStatus === "uploading" || uploadStatus === "verifying")
+      return;
 
     setError(null);
-    setUploadStatus("requesting-url");
-    setUploadProgressMessage("Preparing a secure upload…");
+
     try {
-      // Always request a fresh signed URL; it is used immediately and never stored.
-      const signed = await requestUploadUrl(pending.documentId);
-      setUploadStatus("uploading");
-      setUploadProgressMessage("Sending your document securely…");
-      await uploadFileToSignedUrl(signed.data.upload, pending.file);
-      setUploadStatus("uploaded");
+      if (!s3UploadedRef.current) {
+        // Always request a fresh signed URL; it is used immediately and never stored.
+        setUploadStatus("requesting-url");
+        setUploadProgressMessage("Preparing a secure upload…");
+        const signed = await requestUploadUrl(pending.documentId);
+        setUploadStatus("uploading");
+        setUploadProgressMessage("Sending your document securely…");
+        await uploadFileToSignedUrl(signed.data.upload, pending.file);
+        s3UploadedRef.current = true;
+      }
+
+      setUploadStatus("verifying");
+      setUploadProgressMessage("Verifying upload…");
+      // No body: the backend verifies the stored object itself.
+      const completed = await completeUpload(pending.documentId);
+      const doc = completed.data.document;
+      setUploadStatus("queued");
       setUploadProgressMessage(null);
+      navigate({ to: "/processing/$documentId", params: { documentId: doc.id } });
     } catch (err) {
+      // Object missing in storage means the bytes must be sent again.
+      if (err instanceof ApiError && err.code === "UPLOADED_OBJECT_NOT_FOUND") {
+        s3UploadedRef.current = false;
+      }
       setUploadStatus("failed");
       setUploadProgressMessage(null);
       setError(friendlyDocumentError(err));
@@ -132,17 +154,22 @@ function Upload() {
     if (file) void prepare(file);
   };
 
-  const uploadInFlight = uploadStatus === "requesting-url" || uploadStatus === "uploading";
+  const uploadInFlight =
+    uploadStatus === "requesting-url" ||
+    uploadStatus === "uploading" ||
+    uploadStatus === "verifying";
   const uploadLabel =
     uploadStatus === "requesting-url"
       ? "Preparing secure upload…"
       : uploadStatus === "uploading"
         ? "Uploading securely…"
-        : uploadStatus === "uploaded"
-          ? "Uploaded securely"
-          : uploadStatus === "failed"
-            ? "Try upload again"
-            : "Continue upload";
+        : uploadStatus === "verifying"
+          ? "Verifying upload…"
+          : uploadStatus === "queued"
+            ? "Queued for processing"
+            : uploadStatus === "failed"
+              ? "Try upload again"
+              : "Continue upload";
 
 
   return (
@@ -186,8 +213,8 @@ function Upload() {
           </button>
 
           <h2 className="mt-8 text-center font-display text-[20px] font-semibold leading-snug text-ink">
-            {uploadStatus === "uploaded"
-              ? "File uploaded securely"
+            {uploadStatus === "queued"
+              ? "Upload verified"
               : pending
                 ? "Document prepared securely"
                 : "Snap or upload your document"}
@@ -202,11 +229,11 @@ function Upload() {
                 {formatFileSize(pending.sizeBytes)}
               </p>
               <p className="mt-3 font-mono text-[10.5px] font-bold uppercase tracking-wide text-teal">
-                {uploadStatus === "uploaded" ? "🔒 Uploaded securely" : "Ready to upload"}
+                {uploadStatus === "queued" ? "🔒 Upload verified" : "Ready to upload"}
               </p>
-              {uploadStatus === "uploaded" && (
+              {uploadStatus === "queued" && (
                 <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
-                  Untangle will verify the file before processing it.
+                  Your document is queued for processing.
                 </p>
               )}
             </div>

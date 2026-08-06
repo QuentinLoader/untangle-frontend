@@ -21,6 +21,7 @@ import { Route as ResultRouteImport } from './routes/result'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as VaultRouteImport } from './routes/vault'
+import { Route as ProcessingDocumentIdRouteImport } from './routes/processing.$documentId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -82,6 +83,11 @@ const VaultRoute = VaultRouteImport.update({
   path: '/vault',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProcessingDocumentIdRoute = ProcessingDocumentIdRouteImport.update({
+  id: '/processing/$documentId',
+  path: '/processing/$documentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
+  '/processing/$documentId': typeof ProcessingDocumentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
+  '/processing/$documentId': typeof ProcessingDocumentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
+  '/processing/$documentId': typeof ProcessingDocumentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/upload'
     | '/vault'
+    | '/processing/$documentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/upload'
     | '/vault'
+    | '/processing/$documentId'
   id:
     | '__root__'
     | '/'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/upload'
     | '/vault'
+    | '/processing/$documentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   UploadRoute: typeof UploadRoute
   VaultRoute: typeof VaultRoute
+  ProcessingDocumentIdRoute: typeof ProcessingDocumentIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VaultRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/processing/$documentId': {
+      id: '/processing/$documentId'
+      path: '/processing/$documentId'
+      fullPath: '/processing/$documentId'
+      preLoaderRoute: typeof ProcessingDocumentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -288,17 +308,8 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   UploadRoute: UploadRoute,
   VaultRoute: VaultRoute,
+  ProcessingDocumentIdRoute: ProcessingDocumentIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
