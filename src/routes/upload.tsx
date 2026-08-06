@@ -104,11 +104,46 @@ function Upload() {
     }
   };
 
+  const startUpload = async () => {
+    if (!pending) return;
+    if (uploadStatus === "requesting-url" || uploadStatus === "uploading") return;
+
+    setError(null);
+    setUploadStatus("requesting-url");
+    setUploadProgressMessage("Preparing a secure upload…");
+    try {
+      // Always request a fresh signed URL; it is used immediately and never stored.
+      const signed = await requestUploadUrl(pending.documentId);
+      setUploadStatus("uploading");
+      setUploadProgressMessage("Sending your document securely…");
+      await uploadFileToSignedUrl(signed.data.upload, pending.file);
+      setUploadStatus("uploaded");
+      setUploadProgressMessage(null);
+    } catch (err) {
+      setUploadStatus("failed");
+      setUploadProgressMessage(null);
+      setError(friendlyDocumentError(err));
+    }
+  };
+
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (file) void prepare(file);
   };
+
+  const uploadInFlight = uploadStatus === "requesting-url" || uploadStatus === "uploading";
+  const uploadLabel =
+    uploadStatus === "requesting-url"
+      ? "Preparing secure upload…"
+      : uploadStatus === "uploading"
+        ? "Uploading securely…"
+        : uploadStatus === "uploaded"
+          ? "Uploaded securely"
+          : uploadStatus === "failed"
+            ? "Try upload again"
+            : "Continue upload";
+
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
