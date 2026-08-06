@@ -47,11 +47,16 @@ function Upload() {
   const [pending, setPending] = useState<PendingDocumentUpload | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<DirectUploadStatus>("idle");
+  const [uploadProgressMessage, setUploadProgressMessage] = useState<string | null>(null);
 
   const prepare = async (file: File) => {
     if (busy) return;
     setError(null);
     setPending(null);
+    setUploadStatus("idle");
+    setUploadProgressMessage(null);
+
 
     const mimeType = resolveMimeType(file);
     if (!isSupportedMimeType(mimeType)) {
