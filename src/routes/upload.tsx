@@ -186,7 +186,11 @@ function Upload() {
           </button>
 
           <h2 className="mt-8 text-center font-display text-[20px] font-semibold leading-snug text-ink">
-            {pending ? "Document prepared securely" : "Snap or upload your document"}
+            {uploadStatus === "uploaded"
+              ? "File uploaded securely"
+              : pending
+                ? "Document prepared securely"
+                : "Snap or upload your document"}
           </h2>
 
           {pending ? (
@@ -198,8 +202,13 @@ function Upload() {
                 {formatFileSize(pending.sizeBytes)}
               </p>
               <p className="mt-3 font-mono text-[10.5px] font-bold uppercase tracking-wide text-teal">
-                Ready to upload
+                {uploadStatus === "uploaded" ? "🔒 Uploaded securely" : "Ready to upload"}
               </p>
+              {uploadStatus === "uploaded" && (
+                <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
+                  Untangle will verify the file before processing it.
+                </p>
+              )}
             </div>
           ) : (
             <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
@@ -208,12 +217,12 @@ function Upload() {
             </p>
           )}
 
-          {busy && (
+          {(busy || uploadProgressMessage) && (
             <p
               className="mt-4 font-mono text-[11px] uppercase tracking-wide text-ink-soft"
               role="status"
             >
-              Preparing document…
+              {busy ? "Preparing document…" : uploadProgressMessage}
             </p>
           )}
 
@@ -226,13 +235,17 @@ function Upload() {
           <div className="mt-8 w-full max-w-[280px] space-y-3">
             {pending ? (
               <>
-                <PrimaryButton disabled title="Upload connection coming next" className="opacity-60">
-                  Continue upload
+                <PrimaryButton
+                  onClick={() => void startUpload()}
+                  disabled={uploadInFlight}
+                  className={uploadInFlight ? "opacity-60" : ""}
+                >
+                  {uploadLabel}
                 </PrimaryButton>
-                <p className="text-center font-mono text-[10.5px] uppercase tracking-wide text-ink-soft">
-                  Upload connection coming next
-                </p>
-                <SecondaryButton onClick={() => fileInputRef.current?.click()} disabled={busy}>
+                <SecondaryButton
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={busy || uploadInFlight}
+                >
                   Choose a different file
                 </SecondaryButton>
               </>
@@ -247,6 +260,7 @@ function Upload() {
               </>
             )}
           </div>
+
         </div>
       </div>
     </div>
