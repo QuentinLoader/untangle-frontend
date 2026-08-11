@@ -1,10 +1,28 @@
 import { withAuth } from "@/auth/ProtectedRoute";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { StampBadge } from "@/components/untangle/StampBadge";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { StampBadge, type StampColor } from "@/components/untangle/StampBadge";
 import { BlockCard } from "@/components/untangle/BlockCard";
-import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
+import { SecondaryButton } from "@/components/untangle/Buttons";
+import {
+  formatResultAmount,
+  formatResultDate,
+  friendlyDocumentError,
+  getDocumentResult,
+  severityLabel,
+  type DocumentResult,
+  type ResultSeverity,
+} from "@/lib/documents";
+
+type ResultSearch = { documentId: string };
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const Route = createFileRoute("/result")({
+  validateSearch: (search: Record<string, unknown>): ResultSearch => {
+    const value = typeof search['documentId'] === "string" ? search['documentId'] : "";
+    return { documentId: UUID_RE.test(value) ? value : "" };
+  },
   head: () => ({
     meta: [
       { title: "TaxSnap result — Untangle" },
@@ -22,8 +40,24 @@ export const Route = createFileRoute("/result")({
   component: withAuth(Result),
 });
 
+const SEVERITY_COLOR: Record<ResultSeverity, StampColor> = {
+  INFO: "teal",
+  ACTION_NEEDED: "amber",
+  URGENT: "red",
+  CRITICAL: "red",
+};
+
 function Result() {
-  const navigate = useNavigate();
+  const { documentId } = Route.useSearch();
+
+  const { data, isPending, error } = useQuery({
+    queryKey: ["document-result", documentId],
+    queryFn: () => getDocumentResult(documentId),
+    enabled: documentId !== "",
+    retry: false,
+  });
+
+  const result = data?.data.result;
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
@@ -36,67 +70,182 @@ function Result() {
           >
             <span className="text-[19px]">←</span>
           </Link>
-          <h1 className="font-display text-[17px] font-semibold text-ink">TaxSnap</h1>
+          <h1 className="font-display text-[17px] font-semibold text-ink">
+            {result?.document.moduleDisplayName ?? "Result"}
+          </h1>
         </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-y-auto px-5 pb-5">
-        <div className="flex justify-end pt-1">
-          <StampBadge label="Urgent" color="red" className="rotate-[-5deg]" />
-        </div>
-
-        <h2 className="mt-2 font-display text-[20px] font-semibold leading-snug text-ink">
-          SARS wants R4,200 paid by 14 Jul
-        </h2>
-        <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
-          SARS says you owe R4,200 in unpaid tax from a previous assessment, plus interest. You have
-          until 14 July 2026 to pay or respond.
-        </p>
-
-        <BlockCard title="What you need to do" className="mt-5">
-          <div className="space-y-3">
-            <ActionRow text="Pay R4,200 via SARS eFiling before 14 Jul" />
-            <ActionRow text="If you disagree, lodge a dispute instead of paying" />
-          </div>
-        </BlockCard>
-
-        <BlockCard title="Key date" className="mt-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-[14px] font-semibold text-ink">Payment deadline</span>
-            <span className="rounded-full bg-tint-red px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.04em] text-stamp-red">
-              14 JUL
-            </span>
-          </div>
-        </BlockCard>
-
-        <BlockCard title="Worth knowing" className="mt-3">
-          <div className="space-y-3 text-[12.5px] leading-relaxed text-ink-soft">
-            <p>Interest keeps growing the longer this stays unpaid.</p>
-            <p>You have the right to dispute this amount before paying, via SARS eFiling.</p>
-          </div>
-        </BlockCard>
-
-        <div className="mt-5 space-y-3">
-          <PrimaryButton onClick={() => navigate({ to: "/reminder" })}>Set a reminder</PrimaryButton>
-          <SecondaryButton>Find a tax practitioner near me</SecondaryButton>
-        </div>
-
-        <div className="sticky bottom-0 mt-6 border-t border-dashed border-line bg-paper pt-4 pb-2">
-          <p className="text-[10px] leading-relaxed text-ink-soft">
-            Untangle gives general information only and isn't a registered tax practitioner. For
-            disputes, audits, or amounts over R10,000, consult a SARS-registered tax practitioner.
-          </p>
-        </div>
+        {documentId === "" ? (
+          <StateMessage
+            title="We could not find this result"
+            body="Open the document again from your vault to view its result."
+          />
+        ) : isPending ? (
+          <StateMessage title="Loading your result…" body="One moment while we fetch it." />
+        ) : error || !result ? (
+          <StateMessage
+            title="This result could not be loaded"
+            body={friendlyDocumentError(error)}
+          />
+        ) : (
+          <ResultBody result={result} />
+        )}
       </main>
     </div>
   );
 }
 
-function ActionRow({ text }: { text: string }) {
+function StateMessage({ title, body }: { title: string; body: string }) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="mt-0.5 h-[15px] w-[15px] shrink-0 rounded-[3px] border-2 border-ink-soft" />
-      <span className="text-[12.5px] leading-snug text-ink">{text}</span>
+    <div className="flex flex-1 flex-col items-center justify-center pb-16 text-center">
+      <h2 className="font-display text-[19px] font-semibold text-ink">{title}</h2>
+      <p className="mt-2 max-w-[280px] text-[13px] leading-relaxed text-ink-soft">{body}</p>
     </div>
+  );
+}
+
+function ResultBody({ result }: { result: DocumentResult }) {
+  const { summary, document, requiredActions, keyDates, amounts, riskFlags, yourRights } = result;
+
+  return (
+    <>
+      <div className="flex justify-end pt-1">
+        <StampBadge
+          label={severityLabel(summary.severity)}
+          color={SEVERITY_COLOR[summary.severity]}
+          className="rotate-[-5deg]"
+        />
+      </div>
+
+      <h2 className="mt-2 font-display text-[20px] font-semibold leading-snug text-ink">
+        {summary.headline}
+      </h2>
+      <p className="mt-2 whitespace-pre-line text-[12.5px] leading-relaxed text-ink-soft">
+        {summary.plainEnglish}
+      </p>
+
+      {(document.documentTitle || document.issueDate) && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-ink-soft">
+          {document.documentTitle && (
+            <span className="font-medium text-ink">{document.documentTitle}</span>
+          )}
+          {document.issueDate && (
+            <span className="font-mono text-[10.5px] uppercase tracking-[0.04em]">
+              {formatResultDate(document.issueDate)}
+            </span>
+          )}
+        </div>
+      )}
+
+      {requiredActions.length > 0 && (
+        <BlockCard title="What you need to do" className="mt-5">
+          <div className="space-y-3">
+            {requiredActions.map((action) => (
+              <div key={action.id} className="flex items-start gap-3">
+                <div className="mt-0.5 h-[15px] w-[15px] shrink-0 rounded-[3px] border-2 border-ink-soft" />
+                <div>
+                  <p className="text-[12.5px] leading-snug text-ink">{action.action}</p>
+                  {action.details && (
+                    <p className="mt-1 text-[11.5px] leading-relaxed text-ink-soft">
+                      {action.details}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </BlockCard>
+      )}
+
+      <BlockCard title="Key dates" className="mt-3">
+        {keyDates.length === 0 ? (
+          <p className="text-[12.5px] leading-relaxed text-ink-soft">
+            No explicit response, submission, or payment deadline was found in the validated facts
+            from this document.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {keyDates.map((keyDate) => (
+              <div key={keyDate.id} className="flex items-center justify-between gap-3">
+                <span className="text-[13.5px] font-semibold text-ink">{keyDate.label}</span>
+                <span className="rounded-full bg-paper-2 px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.04em] text-ink">
+                  {formatResultDate(keyDate.date)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </BlockCard>
+
+      {amounts.length > 0 && (
+        <BlockCard title="Amounts" className="mt-3">
+          <div className="space-y-3">
+            {amounts.map((amount) => (
+              <div key={amount.id} className="flex items-center justify-between gap-3">
+                <span className="text-[13.5px] font-semibold text-ink">{amount.label}</span>
+                <span className="font-mono text-[12.5px] font-semibold text-ink">
+                  {formatResultAmount(amount.amountCents, amount.currency)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </BlockCard>
+      )}
+
+      {riskFlags.length > 0 && (
+        <BlockCard title="Worth knowing" className="mt-3">
+          <div className="space-y-3 text-[12.5px] leading-relaxed text-ink-soft">
+            {riskFlags.map((flag) => (
+              <div key={flag.id}>
+                <p className="font-medium text-ink">{flag.flag}</p>
+                <p className="mt-1">{flag.explanation}</p>
+                {flag.legalBasis && (
+                  <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.04em]">
+                    {flag.legalBasis}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </BlockCard>
+      )}
+
+      {yourRights.length > 0 && (
+        <BlockCard title="Your rights" className="mt-3">
+          <div className="space-y-3 text-[12.5px] leading-relaxed text-ink-soft">
+            {yourRights.map((right) => (
+              <div key={right.id}>
+                <p className="font-medium text-ink">{right.right}</p>
+                {right.howToExercise && <p className="mt-1">{right.howToExercise}</p>}
+                {right.legalBasis && (
+                  <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.04em]">
+                    {right.legalBasis}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </BlockCard>
+      )}
+
+      {result.escalation.recommended && (
+        <BlockCard title="Getting help" className="mt-3">
+          {result.escalation.reasons.length > 0 && (
+            <ul className="mb-3 space-y-1.5 text-[12.5px] leading-relaxed text-ink-soft">
+              {result.escalation.reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          )}
+          <SecondaryButton>Find a tax practitioner near me</SecondaryButton>
+        </BlockCard>
+      )}
+
+      <div className="sticky bottom-0 mt-6 border-t border-dashed border-line bg-paper pt-4 pb-2">
+        <p className="text-[10px] leading-relaxed text-ink-soft">{result.disclaimer.wording}</p>
+      </div>
+    </>
   );
 }
