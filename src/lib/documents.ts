@@ -244,6 +244,12 @@ export async function completeUpload(documentId: string): Promise<CompleteUpload
   });
 }
 
+export type DocumentFailureCode =
+  | "DOCUMENT_NOT_SUPPORTED"
+  | "MODULE_NOT_ACTIVE"
+  | "JURISDICTION_NOT_SUPPORTED"
+  | "MODULE_DETECTION_LOW_CONFIDENCE";
+
 export type DocumentStatusResponse = {
   success: true;
   data: {
@@ -253,10 +259,20 @@ export type DocumentStatusResponse = {
       processingStatus: DocumentProcessingStatus;
       detectedModule?: string | null;
       detectedDocumentType?: string | null;
+      failureCode?: DocumentFailureCode | null;
+      failureMessage?: string | null;
       updatedAt?: string;
     };
   };
 };
+
+/** Converts a backend UPPER_SNAKE_CASE value into readable Title Case for display only. */
+export function toTitleCase(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
 
 export async function fetchDocumentStatus(documentId: string): Promise<DocumentStatusResponse> {
   return apiRequest<DocumentStatusResponse>(`/api/v1/documents/${documentId}/status`);
