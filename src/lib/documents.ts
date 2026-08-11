@@ -317,3 +317,131 @@ const PROCESSING_COPY: Record<DocumentProcessingStatus, { title: string; body: s
 export function processingCopy(status: DocumentProcessingStatus) {
   return PROCESSING_COPY[status];
 }
+
+export type ResultSeverity = "INFO" | "ACTION_NEEDED" | "URGENT" | "CRITICAL";
+
+export type DocumentResult = {
+  version: string;
+  document: {
+    id: string;
+    module: string;
+    moduleDisplayName: string;
+    detectedDocumentType: string | null;
+    taxonomyDocumentType: string;
+    documentTitle: string | null;
+    issueDate: string | null;
+    taxpayerType: string;
+    taxType: string;
+    confidence: "HIGH" | "MEDIUM" | "LOW" | null;
+  };
+  summary: {
+    headline: string;
+    plainEnglish: string;
+    severity: ResultSeverity;
+  };
+  requiredActions: Array<{
+    id: string;
+    action: string;
+    details: string | null;
+    priority: "HIGH" | "MEDIUM" | "LOW";
+    deadlineKey: string | null;
+  }>;
+  keyDates: Array<{
+    id: string;
+    fieldKey: string;
+    label: string;
+    date: string;
+    dateConfidence: string;
+    reminderRecommended: boolean;
+  }>;
+  amounts: Array<{
+    id: string;
+    fieldKey: string;
+    label: string;
+    amountCents: number;
+    currency: string | null;
+    isEstimate: boolean;
+  }>;
+  riskFlags: Array<{
+    id: string;
+    flag: string;
+    severity: "LOW" | "MEDIUM" | "HIGH";
+    explanation: string;
+    legalBasis: string | null;
+  }>;
+  yourRights: Array<{
+    id: string;
+    right: string;
+    legalBasis: string | null;
+    howToExercise: string | null;
+  }>;
+  escalation: {
+    recommended: boolean;
+    reasons: string[];
+    suggestedProfessional: "tax_practitioner" | "none";
+  };
+  disclaimer: {
+    tag: string | null;
+    version: string | null;
+    wording: string;
+  };
+  reminderCandidates: Array<{
+    id: string;
+    deadlineKey: string;
+    label: string;
+    dueDate: string;
+    linkedActionId: string | null;
+  }>;
+  validationWarnings: Array<{
+    fieldKey: string;
+    code: string;
+    severity: "WARNING";
+  }>;
+  completedAt: string;
+};
+
+export type GetDocumentResultResponse = {
+  success: true;
+  data: { result: DocumentResult };
+};
+
+export async function getDocumentResult(documentId: string): Promise<GetDocumentResultResponse> {
+  return apiRequest<GetDocumentResultResponse>(`/api/v1/documents/${documentId}/result`, {
+    method: "GET",
+  });
+}
+
+const SEVERITY_LABELS: Record<ResultSeverity, string> = {
+  INFO: "For your information",
+  ACTION_NEEDED: "Action needed",
+  URGENT: "Urgent",
+  CRITICAL: "Critical",
+};
+
+export function severityLabel(severity: ResultSeverity): string {
+  return SEVERITY_LABELS[severity] ?? "For your information";
+}
+
+/** Formats a backend-validated ISO date as e.g. "26 Mar 2025". */
+export function formatResultDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return new Intl.DateTimeFormat("en-ZA", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(parsed);
+}
+
+/** Amounts arrive as integer cents; currency is only applied when supplied. */
+export function formatResultAmount(amountCents: number, currency: string | null): string {
+  const value = amountCents / 100;
+  if (currency) {
+    return new Intl.NumberFormat("en-ZA", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+    }).format(value);
+  }
+  return new Intl.NumberFormat("en-ZA", { minimumFractionDigits: 2 }).format(value);
+}
