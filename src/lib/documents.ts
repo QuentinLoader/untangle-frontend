@@ -180,6 +180,8 @@ const CODE_MESSAGES: Record<string, string> = {
   UPLOAD_CONTENT_TYPE_MISSING: "The uploaded file type could not be verified.",
   UPLOAD_CONTENT_TYPE_MISMATCH: "The uploaded file type did not match the selected document.",
   DOCUMENT_UPLOAD_STATE_CONFLICT: "The upload status changed. Refresh and try again.",
+  RESULT_NOT_READY: "Your result is still being prepared.",
+  RESULT_UNAVAILABLE: "This result could not be loaded. Please try again.",
 };
 
 /** Never surfaces raw API errors, JSON, XML or tokens. */
