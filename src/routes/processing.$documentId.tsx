@@ -54,14 +54,15 @@ function Processing() {
 
     const poll = async () => {
       try {
-        const result = await fetchDocumentStatus(documentId);
+        const response = await getDocumentStatus(documentId);
         if (stoppedRef.current) return;
         failures = 0;
-        const next = result.data.document.processingStatus;
+        const docStatus = response.data.status;
+        const next = docStatus.processingStatus;
         setStatus(next);
-        setDetectedDocumentType(result.data.document.detectedDocumentType ?? null);
-        setFailureCode(result.data.document.failureCode ?? null);
-        setFailureMessage(result.data.document.failureMessage ?? null);
+        setDetectedDocumentType(docStatus.detectedDocumentType ?? null);
+        setFailureCode((docStatus.failureCode as DocumentFailureCode | null) ?? null);
+        setFailureMessage(docStatus.failureMessage ?? null);
         setQueryError(null);
         if (isTerminalProcessingStatus(next)) {
           stoppedRef.current = true;
