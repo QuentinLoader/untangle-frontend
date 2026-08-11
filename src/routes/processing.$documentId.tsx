@@ -40,6 +40,7 @@ const MAX_CONSECUTIVE_POLL_FAILURES = 3;
 
 function Processing() {
   const { documentId } = Route.useParams();
+  const navigate = useNavigate();
   const [status, setStatus] = useState<DocumentProcessingStatus | null>(null);
   const [detectedDocumentType, setDetectedDocumentType] = useState<string | null>(null);
   const [failureCode, setFailureCode] = useState<DocumentFailureCode | null>(null);
@@ -66,8 +67,12 @@ function Processing() {
         setQueryError(null);
         if (isTerminalProcessingStatus(next)) {
           stoppedRef.current = true;
+          if (next === "COMPLETED") {
+            void navigate({ to: "/result", search: { documentId } });
+          }
           return;
         }
+
       } catch (err) {
         if (stoppedRef.current) return;
         failures += 1;
