@@ -6,6 +6,8 @@ import {
   friendlyDocumentError,
   isTerminalProcessingStatus,
   processingCopy,
+  toTitleCase,
+  type DocumentFailureCode,
   type DocumentProcessingStatus,
 } from "@/lib/documents";
 
@@ -39,6 +41,9 @@ const MAX_CONSECUTIVE_POLL_FAILURES = 3;
 function Processing() {
   const { documentId } = Route.useParams();
   const [status, setStatus] = useState<DocumentProcessingStatus | null>(null);
+  const [detectedDocumentType, setDetectedDocumentType] = useState<string | null>(null);
+  const [failureCode, setFailureCode] = useState<DocumentFailureCode | null>(null);
+  const [failureMessage, setFailureMessage] = useState<string | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
   const stoppedRef = useRef(false);
 
@@ -54,6 +59,9 @@ function Processing() {
         failures = 0;
         const next = result.data.document.processingStatus;
         setStatus(next);
+        setDetectedDocumentType(result.data.document.detectedDocumentType ?? null);
+        setFailureCode(result.data.document.failureCode ?? null);
+        setFailureMessage(result.data.document.failureMessage ?? null);
         setQueryError(null);
         if (isTerminalProcessingStatus(next)) {
           stoppedRef.current = true;
@@ -79,6 +87,7 @@ function Processing() {
   }, [documentId]);
 
   const isLoading = status === null;
+  const needsReview = status === "NEEDS_REVIEW";
   const backendFailed = status === "FAILED" || status === "CANCELLED";
   const showProcessingError = backendFailed || queryError !== null;
 
@@ -105,52 +114,179 @@ function Processing() {
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center pb-16">
-          <div className="flex h-[100px] w-[82px] flex-col justify-start gap-2 rounded-lg border-2 border-ink bg-card p-3 pt-4">
-            <div className="h-[5px] w-full rounded-full bg-paper-2" />
-            <div className="h-[5px] w-[75%] rounded-full bg-teal/40" />
-            <div className="h-[5px] w-[55%] rounded-full bg-paper-2" />
-          </div>
+          {needsReview ? (
+            <NeedsReviewState
+              failureCode={failureCode}
+              detectedDocumentType={detectedDocumentType}
+              failureMessage={failureMessage}
+            />
+          ) : (
+            <>
+              <div className="flex h-[100px] w-[82px] flex-col justify-start gap-2 rounded-lg border-2 border-ink bg-card p-3 pt-4">
+                <div className="h-[5px] w-full rounded-full bg-paper-2" />
+                <div className="h-[5px] w-[75%] rounded-full bg-teal/40" />
+                <div className="h-[5px] w-[55%] rounded-full bg-paper-2" />
+              </div>
 
-          <h2 className="mt-8 text-center font-display text-[20px] font-semibold leading-snug text-ink">
-            {copy.title}
-          </h2>
-          <p className="mt-2 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
-            {copy.body}
-          </p>
-          {!isLoading && (
-            <p
-              className={`mt-3 font-mono text-[10.5px] font-bold uppercase tracking-wide ${
-                backendFailed ? "text-stamp-red" : "text-teal"
-              }`}
-            >
-              {status}
-            </p>
-          )}
+              <h2 className="mt-8 text-center font-display text-[20px] font-semibold leading-snug text-ink">
+                {copy.title}
+              </h2>
+              <p className="mt-2 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
+                {copy.body}
+              </p>
+              {!isLoading && (
+                <p
+                  className={`mt-3 font-mono text-[10.5px] font-bold uppercase tracking-wide ${
+                    backendFailed ? "text-stamp-red" : "text-teal"
+                  }`}
+                >
+                  {status}
+                </p>
+              )}
 
-          <div className="mt-10 w-full max-w-[260px] space-y-4">
-            {STEPS.map((step) => {
-              const stepIndex = Math.max(...step.statuses.map((s) => order.indexOf(s)));
-              return (
-                <StepRow
-                  key={step.label}
-                  label={step.label}
-                  done={currentIndex > stepIndex && currentIndex >= 0}
-                />
-              );
-            })}
-          </div>
+              <div className="mt-10 w-full max-w-[260px] space-y-4">
+                {STEPS.map((step) => {
+                  const stepIndex = Math.max(...step.statuses.map((s) => order.indexOf(s)));
+                  return (
+                    <StepRow
+                      key={step.label}
+                      label={step.label}
+                      done={currentIndex > stepIndex && currentIndex >= 0}
+                    />
+                  );
+                })}
+              </div>
 
-          {showProcessingError && (
-            <p className="mt-6 max-w-[280px] text-center text-[13px] text-stamp-red" role="alert">
-              {backendFailed
-                ? copy.body
-                : (queryError ?? "We could not check this document. Please try again.")}
-            </p>
+              {showProcessingError && (
+                <p className="mt-6 max-w-[280px] text-center text-[13px] text-stamp-red" role="alert">
+                  {backendFailed
+                    ? copy.body
+                    : (queryError ?? "We could not check this document. Please try again.")}
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>
     </div>
   );
+}
+
+function NeedsReviewState({
+  failureCode,
+  detectedDocumentType,
+  failureMessage,
+}: {
+  failureCode: DocumentFailureCode | null;
+  detectedDocumentType: string | null;
+  failureMessage: string | null;
+}) {
+  const readableDocumentType = detectedDocumentType ? toTitleCase(detectedDocumentType) : null;
+
+  switch (failureCode) {
+    case "DOCUMENT_NOT_SUPPORTED":
+      return (
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-[28px]">
+            📄
+          </div>
+          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
+            This document isn't supported yet
+          </h2>
+          {readableDocumentType && (
+            <p className="mt-4 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
+              Untangle identified it as:
+              <br />
+              <span className="font-medium text-ink">{readableDocumentType}</span>
+            </p>
+          )}
+          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
+            Untangle currently supports TaxSnap documents in this version.
+          </p>
+          {failureMessage && (
+            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
+              {failureMessage}
+            </p>
+          )}
+        </div>
+      );
+    case "MODULE_NOT_ACTIVE":
+      return (
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-teal/10 text-[28px]">
+            🔍
+          </div>
+          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
+            We recognised this document
+          </h2>
+          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
+            This Untangle module isn't available yet.
+          </p>
+          {failureMessage && (
+            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
+              {failureMessage}
+            </p>
+          )}
+        </div>
+      );
+    case "JURISDICTION_NOT_SUPPORTED":
+      return (
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-[28px]">
+            🌍
+          </div>
+          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
+            This document is outside the current TaxSnap scope
+          </h2>
+          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
+            Untangle currently supports South African tax documents.
+          </p>
+          {failureMessage && (
+            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
+              {failureMessage}
+            </p>
+          )}
+        </div>
+      );
+    case "MODULE_DETECTION_LOW_CONFIDENCE":
+      return (
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-[28px]">
+            ❓
+          </div>
+          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
+            We couldn't identify this document confidently
+          </h2>
+          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
+            Please check the document and try again.
+          </p>
+          {failureMessage && (
+            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
+              {failureMessage}
+            </p>
+          )}
+        </div>
+      );
+    default:
+      return (
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-[28px]">
+            📄
+          </div>
+          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
+            This one needs a closer look
+          </h2>
+          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
+            Some details could not be confirmed automatically.
+          </p>
+          {failureMessage && (
+            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
+              {failureMessage}
+            </p>
+          )}
+        </div>
+      );
+  }
 }
 
 function StepRow({ label, done }: { label: string; done: boolean }) {
