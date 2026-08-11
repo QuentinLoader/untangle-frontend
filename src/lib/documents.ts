@@ -250,19 +250,27 @@ export type DocumentFailureCode =
   | "JURISDICTION_NOT_SUPPORTED"
   | "MODULE_DETECTION_LOW_CONFIDENCE";
 
-export type DocumentStatusResponse = {
+export type DocumentStatusView = {
+  id: string;
+  uploadStatus: DocumentUploadStatus;
+  processingStatus: DocumentProcessingStatus;
+  detectedModule: string | null;
+  detectedDocumentType: string | null;
+  failureCode: DocumentFailureCode | string | null;
+  failureMessage: string | null;
+  uploadedAt: string | null;
+  updatedAt: string;
+};
+
+/** GET /api/v1/documents/:id/status returns data.status (NOT data.document). */
+export type GetDocumentStatusResponse = {
   success: true;
   data: {
-    document: {
-      id: string;
-      uploadStatus: DocumentUploadStatus;
-      processingStatus: DocumentProcessingStatus;
-      detectedModule?: string | null;
-      detectedDocumentType?: string | null;
-      failureCode?: DocumentFailureCode | null;
-      failureMessage?: string | null;
-      updatedAt?: string;
-    };
+    status: DocumentStatusView;
+  };
+  meta?: {
+    requestId: string;
+    timestamp: string;
   };
 };
 
