@@ -282,8 +282,10 @@ export function toTitleCase(value: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-export async function fetchDocumentStatus(documentId: string): Promise<DocumentStatusResponse> {
-  return apiRequest<DocumentStatusResponse>(`/api/v1/documents/${documentId}/status`);
+export async function getDocumentStatus(documentId: string): Promise<GetDocumentStatusResponse> {
+  return apiRequest<GetDocumentStatusResponse>(`/api/v1/documents/${documentId}/status`, {
+    method: "GET",
+  });
 }
 
 export const TERMINAL_PROCESSING_STATUSES: DocumentProcessingStatus[] = [
