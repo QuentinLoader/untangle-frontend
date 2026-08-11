@@ -90,7 +90,7 @@ function Processing() {
       stoppedRef.current = true;
       if (timer) clearTimeout(timer);
     };
-  }, [documentId]);
+  }, [documentId, navigate]);
 
   const isLoading = status === null;
   const needsReview = status === "NEEDS_REVIEW";
