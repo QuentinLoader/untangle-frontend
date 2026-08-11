@@ -33,30 +33,39 @@ const STEPS: { label: string; statuses: DocumentProcessingStatus[] }[] = [
   { label: "Checking your rights", statuses: ["MATCHING_RULES"] },
 ];
 
+/** Number of consecutive polling failures tolerated before surfacing an error. */
+const MAX_CONSECUTIVE_POLL_FAILURES = 3;
+
 function Processing() {
   const { documentId } = Route.useParams();
-  const [status, setStatus] = useState<DocumentProcessingStatus>("QUEUED");
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<DocumentProcessingStatus | null>(null);
+  const [queryError, setQueryError] = useState<string | null>(null);
   const stoppedRef = useRef(false);
 
   useEffect(() => {
     stoppedRef.current = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let failures = 0;
 
     const poll = async () => {
       try {
         const result = await fetchDocumentStatus(documentId);
         if (stoppedRef.current) return;
+        failures = 0;
         const next = result.data.document.processingStatus;
         setStatus(next);
-        setError(null);
+        setQueryError(null);
         if (isTerminalProcessingStatus(next)) {
           stoppedRef.current = true;
           return;
         }
       } catch (err) {
         if (stoppedRef.current) return;
-        setError(friendlyDocumentError(err));
+        failures += 1;
+        // Keep the last known good status; only surface persistent failures.
+        if (failures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+          setQueryError(friendlyDocumentError(err));
+        }
       }
       timer = setTimeout(() => void poll(), 3000);
     };
@@ -69,7 +78,14 @@ function Processing() {
     };
   }, [documentId]);
 
-  const copy = processingCopy(status);
+  const isLoading = status === null;
+  const backendFailed = status === "FAILED" || status === "CANCELLED";
+  const showProcessingError = backendFailed || queryError !== null;
+
+  const copy = status
+    ? processingCopy(status)
+    : { title: "Checking document status…", body: "One moment while we look this up." };
+
   const order: DocumentProcessingStatus[] = [
     "QUEUED",
     "DETECTING_MODULE",
@@ -79,7 +95,7 @@ function Processing() {
     "MATCHING_RULES",
     "COMPLETED",
   ];
-  const currentIndex = order.indexOf(status);
+  const currentIndex = status ? order.indexOf(status) : -1;
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
@@ -101,9 +117,15 @@ function Processing() {
           <p className="mt-2 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
             {copy.body}
           </p>
-          <p className="mt-3 font-mono text-[10.5px] font-bold uppercase tracking-wide text-teal">
-            {status}
-          </p>
+          {!isLoading && (
+            <p
+              className={`mt-3 font-mono text-[10.5px] font-bold uppercase tracking-wide ${
+                backendFailed ? "text-stamp-red" : "text-teal"
+              }`}
+            >
+              {status}
+            </p>
+          )}
 
           <div className="mt-10 w-full max-w-[260px] space-y-4">
             {STEPS.map((step) => {
@@ -118,9 +140,11 @@ function Processing() {
             })}
           </div>
 
-          {error && (
+          {showProcessingError && (
             <p className="mt-6 max-w-[280px] text-center text-[13px] text-stamp-red" role="alert">
-              {error}
+              {backendFailed
+                ? copy.body
+                : (queryError ?? "We could not check this document. Please try again.")}
             </p>
           )}
         </div>
