@@ -1,5 +1,5 @@
 import { withAuth } from "@/auth/ProtectedRoute";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 
 export const Route = createFileRoute("/reminder")({
@@ -27,13 +27,13 @@ function Reminder() {
     <div className="flex min-h-screen flex-col bg-paper">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-7">
         <header className="flex items-center gap-3">
-          <Link
-            to="/result"
+          <button
+            onClick={() => navigate({ to: "/vault" })}
             className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper-2"
             aria-label="Go back"
           >
             <span className="text-[19px]">←</span>
-          </Link>
+          </button>
           <h1 className="font-display text-[17px] font-semibold text-ink">TaxSnap</h1>
         </header>
 

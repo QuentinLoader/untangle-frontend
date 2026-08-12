@@ -197,17 +197,22 @@ function ResultBody({ result }: { result: DocumentResult }) {
       {riskFlags.length > 0 && (
         <BlockCard title="Worth knowing" className="mt-3">
           <div className="space-y-3 text-[12.5px] leading-relaxed text-ink-soft">
-            {riskFlags.map((flag) => (
-              <div key={flag.id}>
-                <p className="font-medium text-ink">{flag.flag}</p>
-                <p className="mt-1">{flag.explanation}</p>
-                {flag.legalBasis && (
-                  <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.04em]">
-                    {flag.legalBasis}
-                  </p>
-                )}
-              </div>
-            ))}
+            {riskFlags.map((flag) => {
+              const explanation = flag.explanation?.trim() ?? "";
+              const showExplanation =
+                explanation.length > 0 && explanation !== flag.flag.trim();
+              return (
+                <div key={flag.id}>
+                  <p className="font-medium text-ink">{flag.flag}</p>
+                  {showExplanation && <p className="mt-1">{explanation}</p>}
+                  {flag.legalBasis && (
+                    <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.04em]">
+                      {flag.legalBasis}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </BlockCard>
       )}
