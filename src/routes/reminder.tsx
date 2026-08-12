@@ -1,5 +1,5 @@
 import { withAuth } from "@/auth/ProtectedRoute";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 
 export const Route = createFileRoute("/reminder")({
