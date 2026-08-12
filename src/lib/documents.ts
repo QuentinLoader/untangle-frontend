@@ -445,3 +445,70 @@ export function formatResultAmount(amountCents: number, currency: string | null)
   }
   return new Intl.NumberFormat("en-ZA", { minimumFractionDigits: 2 }).format(value);
 }
+
+export type DocumentModule = "TAX" | "LEASE" | "DEAL" | "WORK";
+
+export type DocumentListItem = {
+  documentId: string;
+  originalFilename: string;
+  module: DocumentModule | null;
+  documentType: string | null;
+  processingStatus: DocumentProcessingStatus | "NOT_STARTED" | string;
+  documentTitle: string | null;
+  issueDate: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ListDocumentsResponse = {
+  success: true;
+  data: { documents: DocumentListItem[] };
+};
+
+/** GET /api/v1/documents — the signed-in user's document history, newest first. */
+export async function listDocuments(): Promise<ListDocumentsResponse> {
+  return apiRequest<ListDocumentsResponse>("/api/v1/documents", { method: "GET" });
+}
+
+const MODULE_LABELS: Record<DocumentModule, string> = {
+  TAX: "TaxSnap",
+  LEASE: "LeaseCheck",
+  DEAL: "DealCheck",
+  WORK: "WorkCheck",
+};
+
+export function moduleLabel(module: DocumentModule | null): string {
+  return module ? (MODULE_LABELS[module] ?? "Other") : "Other";
+}
+
+/** Title priority: documentTitle → readable documentType → originalFilename. */
+export function documentDisplayTitle(doc: DocumentListItem): string {
+  if (doc.documentTitle?.trim()) return doc.documentTitle.trim();
+  if (doc.documentType?.trim()) return toTitleCase(doc.documentType.trim());
+  return doc.originalFilename;
+}
+
+export function documentStatusSubtitle(doc: DocumentListItem): string {
+  switch (doc.processingStatus) {
+    case "COMPLETED":
+      return doc.issueDate ? `Reviewed · ${formatResultDate(doc.issueDate)}` : "Reviewed";
+    case "NEEDS_REVIEW":
+      return "Needs review";
+    case "FAILED":
+      return "Could not process";
+    case "CANCELLED":
+      return "Cancelled";
+    case "NOT_STARTED":
+      return "Upload incomplete";
+    case "QUEUED":
+    case "DETECTING_MODULE":
+    case "CLASSIFYING":
+    case "EXTRACTING":
+    case "VALIDATING_RESULT":
+    case "MATCHING_RULES":
+      return "Processing";
+    default:
+      return "Processing";
+  }
+}
