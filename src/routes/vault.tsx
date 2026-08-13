@@ -13,6 +13,7 @@ import {
   moduleLabel,
   type DocumentListItem,
 } from "@/lib/documents";
+import { formatReminderDate, friendlyReminderError, listReminders } from "@/lib/reminders";
 
 export const Route = createFileRoute("/vault")({
   head: () => ({
@@ -112,7 +113,8 @@ function Vault() {
         </div>
 
         {tab === "reminders" ? (
-          <p className="mt-8 text-[14px] text-ink-soft">No reminders yet.</p>
+          <RemindersTab />
+
         ) : isPending ? (
           <p className="mt-8 text-[14px] text-ink-soft">Loading your documents…</p>
         ) : error ? (
@@ -166,6 +168,43 @@ function Vault() {
 
       <FAB />
       <BottomTabBar active="Vault" />
+    </div>
+  );
+}
+
+function RemindersTab() {
+  const { data, isPending, error } = useQuery({
+    queryKey: ["reminders"],
+    queryFn: () => listReminders(),
+    retry: false,
+  });
+
+  const reminders = data?.data.reminders ?? [];
+
+  if (isPending) return <p className="mt-8 text-[14px] text-ink-soft">Loading your reminders…</p>;
+  if (error)
+    return <p className="mt-8 text-[14px] text-ink-soft">{friendlyReminderError(error)}</p>;
+  if (reminders.length === 0)
+    return <p className="mt-8 text-[14px] text-ink-soft">No reminders yet.</p>;
+
+  return (
+    <div className="mt-6 space-y-3">
+      {reminders.map((reminder) => (
+        <div
+          key={reminder.reminderId}
+          className="flex items-center justify-between gap-3 rounded-[14px] border border-line bg-white p-[14px]"
+        >
+          <div>
+            <p className="text-[14px] font-bold text-ink">{reminder.label}</p>
+            <p className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.04em] text-ink-soft">
+              {formatReminderDate(reminder.dueDate)}
+            </p>
+          </div>
+          <span className="rounded-full bg-teal-dim px-2.5 py-1 font-mono text-[10.5px] font-bold uppercase text-teal">
+            {reminder.status}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

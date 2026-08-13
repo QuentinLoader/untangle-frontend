@@ -177,7 +177,16 @@ function ResultBody({ result }: { result: DocumentResult }) {
             ))}
           </div>
         )}
+        <Link
+          to="/reminder"
+          search={{ documentId: document.id }}
+          className="mt-4 block w-full rounded-[14px] border-[1.5px] border-line px-4 py-[14px] text-center text-[15px] font-semibold text-ink transition-colors hover:bg-paper-2"
+        >
+          {result.reminderCandidates.length > 0 ? "Set a reminder" : "Add a reminder myself"}
+        </Link>
+
       </BlockCard>
+
 
       {amounts.length > 0 && (
         <BlockCard title="Amounts" className="mt-3">
