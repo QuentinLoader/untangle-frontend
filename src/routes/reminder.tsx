@@ -47,7 +47,6 @@ function ReminderPage() {
   const [created, setCreated] = useState<Reminder | null>(null);
   const [label, setLabel] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [deadlineKey, setDeadlineKey] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   // Deadlines are always re-read from the Result API — never trusted from the URL.
@@ -218,10 +217,7 @@ function ReminderPage() {
               <div className="mt-4">
                 <PrimaryButton
                   disabled={mutation.isPending}
-                  onClick={() => {
-                    setDeadlineKey(null);
-                    submit(label, dueDate, deadlineKey);
-                  }}
+                  onClick={() => submit(label, dueDate, null)}
                 >
                   {mutation.isPending ? "Saving…" : "Set reminder"}
                 </PrimaryButton>
