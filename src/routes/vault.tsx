@@ -112,7 +112,8 @@ function Vault() {
         </div>
 
         {tab === "reminders" ? (
-          <p className="mt-8 text-[14px] text-ink-soft">No reminders yet.</p>
+          <RemindersTab />
+
         ) : isPending ? (
           <p className="mt-8 text-[14px] text-ink-soft">Loading your documents…</p>
         ) : error ? (
