@@ -177,13 +177,14 @@ function ResultBody({ result }: { result: DocumentResult }) {
             ))}
           </div>
         )}
-        <div className="mt-4">
-          <Link to="/reminder" search={{ documentId: document.id }} className="block">
-            <SecondaryButton>
-              {result.reminderCandidates.length > 0 ? "Set a reminder" : "Add a reminder myself"}
-            </SecondaryButton>
-          </Link>
-        </div>
+        <Link
+          to="/reminder"
+          search={{ documentId: document.id }}
+          className="mt-4 block w-full rounded-[14px] border-[1.5px] border-line px-4 py-[14px] text-center text-[15px] font-semibold text-ink transition-colors hover:bg-paper-2"
+        >
+          {result.reminderCandidates.length > 0 ? "Set a reminder" : "Add a reminder myself"}
+        </Link>
+
       </BlockCard>
 
 
