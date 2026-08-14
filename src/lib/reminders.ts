@@ -2,6 +2,23 @@ import { apiRequest, ApiError } from "./api-client";
 
 export type ReminderStatus = "SCHEDULED" | "SENT" | "CANCELLED";
 
+export type ReminderOccurrenceStatus = "SCHEDULED" | "SENT" | "SKIPPED" | "CANCELLED";
+
+export type ReminderOccurrence = {
+  occurrenceId: string;
+  offsetLabel?: string | null;
+  scheduledFor: string;
+  sentAt?: string | null;
+  status: ReminderOccurrenceStatus;
+};
+
+export type ReminderDocument = {
+  documentId?: string;
+  documentTitle?: string | null;
+  documentType?: string | null;
+  originalFilename?: string | null;
+};
+
 export type Reminder = {
   reminderId: string;
   documentId: string;
@@ -10,7 +27,11 @@ export type Reminder = {
   deadlineKey: string | null;
   status: ReminderStatus;
   createdAt: string;
+  confirmedDeadline?: string | null;
+  occurrences?: ReminderOccurrence[];
+  document?: ReminderDocument | null;
 };
+
 
 export type CreateReminderRequest = {
   documentId: string;
