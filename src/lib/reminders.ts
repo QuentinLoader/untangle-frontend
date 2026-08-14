@@ -2,6 +2,23 @@ import { apiRequest, ApiError } from "./api-client";
 
 export type ReminderStatus = "SCHEDULED" | "SENT" | "CANCELLED";
 
+export type ReminderOccurrenceStatus = "SCHEDULED" | "SENT" | "SKIPPED" | "CANCELLED";
+
+export type ReminderOccurrence = {
+  occurrenceId: string;
+  offsetLabel?: string | null;
+  scheduledFor: string;
+  sentAt?: string | null;
+  status: ReminderOccurrenceStatus;
+};
+
+export type ReminderDocument = {
+  documentId?: string;
+  documentTitle?: string | null;
+  documentType?: string | null;
+  originalFilename?: string | null;
+};
+
 export type Reminder = {
   reminderId: string;
   documentId: string;
@@ -10,7 +27,11 @@ export type Reminder = {
   deadlineKey: string | null;
   status: ReminderStatus;
   createdAt: string;
+  confirmedDeadline?: string | null;
+  occurrences?: ReminderOccurrence[];
+  document?: ReminderDocument | null;
 };
+
 
 export type CreateReminderRequest = {
   documentId: string;
@@ -79,6 +100,37 @@ export function formatReminderDate(value: string): string {
     month: "short",
     year: "numeric",
   }).format(date);
+}
+
+/** Most recent occurrence already sent (in-app due reminder). */
+export function getLatestSentOccurrence(reminder: Reminder): ReminderOccurrence | null {
+  const sent = (reminder.occurrences ?? []).filter((o) => o.status === "SENT");
+  if (sent.length === 0) return null;
+  return sent.reduce((latest, o) =>
+    new Date(o.sentAt ?? o.scheduledFor).getTime() >
+    new Date(latest.sentAt ?? latest.scheduledFor).getTime()
+      ? o
+      : latest,
+  );
+}
+
+/** Earliest still-scheduled occurrence. SKIPPED/CANCELLED are never upcoming. */
+export function getNextScheduledOccurrence(reminder: Reminder): ReminderOccurrence | null {
+  const scheduled = (reminder.occurrences ?? []).filter((o) => o.status === "SCHEDULED");
+  if (scheduled.length === 0) return null;
+  return scheduled.reduce((earliest, o) =>
+    new Date(o.scheduledFor).getTime() < new Date(earliest.scheduledFor).getTime() ? o : earliest,
+  );
+}
+
+export function reminderDocumentTitle(reminder: Reminder): string {
+  const doc = reminder.document;
+  return (
+    doc?.documentTitle?.trim() ||
+    doc?.originalFilename?.trim() ||
+    doc?.documentType?.trim() ||
+    "Document"
+  );
 }
 
 export function isFutureDateString(value: string): boolean {

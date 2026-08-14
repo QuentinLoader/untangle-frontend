@@ -13,7 +13,14 @@ import {
   moduleLabel,
   type DocumentListItem,
 } from "@/lib/documents";
-import { formatReminderDate, friendlyReminderError, listReminders } from "@/lib/reminders";
+import {
+  formatReminderDate,
+  friendlyReminderError,
+  getLatestSentOccurrence,
+  getNextScheduledOccurrence,
+  listReminders,
+  reminderDocumentTitle,
+} from "@/lib/reminders";
 
 export const Route = createFileRoute("/vault")({
   head: () => ({
@@ -173,10 +180,13 @@ function Vault() {
 }
 
 function RemindersTab() {
+  const navigate = useNavigate();
   const { data, isPending, error } = useQuery({
     queryKey: ["reminders"],
     queryFn: () => listReminders(),
     retry: false,
+    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
   });
 
   const reminders = data?.data.reminders ?? [];
@@ -187,24 +197,72 @@ function RemindersTab() {
   if (reminders.length === 0)
     return <p className="mt-8 text-[14px] text-ink-soft">No reminders yet.</p>;
 
+  const rows = reminders.map((reminder) => ({
+    reminder,
+    sent: getLatestSentOccurrence(reminder),
+    next: getNextScheduledOccurrence(reminder),
+  }));
+
+  // Due in-app reminders first, then upcoming ones.
+  rows.sort((a, b) => {
+    if (!!a.sent !== !!b.sent) return a.sent ? -1 : 1;
+    if (a.sent && b.sent) {
+      return (
+        new Date(b.sent.sentAt ?? b.sent.scheduledFor).getTime() -
+        new Date(a.sent.sentAt ?? a.sent.scheduledFor).getTime()
+      );
+    }
+    if (a.next && b.next) {
+      return new Date(a.next.scheduledFor).getTime() - new Date(b.next.scheduledFor).getTime();
+    }
+    return a.next ? -1 : b.next ? 1 : 0;
+  });
+
   return (
     <div className="mt-6 space-y-3">
-      {reminders.map((reminder) => (
-        <div
-          key={reminder.reminderId}
-          className="flex items-center justify-between gap-3 rounded-[14px] border border-line bg-white p-[14px]"
-        >
-          <div>
-            <p className="text-[14px] font-bold text-ink">{reminder.label}</p>
-            <p className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.04em] text-ink-soft">
-              {formatReminderDate(reminder.dueDate)}
-            </p>
-          </div>
-          <span className="rounded-full bg-teal-dim px-2.5 py-1 font-mono text-[10.5px] font-bold uppercase text-teal">
-            {reminder.status}
-          </span>
-        </div>
-      ))}
+      {rows.map(({ reminder, sent, next }) => {
+        const isDue = Boolean(sent);
+        const statusLine = sent
+          ? `Due now — ${formatReminderDate(sent.sentAt ?? sent.scheduledFor)}`
+          : next
+            ? `Upcoming — ${formatReminderDate(next.scheduledFor)}`
+            : reminder.status === "CANCELLED"
+              ? "Reminder cancelled"
+              : reminder.occurrences && reminder.occurrences.length > 0
+                ? "No upcoming reminders"
+                : "Reminder could not be processed";
+
+        return (
+          <button
+            key={reminder.reminderId}
+            type="button"
+            onClick={() =>
+              navigate({ to: "/result", search: { documentId: reminder.documentId } })
+            }
+            className={`flex w-full items-center justify-between gap-3 rounded-[14px] border bg-white p-[14px] text-left ${
+              isDue ? "border-teal" : "border-line"
+            }`}
+          >
+            <div>
+              <p className="text-[14px] font-bold text-ink">{reminder.label}</p>
+              <p className="mt-0.5 text-[12px] text-ink-soft">
+                {reminderDocumentTitle(reminder)}
+              </p>
+              <p className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.04em] text-ink-soft">
+                {statusLine}
+              </p>
+            </div>
+            <span
+              className={`rounded-full px-2.5 py-1 font-mono text-[10.5px] font-bold uppercase ${
+                isDue ? "bg-teal text-white" : "bg-teal-dim text-teal"
+              }`}
+            >
+              {isDue ? "Due" : "Upcoming"}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
+
