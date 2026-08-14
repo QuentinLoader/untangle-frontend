@@ -102,6 +102,37 @@ export function formatReminderDate(value: string): string {
   }).format(date);
 }
 
+/** Most recent occurrence already sent (in-app due reminder). */
+export function getLatestSentOccurrence(reminder: Reminder): ReminderOccurrence | null {
+  const sent = (reminder.occurrences ?? []).filter((o) => o.status === "SENT");
+  if (sent.length === 0) return null;
+  return sent.reduce((latest, o) =>
+    new Date(o.sentAt ?? o.scheduledFor).getTime() >
+    new Date(latest.sentAt ?? latest.scheduledFor).getTime()
+      ? o
+      : latest,
+  );
+}
+
+/** Earliest still-scheduled occurrence. SKIPPED/CANCELLED are never upcoming. */
+export function getNextScheduledOccurrence(reminder: Reminder): ReminderOccurrence | null {
+  const scheduled = (reminder.occurrences ?? []).filter((o) => o.status === "SCHEDULED");
+  if (scheduled.length === 0) return null;
+  return scheduled.reduce((earliest, o) =>
+    new Date(o.scheduledFor).getTime() < new Date(earliest.scheduledFor).getTime() ? o : earliest,
+  );
+}
+
+export function reminderDocumentTitle(reminder: Reminder): string {
+  const doc = reminder.document;
+  return (
+    doc?.documentTitle?.trim() ||
+    doc?.originalFilename?.trim() ||
+    doc?.documentType?.trim() ||
+    "Document"
+  );
+}
+
 export function isFutureDateString(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(`${value}T00:00:00`);
