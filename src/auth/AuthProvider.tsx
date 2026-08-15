@@ -4,6 +4,8 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { fetchAuthMe } from "@/lib/api-client";
+import { unregisterPushDevice } from "@/lib/push";
+import { readPushFid, rememberPushFid } from "@/hooks/usePushReminders";
 import type { AuthContextValue, UntangleUser } from "./auth.types";
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
