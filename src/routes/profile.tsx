@@ -79,6 +79,8 @@ function Profile() {
             <Row label="Plan" value={profile?.plan ?? "Free"} />
           </BlockCard>
 
+          <PushSection />
+
           <SecondaryButton onClick={handleSignOut}>Log out</SecondaryButton>
         </div>
       </div>
