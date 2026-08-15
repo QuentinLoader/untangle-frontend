@@ -4,6 +4,8 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { fetchAuthMe } from "@/lib/api-client";
+import { unregisterPushDevice } from "@/lib/push";
+import { readPushFid, rememberPushFid } from "@/hooks/usePushReminders";
 import type { AuthContextValue, UntangleUser } from "./auth.types";
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -109,6 +111,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    // Best-effort push device cleanup — never blocks logout.
+    try {
+      const fid = readPushFid();
+      if (fid) {
+        await unregisterPushDevice(fid).catch(() => {});
+        rememberPushFid(null);
+      }
+    } catch {
+      /* push cleanup is optional */
+    }
     await queryClient.cancelQueries();
     queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "public" });
     try {

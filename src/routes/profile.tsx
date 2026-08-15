@@ -4,6 +4,7 @@ import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { BlockCard } from "@/components/untangle/BlockCard";
 import { SecondaryButton } from "@/components/untangle/Buttons";
 import { useAuth } from "@/auth/useAuth";
+import { usePushReminders } from "@/hooks/usePushReminders";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -28,6 +29,34 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
+function PushSection() {
+  const { state, busy, error, enable, disable } = usePushReminders();
+
+  const copy: Record<string, string> = {
+    loading: "Checking browser reminders…",
+    unsupported: "This browser can't show reminders.",
+    "not-configured": "Browser reminders aren't available yet.",
+    "requires-plus": "Browser reminders are part of Untangle Plus.",
+    blocked: "Notifications are blocked in your browser settings.",
+    off: "Get a reminder in this browser before a deadline.",
+    on: "Browser reminders are on for this device.",
+  };
+
+  return (
+    <BlockCard title="Browser reminders">
+      <p className="text-[13px] text-ink-soft">{copy[state]}</p>
+      {error ? <p className="mt-2 text-[12.5px] text-stamp-red">{error}</p> : null}
+      {state === "off" || state === "on" ? (
+        <div className="mt-3">
+          <SecondaryButton onClick={state === "on" ? disable : enable} disabled={busy}>
+            {busy ? "Working…" : state === "on" ? "Turn off" : "Turn on reminders"}
+          </SecondaryButton>
+        </div>
+      ) : null}
+    </BlockCard>
+  );
+}
+
 function Profile() {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
@@ -49,6 +78,8 @@ function Profile() {
             <Row label="Account type" value={profile?.userType ?? "Individual"} />
             <Row label="Plan" value={profile?.plan ?? "Free"} />
           </BlockCard>
+
+          <PushSection />
 
           <SecondaryButton onClick={handleSignOut}>Log out</SecondaryButton>
         </div>

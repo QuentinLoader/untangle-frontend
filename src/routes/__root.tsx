@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../auth/AuthProvider";
+import { Toaster } from "../components/ui/sonner";
+import { PushForegroundListener } from "../components/untangle/PushForegroundListener";
 
 function NotFoundComponent() {
   return (
@@ -131,6 +133,8 @@ function RootComponent() {
       <AuthProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
+        <PushForegroundListener />
+        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );
