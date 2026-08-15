@@ -4,6 +4,7 @@ import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { BlockCard } from "@/components/untangle/BlockCard";
 import { SecondaryButton } from "@/components/untangle/Buttons";
 import { useAuth } from "@/auth/useAuth";
+import { usePushReminders } from "@/hooks/usePushReminders";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
