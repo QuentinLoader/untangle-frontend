@@ -109,6 +109,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    // Best-effort push device cleanup — never blocks logout.
+    try {
+      const fid = readPushFid();
+      if (fid) {
+        await unregisterPushDevice(fid).catch(() => {});
+        rememberPushFid(null);
+      }
+    } catch {
+      /* push cleanup is optional */
+    }
     await queryClient.cancelQueries();
     queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "public" });
     try {
