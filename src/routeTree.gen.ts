@@ -19,6 +19,7 @@ import { Route as RemindersRouteImport } from './routes/reminders'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ResultRouteImport } from './routes/result'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as UpgradeRouteImport } from './routes/upgrade'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as ProcessingDocumentIdRouteImport } from './routes/processing.$documentId'
@@ -73,6 +74,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UpgradeRoute = UpgradeRouteImport.update({
+  id: '/upgrade',
+  path: '/upgrade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/result': typeof ResultRoute
   '/signup': typeof SignupRoute
+  '/upgrade': typeof UpgradeRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/result': typeof ResultRoute
   '/signup': typeof SignupRoute
+  '/upgrade': typeof UpgradeRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/result': typeof ResultRoute
   '/signup': typeof SignupRoute
+  '/upgrade': typeof UpgradeRoute
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/result'
     | '/signup'
+    | '/upgrade'
     | '/upload'
     | '/vault'
     | '/processing/$documentId'
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/result'
     | '/signup'
+    | '/upgrade'
     | '/upload'
     | '/vault'
     | '/processing/$documentId'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/result'
     | '/signup'
+    | '/upgrade'
     | '/upload'
     | '/vault'
     | '/processing/$documentId'
@@ -194,6 +206,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ResultRoute: typeof ResultRoute
   SignupRoute: typeof SignupRoute
+  UpgradeRoute: typeof UpgradeRoute
   UploadRoute: typeof UploadRoute
   VaultRoute: typeof VaultRoute
   ProcessingDocumentIdRoute: typeof ProcessingDocumentIdRoute
@@ -271,6 +284,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/upgrade': {
+      id: '/upgrade'
+      path: '/upgrade'
+      fullPath: '/upgrade'
+      preLoaderRoute: typeof UpgradeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/upload': {
       id: '/upload'
       path: '/upload'
@@ -306,6 +326,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ResultRoute: ResultRoute,
   SignupRoute: SignupRoute,
+  UpgradeRoute: UpgradeRoute,
   UploadRoute: UploadRoute,
   VaultRoute: VaultRoute,
   ProcessingDocumentIdRoute: ProcessingDocumentIdRoute,
