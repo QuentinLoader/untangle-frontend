@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useEntitlements } from "./useEntitlements";
 import {
   friendlyPushError,
-  getEntitlements,
   getInstallationId,
   getPublicConfig,
   isPushSupportedInBrowser,
@@ -42,6 +42,8 @@ export type PushState =
   | "on";
 
 export function usePushReminders() {
+  const { entitlements, isPending: entitlementsPending } = useEntitlements();
+  const pushAllowed = entitlements?.pushRemindersEnabled ?? false;
   const [state, setState] = useState<PushState>("loading");
   const [web, setWeb] = useState<PushWebConfig | null>(null);
   const [busy, setBusy] = useState(false);
@@ -50,6 +52,7 @@ export function usePushReminders() {
 
   useEffect(() => {
     let active = true;
+    if (entitlementsPending) return;
 
     (async () => {
       if (!isPushSupportedInBrowser()) {
@@ -66,9 +69,7 @@ export function usePushReminders() {
         }
         setWeb(config.web);
 
-        const entitlements = await getEntitlements();
-        if (!active) return;
-        if (!entitlements.pushRemindersEnabled) {
+        if (!pushAllowed) {
           setState("requires-plus");
           return;
         }
@@ -101,7 +102,7 @@ export function usePushReminders() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [entitlementsPending, pushAllowed]);
 
   // Firebase can rotate the installation ID — keep the backend in sync.
   useEffect(() => {
