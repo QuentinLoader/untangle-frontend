@@ -66,7 +66,7 @@ function Upload() {
   const s3UploadedRef = useRef(false);
 
   const prepare = async (file: File) => {
-    if (busy) return;
+    if (busy || analysesUsedUp) return;
     setError(null);
     setPending(null);
     setUploadStatus("idle");
@@ -269,8 +269,19 @@ function Upload() {
             </p>
           )}
 
+          {planUsageLine ? (
+            <p className="mt-4 font-mono text-[11px] uppercase tracking-wide text-ink-soft">
+              {planUsageLine}
+            </p>
+          ) : null}
+
           <div className="mt-8 w-full max-w-[280px] space-y-3">
-            {pending ? (
+            {analysesUsedUp && !pending ? (
+              <UpgradePrompt
+                title="Free analyses used"
+                message="You've used your free analyses for this month. Untangle Plus gives you more."
+              />
+            ) : pending ? (
               <>
                 <PrimaryButton
                   onClick={() => void startUpload()}
