@@ -58,7 +58,7 @@ function ReminderPage() {
   const { data, isPending, error } = useQuery({
     queryKey: ["document-result", documentId],
     queryFn: () => getDocumentResult(documentId),
-    enabled: documentId !== "",
+    enabled: documentId !== "" && !remindersLocked,
     retry: false,
   });
 
@@ -108,7 +108,14 @@ function ReminderPage() {
           </h1>
         </header>
 
-        {created ? (
+        {remindersLocked ? (
+          <div className="mt-6">
+            <UpgradePrompt
+              title="Reminders are part of Plus"
+              message="Untangle Plus reminds you before a deadline from your documents arrives."
+            />
+          </div>
+        ) : created ? (
           <div className="flex flex-1 flex-col items-center justify-center px-2 py-10 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal">
               <span className="text-[30px] text-white">✓</span>

@@ -2,6 +2,9 @@ import { useRef, useState } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
+import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
+import { useEntitlements } from "@/hooks/useEntitlements";
+import { usageLine } from "@/lib/entitlements";
 import { ApiError } from "@/lib/api-client";
 import {
   MAX_UPLOAD_BYTES,
@@ -40,6 +43,13 @@ const ACCEPT = [...SUPPORTED_MIME_TYPES, ".heic", ".heif", ".tif", ".tiff"].join
 
 function Upload() {
   const navigate = useNavigate();
+  const { entitlements } = useEntitlements();
+  const analysesUsedUp =
+    entitlements !== null &&
+    !entitlements.unlimitedAnalyses &&
+    entitlements.remainingAnalyses !== null &&
+    entitlements.remainingAnalyses <= 0;
+  const planUsageLine = entitlements ? usageLine(entitlements) : null;
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
