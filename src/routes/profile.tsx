@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { BlockCard } from "@/components/untangle/BlockCard";
@@ -49,6 +49,14 @@ function PushSection() {
     <BlockCard title="Browser reminders">
       <p className="text-[13px] text-ink-soft">{copy[state]}</p>
       {error ? <p className="mt-2 text-[12.5px] text-stamp-red">{error}</p> : null}
+      {state === "requires-plus" ? (
+        <Link
+          to="/upgrade"
+          className="mt-3 block text-[13px] font-semibold text-teal underline"
+        >
+          See Untangle Plus
+        </Link>
+      ) : null}
       {state === "off" || state === "on" ? (
         <div className="mt-3">
           <SecondaryButton onClick={state === "on" ? disable : enable} disabled={busy}>
