@@ -4,6 +4,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 import { BlockCard } from "@/components/untangle/BlockCard";
+import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import { getDocumentResult, formatResultDate } from "@/lib/documents";
 import {
   createReminder,
@@ -43,6 +45,9 @@ function ReminderPage() {
   const { documentId } = Route.useSearch();
   const navigate = useNavigate({ from: "/reminder" });
   const queryClient = useQueryClient();
+
+  const { entitlements } = useEntitlements();
+  const remindersLocked = entitlements ? !entitlements.remindersEnabled : false;
 
   const [created, setCreated] = useState<Reminder | null>(null);
   const [label, setLabel] = useState("");

@@ -3,6 +3,8 @@ import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
+import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import { DocCard } from "@/components/untangle/DocCard";
 import { FAB } from "@/components/untangle/FAB";
 import {
@@ -58,11 +60,14 @@ const PROCESSING_STATUSES = new Set([
 function Vault() {
   const [tab, setTab] = useState<"documents" | "reminders">("documents");
   const navigate = useNavigate();
+  const { entitlements } = useEntitlements();
+  const vaultLocked = entitlements ? !entitlements.vaultEnabled : false;
 
   const { data, isPending, error } = useQuery({
     queryKey: ["documents"],
     queryFn: () => listDocuments(),
     retry: false,
+    enabled: !vaultLocked,
   });
 
   const documents = data?.data.documents ?? [];
@@ -119,7 +124,14 @@ function Vault() {
           </button>
         </div>
 
-        {tab === "reminders" ? (
+        {vaultLocked ? (
+          <div className="mt-6">
+            <UpgradePrompt
+              title="Vault is part of Plus"
+              message="Untangle Plus keeps every document you've untangled, together with its reminders."
+            />
+          </div>
+        ) : tab === "reminders" ? (
           <RemindersTab />
 
         ) : isPending ? (
@@ -173,7 +185,7 @@ function Vault() {
         )}
       </div>
 
-      <FAB />
+      {vaultLocked ? null : <FAB />}
       <BottomTabBar active="Vault" />
     </div>
   );
@@ -181,13 +193,26 @@ function Vault() {
 
 function RemindersTab() {
   const navigate = useNavigate();
+  const { entitlements } = useEntitlements();
+  const remindersLocked = entitlements ? !entitlements.remindersEnabled : false;
   const { data, isPending, error } = useQuery({
     queryKey: ["reminders"],
     queryFn: () => listReminders(),
     retry: false,
     refetchInterval: 30000,
     refetchOnWindowFocus: true,
+    enabled: !remindersLocked,
   });
+
+  if (remindersLocked)
+    return (
+      <div className="mt-6">
+        <UpgradePrompt
+          title="Reminders are part of Plus"
+          message="Untangle Plus reminds you before a deadline from your documents arrives."
+        />
+      </div>
+    );
 
   const reminders = data?.data.reminders ?? [];
 
