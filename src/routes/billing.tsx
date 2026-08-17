@@ -15,7 +15,7 @@ import {
   type VerifyResult,
 } from "@/lib/billing";
 
-type BillingSearch = { status?: string; attemptId?: string };
+type BillingSearch = { status: string | undefined; attemptId: string | undefined };
 
 export const Route = createFileRoute("/billing")({
   validateSearch: (search: Record<string, unknown>): BillingSearch => ({
