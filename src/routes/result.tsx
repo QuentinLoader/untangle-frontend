@@ -54,7 +54,8 @@ const SEVERITY_COLOR: Record<ResultSeverity, StampColor> = {
 };
 
 function Result() {
-  const { documentId } = Route.useSearch();
+  const { documentId, from } = Route.useSearch();
+  const back = resultBackTarget(from);
 
   const { data, isPending, error } = useQuery({
     queryKey: ["document-result", documentId],
@@ -70,12 +71,13 @@ function Result() {
       <header className="sticky top-0 z-10 bg-paper px-5 pt-7 pb-3">
         <div className="mx-auto flex max-w-md items-center gap-3">
           <Link
-            to="/upload"
+            to={back.to}
             className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper-2"
-            aria-label="Go back"
+            aria-label={`Back to ${back.label}`}
           >
             <span className="text-[19px]">←</span>
           </Link>
+
           <h1 className="font-display text-[17px] font-semibold text-ink">
             {result?.document.moduleDisplayName ?? "Result"}
           </h1>
