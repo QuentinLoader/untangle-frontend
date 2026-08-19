@@ -95,7 +95,7 @@ function ReminderPage() {
           <button
             onClick={() =>
               documentId
-                ? navigate({ to: "/result", search: { documentId } })
+                ? navigate({ to: "/result", search: { documentId, from: "vault" as const } })
                 : navigate({ to: "/vault" })
             }
             className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper-2"
@@ -133,7 +133,7 @@ function ReminderPage() {
               <SecondaryButton
                 onClick={() =>
                   documentId
-                    ? navigate({ to: "/result", search: { documentId } })
+                    ? navigate({ to: "/result", search: { documentId, from: "vault" as const } })
                     : navigate({ to: "/vault" })
                 }
               >

@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -43,6 +44,7 @@ const ACCEPT = [...SUPPORTED_MIME_TYPES, ".heic", ".heif", ".tif", ".tiff"].join
 
 function Upload() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { entitlements } = useEntitlements();
   const analysesUsedUp =
     entitlements !== null &&
@@ -145,6 +147,8 @@ function Upload() {
       const completed = await completeUpload(pending.documentId);
       const doc = completed.data.document;
       setUploadStatus("queued");
+      // A new document exists on the backend: refresh Home and Vault listings.
+      void queryClient.invalidateQueries({ queryKey: ["documents"] });
       setUploadProgressMessage(null);
       navigate({ to: "/processing/$documentId", params: { documentId: doc.id } });
     } catch (err) {

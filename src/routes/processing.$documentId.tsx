@@ -68,7 +68,7 @@ function Processing() {
         if (isTerminalProcessingStatus(next)) {
           stoppedRef.current = true;
           if (next === "COMPLETED") {
-            void navigate({ to: "/result", search: { documentId } });
+            void navigate({ to: "/result", search: { documentId, from: "upload" as const } });
           }
           return;
         }

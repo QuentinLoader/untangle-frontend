@@ -60,6 +60,9 @@ function BillingReturnPage() {
       setAutoAttempts((n) => n + 1);
       if (isAttemptComplete(result)) {
         await queryClient.invalidateQueries({ queryKey: ENTITLEMENTS_QUERY_KEY });
+        // Plus unlocks vault and reminder data, so refetch both.
+        await queryClient.invalidateQueries({ queryKey: ["documents"] });
+        await queryClient.invalidateQueries({ queryKey: ["reminders"] });
       }
       return result;
     },

@@ -13,16 +13,22 @@ import {
   type DocumentResult,
   type ResultSeverity,
 } from "@/lib/documents";
+import { parseResultOrigin, resultBackTarget, type ResultOrigin } from "@/lib/navigation";
 
-type ResultSearch = { documentId: string };
+
+type ResultSearch = { documentId: string; from: ResultOrigin };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const Route = createFileRoute("/result")({
   validateSearch: (search: Record<string, unknown>): ResultSearch => {
     const value = typeof search['documentId'] === "string" ? search['documentId'] : "";
-    return { documentId: UUID_RE.test(value) ? value : "" };
+    return {
+      documentId: UUID_RE.test(value) ? value : "",
+      from: parseResultOrigin(search['from']),
+    };
   },
+
   head: () => ({
     meta: [
       { title: "TaxSnap result — Untangle" },
@@ -48,7 +54,8 @@ const SEVERITY_COLOR: Record<ResultSeverity, StampColor> = {
 };
 
 function Result() {
-  const { documentId } = Route.useSearch();
+  const { documentId, from } = Route.useSearch();
+  const back = resultBackTarget(from);
 
   const { data, isPending, error } = useQuery({
     queryKey: ["document-result", documentId],
@@ -64,12 +71,13 @@ function Result() {
       <header className="sticky top-0 z-10 bg-paper px-5 pt-7 pb-3">
         <div className="mx-auto flex max-w-md items-center gap-3">
           <Link
-            to="/upload"
+            to={back.to}
             className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper-2"
-            aria-label="Go back"
+            aria-label={`Back to ${back.label}`}
           >
             <span className="text-[19px]">←</span>
           </Link>
+
           <h1 className="font-display text-[17px] font-semibold text-ink">
             {result?.document.moduleDisplayName ?? "Result"}
           </h1>
