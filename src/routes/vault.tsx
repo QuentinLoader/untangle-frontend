@@ -83,7 +83,7 @@ function Vault() {
 
   const openDocument = (doc: DocumentListItem) => {
     if (doc.processingStatus === "COMPLETED") {
-      navigate({ to: "/result", search: { documentId: doc.documentId } });
+      navigate({ to: "/result", search: { documentId: doc.documentId, from: "vault" as const } });
       return;
     }
     if (PROCESSING_STATUSES.has(doc.processingStatus)) {

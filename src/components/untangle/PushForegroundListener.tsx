@@ -33,7 +33,7 @@ export function PushForegroundListener() {
                   onClick: () =>
                     navigate({
                       to: "/result",
-                      search: { documentId: reminder.documentId as string },
+                      search: { documentId: reminder.documentId as string, from: "reminders" as const },
                     }),
                 }
               : undefined,
