@@ -13,16 +13,22 @@ import {
   type DocumentResult,
   type ResultSeverity,
 } from "@/lib/documents";
+import { parseResultOrigin, resultBackTarget, type ResultOrigin } from "@/lib/navigation";
 
-type ResultSearch = { documentId: string };
+
+type ResultSearch = { documentId: string; from: ResultOrigin };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const Route = createFileRoute("/result")({
   validateSearch: (search: Record<string, unknown>): ResultSearch => {
     const value = typeof search['documentId'] === "string" ? search['documentId'] : "";
-    return { documentId: UUID_RE.test(value) ? value : "" };
+    return {
+      documentId: UUID_RE.test(value) ? value : "",
+      from: parseResultOrigin(search['from']),
+    };
   },
+
   head: () => ({
     meta: [
       { title: "TaxSnap result — Untangle" },
