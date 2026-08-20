@@ -24,6 +24,7 @@ import { Route as UpgradeRouteImport } from './routes/upgrade'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as ProcessingDocumentIdRouteImport } from './routes/processing.$documentId'
+import { Route as SolutionsSlugRouteImport } from './routes/solutions.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -100,6 +101,11 @@ const ProcessingDocumentIdRoute = ProcessingDocumentIdRouteImport.update({
   path: '/processing/$documentId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SolutionsSlugRoute = SolutionsSlugRouteImport.update({
+  id: '/solutions/$slug',
+  path: '/solutions/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
+  '/solutions/$slug': typeof SolutionsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
+  '/solutions/$slug': typeof SolutionsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
+  '/solutions/$slug': typeof SolutionsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/vault'
     | '/processing/$documentId'
+    | '/solutions/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/vault'
     | '/processing/$documentId'
+    | '/solutions/$slug'
   id:
     | '__root__'
     | '/'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/vault'
     | '/processing/$documentId'
+    | '/solutions/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   UploadRoute: typeof UploadRoute
   VaultRoute: typeof VaultRoute
   ProcessingDocumentIdRoute: typeof ProcessingDocumentIdRoute
+  SolutionsSlugRoute: typeof SolutionsSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -332,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProcessingDocumentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/solutions/$slug': {
+      id: '/solutions/$slug'
+      path: '/solutions/$slug'
+      fullPath: '/solutions/$slug'
+      preLoaderRoute: typeof SolutionsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -351,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   UploadRoute: UploadRoute,
   VaultRoute: VaultRoute,
   ProcessingDocumentIdRoute: ProcessingDocumentIdRoute,
+  SolutionsSlugRoute: SolutionsSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
