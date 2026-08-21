@@ -141,3 +141,63 @@ export function isFutureDateString(value: string): boolean {
   today.setHours(0, 0, 0, 0);
   return date.getTime() >= today.getTime();
 }
+
+/**
+ * One reminder resolves to exactly one state, so the UI can never show
+ * contradictory labels. Derived only from real backend fields.
+ */
+export type ReminderViewState = "DUE" | "UPCOMING" | "PAST" | "CANCELLED" | "INACTIVE";
+
+export type ReminderView = {
+  reminder: Reminder;
+  state: ReminderViewState;
+  statusLabel: string;
+  /** Date the timeline sorts and groups by; null when nothing usable exists. */
+  effectiveDate: string | null;
+};
+
+export function reminderView(reminder: Reminder): ReminderView {
+  const sent = getLatestSentOccurrence(reminder);
+  const next = getNextScheduledOccurrence(reminder);
+  const due = reminder.confirmedDeadline ?? reminder.dueDate ?? null;
+
+  if (reminder.status === "CANCELLED") {
+    return {
+      reminder,
+      state: "CANCELLED",
+      statusLabel: "Cancelled",
+      effectiveDate: due,
+    };
+  }
+
+  if (sent) {
+    return {
+      reminder,
+      state: "DUE",
+      statusLabel: "Reminder due",
+      effectiveDate: sent.sentAt ?? sent.scheduledFor ?? due,
+    };
+  }
+
+  if (next) {
+    return {
+      reminder,
+      state: "UPCOMING",
+      statusLabel: "Upcoming",
+      effectiveDate: next.scheduledFor ?? due,
+    };
+  }
+
+  if (reminder.status === "SENT") {
+    return { reminder, state: "PAST", statusLabel: "Sent", effectiveDate: due };
+  }
+
+  const isPast = due ? new Date(due).getTime() < Date.now() : false;
+  return {
+    reminder,
+    state: isPast ? "PAST" : "INACTIVE",
+    statusLabel: isPast ? "Past" : "No reminder scheduled",
+    effectiveDate: due,
+  };
+}
+
