@@ -512,3 +512,24 @@ export function documentStatusSubtitle(doc: DocumentListItem): string {
       return "Processing";
   }
 }
+
+/**
+ * DELETE /api/v1/documents/:id — removes the document record (and its stored file)
+ * on the backend. The Vault list is database-driven, so removing the S3 object
+ * alone never clears a card; the record must be deleted here.
+ */
+export async function deleteDocument(documentId: string): Promise<void> {
+  await apiRequest<unknown>(`/api/v1/documents/${documentId}`, { method: "DELETE" });
+}
+
+/** True when the backend has no delete endpoint deployed yet. */
+export function isDeleteUnsupported(error: unknown): boolean {
+  return error instanceof ApiError && (error.status === 404 || error.status === 405);
+}
+
+export function friendlyDeleteError(error: unknown): string {
+  if (isDeleteUnsupported(error)) {
+    return "Deleting documents isn't available yet. This will work once the backend supports it.";
+  }
+  return "We could not delete this document. Please try again.";
+}
