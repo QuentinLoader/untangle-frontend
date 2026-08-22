@@ -13,6 +13,8 @@ import {
   friendlyDocumentError,
   listDocuments,
   moduleLabel,
+  deleteDocument,
+  friendlyDeleteError,
   type DocumentListItem,
 } from "@/lib/documents";
 
