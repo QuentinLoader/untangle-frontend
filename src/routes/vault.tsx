@@ -1,6 +1,6 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
@@ -13,6 +13,8 @@ import {
   friendlyDocumentError,
   listDocuments,
   moduleLabel,
+  deleteDocument,
+  friendlyDeleteError,
   type DocumentListItem,
 } from "@/lib/documents";
 
@@ -54,9 +56,25 @@ function Vault() {
   const { entitlements } = useEntitlements();
   const vaultLocked = entitlements ? !entitlements.vaultEnabled : false;
 
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const removeDocument = useMutation({
+    mutationFn: (documentId: string) => deleteDocument(documentId),
+    onSuccess: async () => {
+      setConfirmId(null);
+      setDeleteError(null);
+      await queryClient.invalidateQueries({ queryKey: ["documents"] });
+      await queryClient.invalidateQueries({ queryKey: ["reminders"] });
+    },
+    onError: (mutationError) => {
+      setDeleteError(friendlyDeleteError(mutationError));
+    },
+  });
 
   const { data, isPending, error } = useQuery({
     queryKey: ["documents"],
@@ -180,6 +198,14 @@ function Vault() {
               </button>
             </div>
 
+            {deleteError ? (
+              <p className="mt-3 rounded-[12px] border border-line bg-white px-3 py-2 text-[12.5px] text-ink">
+                {deleteError}
+              </p>
+            ) : null}
+
+
+
             {visible.length === 0 ? (
               <p className="mt-8 text-[14px] text-ink-soft">
                 No documents match your search.
@@ -196,19 +222,61 @@ function Vault() {
                       subtitle={`${moduleLabel(doc.module)} · ${documentStatusSubtitle(doc)}`}
                     />
                   );
-                  return isOpenable(doc) ? (
-                    <button
-                      key={doc.documentId}
-                      type="button"
-                      onClick={() => openDocument(doc)}
-                      className="block w-full text-left"
-                    >
-                      {card}
-                    </button>
-                  ) : (
-                    <div key={doc.documentId}>{card}</div>
+                  const confirming = confirmId === doc.documentId;
+                  const busy = removeDocument.isPending && confirming;
+                  return (
+                    <div key={doc.documentId}>
+                      {isOpenable(doc) ? (
+                        <button
+                          type="button"
+                          onClick={() => openDocument(doc)}
+                          className="block w-full text-left"
+                        >
+                          {card}
+                        </button>
+                      ) : (
+                        card
+                      )}
+                      {confirming ? (
+                        <div className="mt-2 flex items-center justify-end gap-3 px-1">
+                          <span className="mr-auto text-[12px] text-ink-soft">
+                            Delete this document?
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmId(null)}
+                            className="text-[12.5px] font-semibold text-ink-soft"
+                            disabled={busy}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeDocument.mutate(doc.documentId)}
+                            className="text-[12.5px] font-bold text-red-600"
+                            disabled={busy}
+                          >
+                            {busy ? "Deleting…" : "Delete"}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="mt-1.5 flex justify-end px-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeleteError(null);
+                              setConfirmId(doc.documentId);
+                            }}
+                            className="text-[12px] font-semibold text-ink-soft"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
+
               </div>
             )}
           </>
