@@ -198,6 +198,14 @@ function Vault() {
               </button>
             </div>
 
+            {deleteError ? (
+              <p className="mt-3 rounded-[12px] border border-line bg-white px-3 py-2 text-[12.5px] text-ink">
+                {deleteError}
+              </p>
+            ) : null}
+
+
+
             {visible.length === 0 ? (
               <p className="mt-8 text-[14px] text-ink-soft">
                 No documents match your search.
