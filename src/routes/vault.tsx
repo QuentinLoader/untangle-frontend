@@ -56,9 +56,25 @@ function Vault() {
   const { entitlements } = useEntitlements();
   const vaultLocked = entitlements ? !entitlements.vaultEnabled : false;
 
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const removeDocument = useMutation({
+    mutationFn: (documentId: string) => deleteDocument(documentId),
+    onSuccess: async () => {
+      setConfirmId(null);
+      setDeleteError(null);
+      await queryClient.invalidateQueries({ queryKey: ["documents"] });
+      await queryClient.invalidateQueries({ queryKey: ["reminders"] });
+    },
+    onError: (mutationError) => {
+      setDeleteError(friendlyDeleteError(mutationError));
+    },
+  });
 
   const { data, isPending, error } = useQuery({
     queryKey: ["documents"],
