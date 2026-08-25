@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CheckCircle2, CreditCard, ShieldCheck } from "lucide-react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { BlockCard } from "@/components/untangle/BlockCard";
@@ -11,31 +12,41 @@ import { createCheckout, friendlyBillingError, submitCheckoutForm } from "@/lib/
 export const Route = createFileRoute("/upgrade")({
   head: () => ({
     meta: [
-      { title: "Untangle Plus — Untangle" },
+      { title: "Plan & billing — Untangle" },
       {
         name: "description",
-        content: "Untangle Plus unlocks your Vault, deadline reminders and unlimited analyses.",
+        content: "View your Untangle plan and upgrade to Untangle Plus for R79 a month.",
       },
-      { property: "og:title", content: "Untangle Plus — Untangle" },
+      { property: "og:title", content: "Plan & billing — Untangle" },
       {
         property: "og:description",
-        content: "Unlimited analyses, your Vault and deadline reminders for R79 a month.",
+        content: "View your Untangle plan and upgrade to Untangle Plus for R79 a month.",
       },
     ],
   }),
-  component: withAuth(UpgradePage),
+  component: withAuth(PlanBillingPage),
 });
 
 const PLUS_BENEFITS = [
-  "📄 Unlimited document analyses.",
-  "🗂️ Your Vault — every document you've untangled, kept together.",
-  "🕰️ Longer document history and retention.",
-  "⏰ In-app deadline reminders before a due date arrives.",
-  "🔔 Browser reminders on the devices you use.",
-  "📅 Calendar export for your deadlines.",
+  "Unlimited document analyses",
+  "Vault and longer document history",
+  "In-app deadline reminders",
+  "Browser reminders on supported devices",
+  "Calendar export for deadlines",
 ];
 
-function UpgradePage() {
+function formatPeriodEnd(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-ZA", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function PlanBillingPage() {
   const navigate = useNavigate();
   const { entitlements, isPending, error } = useEntitlements();
   const [starting, setStarting] = useState(false);
@@ -55,81 +66,99 @@ function UpgradePage() {
   };
 
   const isPlus = entitlements?.isPlus === true;
+  const periodEnd = formatPeriodEnd(entitlements?.currentPeriodEnd ?? null);
 
   return (
     <div className="min-h-screen bg-paper px-5 pt-8 pb-[110px]">
       <div className="mx-auto max-w-md">
-        <h1 className="font-display text-[21px] font-semibold text-ink">Untangle Plus</h1>
-        <p className="mt-1 text-[13px] text-ink-soft">
-          Keep every document, and never miss a deadline.
+        <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-teal">
+          Account
+        </p>
+        <h1 className="mt-2 font-display text-[24px] font-semibold text-ink">Plan & billing</h1>
+        <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+          See your current access and manage upgrades from one place.
         </p>
 
         <div className="mt-5 space-y-3">
-          <BlockCard title="Your plan">
+          <BlockCard title="Current plan">
             {isPending ? (
               <p className="text-[13px] text-ink-soft">Checking your plan…</p>
             ) : error ? (
               <p className="text-[13px] text-ink-soft">{friendlyEntitlementError(error)}</p>
             ) : entitlements ? (
               <>
-                <p className="text-[15px] font-bold text-ink">{entitlements.planLabel}</p>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[18px] font-bold text-ink">{entitlements.planLabel}</p>
+                    {entitlements.isPlus ? (
+                      <p className="mt-1 text-[13px] text-ink-soft">R79 monthly access</p>
+                    ) : (
+                      <p className="mt-1 text-[13px] text-ink-soft">Up to 3 successful analyses per month</p>
+                    )}
+                  </div>
+                  <span className="rounded-full bg-teal-dim px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-teal">
+                    {entitlements.isPlus ? entitlements.subscriptionStatus ?? "Active" : "Free"}
+                  </span>
+                </div>
                 {usageLine(entitlements) ? (
-                  <p className="mt-1 text-[13px] text-ink-soft">{usageLine(entitlements)}</p>
+                  <p className="mt-3 text-[13px] leading-relaxed text-ink-soft">{usageLine(entitlements)}</p>
+                ) : null}
+                {periodEnd ? (
+                  <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                    Current access period ends {periodEnd}.
+                  </p>
                 ) : null}
                 {entitlements.retentionDays !== null ? (
-                  <p className="mt-1 text-[13px] text-ink-soft">
-                    Documents are kept for {entitlements.retentionDays} days.
+                  <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                    Document retention: {entitlements.retentionDays} days.
                   </p>
                 ) : null}
               </>
             ) : null}
           </BlockCard>
 
-          <BlockCard title="What Plus unlocks">
-            <ul className="space-y-2 text-[13px] text-ink">
+          <BlockCard title="Untangle Plus">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[20px] font-bold text-ink">R79</p>
+                <p className="text-[12.5px] text-ink-soft">per month</p>
+              </div>
+              <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-teal-dim text-teal">
+                <CreditCard size={19} aria-hidden />
+              </div>
+            </div>
+            <ul className="mt-4 space-y-2.5">
               {PLUS_BENEFITS.map((benefit) => (
-                <li key={benefit}>{benefit}</li>
+                <li key={benefit} className="flex gap-2 text-[13px] text-ink">
+                  <CheckCircle2 size={15} className="mt-[2px] shrink-0 text-teal" aria-hidden />
+                  <span>{benefit}</span>
+                </li>
               ))}
             </ul>
           </BlockCard>
 
+          <div className="flex items-start gap-2 rounded-[14px] border border-line bg-white/60 px-4 py-3">
+            <ShieldCheck size={16} className="mt-[1px] shrink-0 text-teal" aria-hidden />
+            <p className="text-[12.5px] leading-relaxed text-ink-soft">
+              Payments are completed securely through Ozow. Untangle does not receive your banking credentials.
+            </p>
+          </div>
+
+          {checkoutError ? <p className="text-[13px] text-stamp-red">{checkoutError}</p> : null}
+
           {isPlus ? (
-            <>
-              <BlockCard title="Already on Plus">
-                <p className="text-[13px] text-ink-soft">
-                  Untangle Plus is active — everything above is already switched on.
-                </p>
-              </BlockCard>
-              <PrimaryButton onClick={() => navigate({ to: "/" })}>
-                Continue to Untangle
-              </PrimaryButton>
-            </>
+            <PrimaryButton onClick={() => navigate({ to: "/" })}>Continue to Untangle</PrimaryButton>
           ) : (
-            <>
-              <BlockCard title="Untangle Plus">
-                <p className="text-[17px] font-bold text-ink">R79 / month</p>
-                <p className="mt-1 text-[13px] text-ink-soft">
-                  You'll pay securely through Ozow. Untangle never sees your banking details.
-                </p>
-              </BlockCard>
-
-              {checkoutError ? (
-                <p className="text-[13px] text-stamp-red">{checkoutError}</p>
-              ) : null}
-
-              <PrimaryButton onClick={startCheckout} disabled={starting}>
-                {starting ? "Opening secure payment…" : "Continue to secure payment"}
-              </PrimaryButton>
-            </>
+            <PrimaryButton onClick={startCheckout} disabled={starting || isPending}>
+              {starting ? "Opening secure payment…" : "Upgrade to Plus — R79/month"}
+            </PrimaryButton>
           )}
 
-          <SecondaryButton onClick={() => navigate({ to: "/profile" })}>
-            Back to profile
-          </SecondaryButton>
+          <SecondaryButton onClick={() => navigate({ to: "/profile" })}>Back to account</SecondaryButton>
         </div>
       </div>
 
-      <BottomTabBar active="Profile" />
+      <BottomTabBar active="Account" />
     </div>
   );
 }

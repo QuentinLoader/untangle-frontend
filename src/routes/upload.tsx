@@ -3,10 +3,12 @@ import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
+import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { usageLine } from "@/lib/entitlements";
 import { ApiError } from "@/lib/api-client";
+import { findSolution } from "@/lib/solutions";
 import {
   MAX_UPLOAD_BYTES,
   SUPPORTED_MIME_TYPES,
@@ -22,7 +24,12 @@ import {
   type PendingDocumentUpload,
 } from "@/lib/documents";
 
+type UploadSearch = { solution: string | undefined };
+
 export const Route = createFileRoute("/upload")({
+  validateSearch: (search: Record<string, unknown>): UploadSearch => ({
+    solution: typeof search["solution"] === "string" ? search["solution"] : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "New document — Untangle" },
@@ -45,6 +52,9 @@ const ACCEPT = [...SUPPORTED_MIME_TYPES, ".heic", ".heif", ".tif", ".tiff"].join
 function Upload() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { solution: solutionSlug } = Route.useSearch();
+  const solution = solutionSlug ? findSolution(solutionSlug) : undefined;
+  const operationalSolution = solution?.operational ? solution : undefined;
   const { entitlements } = useEntitlements();
   const analysesUsedUp =
     entitlements !== null &&
@@ -187,7 +197,7 @@ function Upload() {
 
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper">
+    <div className="flex min-h-screen flex-col bg-paper pb-[88px]">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5">
         <header className="flex items-center gap-3 pt-7">
           <Link
@@ -197,7 +207,14 @@ function Upload() {
           >
             <span className="text-[19px]">←</span>
           </Link>
-          <h1 className="font-display text-[17px] font-semibold text-ink">New document</h1>
+          <div>
+            <h1 className="font-display text-[17px] font-semibold text-ink">
+              {operationalSolution ? operationalSolution.name : "Analyze a document"}
+            </h1>
+            {operationalSolution ? (
+              <p className="mt-0.5 text-[11.5px] text-ink-soft">{operationalSolution.tagline}</p>
+            ) : null}
+          </div>
         </header>
 
         <input
@@ -253,8 +270,9 @@ function Upload() {
             </div>
           ) : (
             <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
-              Works for SARS letters, leases, purchase agreements or job offers — you don't need to
-              tell us which.
+              {operationalSolution
+                ? `${operationalSolution.name} is selected. Untangle will still verify the document before analysis.`
+                : "Upload a document and Untangle will detect the supported solution automatically."}
             </p>
           )}
 
@@ -315,6 +333,7 @@ function Upload() {
 
         </div>
       </div>
+      <BottomTabBar active="Analyze" />
     </div>
   );
 }

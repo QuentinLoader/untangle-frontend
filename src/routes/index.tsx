@@ -1,9 +1,9 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { ArrowRight, ScanLine } from "lucide-react";
 import { DocCard } from "@/components/untangle/DocCard";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
-import { FAB } from "@/components/untangle/FAB";
 import { SolutionCard } from "@/components/untangle/SolutionCard";
 import { useAuth } from "@/auth/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -90,6 +90,8 @@ function Index() {
 
   const documents = documentsQuery.data?.data.documents ?? [];
   const recent = documents.slice(0, 3);
+  const featuredSolution = SOLUTIONS.find((solution) => solution.status === "AVAILABLE") ?? SOLUTIONS[0]!;
+  const upcomingSolutions = SOLUTIONS.filter((solution) => solution.slug !== featuredSolution.slug);
 
   const attention = (remindersQuery.data?.data.reminders ?? [])
     .map(reminderView)
@@ -119,44 +121,71 @@ function Index() {
     doc.processingStatus === "COMPLETED" || PROCESSING_STATUSES.has(doc.processingStatus);
 
   return (
-    <div className="min-h-screen bg-paper pb-[150px]">
+    <div className="min-h-screen bg-paper pb-[110px]">
       <div className="mx-auto max-w-md px-5 pt-8">
         <header>
-          <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-teal">
-            Untangle
-          </p>
-          <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight text-ink">
-            {greeting(new Date())}
-            {name ? `, ${name}` : ""}
-          </h1>
-          <p className="mt-2 text-[14px] leading-relaxed text-ink-soft">
-            Untangle explains official documents in plain English and keeps track of the deadlines
-            inside them.
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-teal">
+                Untangle
+              </p>
+              <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight text-ink">
+                {greeting(new Date())}
+                {name ? `, ${name}` : ""}
+              </h1>
+            </div>
+            <Link
+              to="/upgrade"
+              className="rounded-full border border-line bg-white px-3 py-2 text-[11.5px] font-bold text-ink shadow-sm"
+            >
+              {entitlements?.isPlus ? "Plus" : "Free plan"}
+            </Link>
+          </div>
+          <p className="mt-2 max-w-[340px] text-[14px] leading-relaxed text-ink-soft">
+            Understand the document in front of you, know what matters, and keep track of what comes next.
           </p>
         </header>
 
-        {/* SOLUTIONS — product metadata only */}
         <section className="mt-8">
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-ink-soft">
-              Untangle solutions
-            </h2>
-            <Link
-              to="/solutions/$slug"
-              params={{ slug: "taxsnap" }}
-              className="text-[12.5px] font-semibold text-teal"
-            >
-              Start with TaxSnap →
-            </Link>
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-ink-soft">
+                Your solutions
+              </h2>
+              <p className="mt-1 text-[12.5px] text-ink-soft">Start with the tool that matches what you need.</p>
+            </div>
           </div>
+
+          <div className="mt-3">
+            <SolutionCard solution={featuredSolution} featured />
+          </div>
+
           <div className="mt-3 grid grid-cols-2 gap-3">
-            {SOLUTIONS.map((solution) => (
+            {upcomingSolutions.map((solution) => (
               <SolutionCard key={solution.slug} solution={solution} />
             ))}
           </div>
         </section>
 
-        {/* NEEDS YOUR ATTENTION — real reminders only */}
+        <section className="mt-6">
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/upload" })}
+            className="flex w-full items-center gap-3 rounded-[16px] bg-ink px-4 py-4 text-left text-paper shadow-sm transition-transform active:scale-[0.99]"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-white/10">
+              <ScanLine size={20} aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14px] font-bold">Analyze a document</span>
+              <span className="mt-0.5 block text-[12px] text-white/70">
+                Upload it once. Untangle detects the right supported solution.
+              </span>
+            </span>
+            <ArrowRight size={17} className="shrink-0" aria-hidden />
+          </button>
+        </section>
+
         {attention.length > 0 ? (
           <section className="mt-9">
             <div className="flex items-baseline justify-between">
@@ -198,13 +227,12 @@ function Index() {
           </section>
         ) : null}
 
-        {/* RECENT ACTIVITY — real documents only */}
         <section className="mt-9">
           <div className="flex items-baseline justify-between">
             <h2 className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-ink-soft">
               Recent activity
             </h2>
-            {documents.length > 3 ? (
+            {documents.length > 0 ? (
               <Link to="/vault" className="text-[12.5px] font-semibold text-teal">
                 Open Vault →
               </Link>
@@ -221,20 +249,25 @@ function Index() {
             <div className="mt-4 rounded-[16px] border border-dashed border-line bg-white/60 p-5 text-center">
               <p className="text-[15px] font-bold text-ink">Nothing analysed yet</p>
               <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
-                Upload a SARS document and TaxSnap will explain it in plain English.
+                TaxSnap is ready for supported SARS documents. Your analyses will appear here.
               </p>
               <button
                 type="button"
-                onClick={() => navigate({ to: "/upload" })}
-                className="mt-4 rounded-full bg-ink px-5 py-[10px] text-[13.5px] font-semibold text-paper"
+                onClick={() =>
+                  navigate({
+                    to: "/solutions/$slug",
+                    params: { slug: "taxsnap" },
+                  })
+                }
+                className="mt-4 rounded-full bg-teal px-5 py-[10px] text-[13.5px] font-semibold text-white"
               >
-                Upload a document
+                Open TaxSnap
               </button>
             </div>
           ) : (
             <div className="mt-3 space-y-3">
               {recent.map((doc) => {
-                const visual = MODULE_ICON[moduleLabel(doc.module)] ?? MODULE_ICON['Other']!;
+                const visual = MODULE_ICON[moduleLabel(doc.module)] ?? MODULE_ICON["Other"]!;
                 const card = (
                   <DocCard
                     icon={visual.icon}
@@ -261,18 +294,19 @@ function Index() {
         </section>
 
         {usage ? (
-          <p className="mt-8 text-[12px] text-ink-soft">
-            {usage}{" "}
-            {entitlements && !entitlements.isPlus ? (
-              <Link to="/upgrade" className="font-semibold text-teal">
-                See Plus →
-              </Link>
-            ) : null}
-          </p>
+          <div className="mt-8 rounded-[14px] border border-line bg-white px-4 py-3">
+            <p className="text-[12.5px] text-ink-soft">
+              {usage}{" "}
+              {!entitlements?.isPlus ? (
+                <Link to="/upgrade" className="font-semibold text-teal">
+                  View plan & billing →
+                </Link>
+              ) : null}
+            </p>
+          </div>
         ) : null}
       </div>
 
-      <FAB />
       <BottomTabBar active="Home" />
     </div>
   );

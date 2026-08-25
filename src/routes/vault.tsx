@@ -6,7 +6,6 @@ import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { DocCard } from "@/components/untangle/DocCard";
-import { FAB } from "@/components/untangle/FAB";
 import {
   documentDisplayTitle,
   documentStatusSubtitle,
@@ -283,7 +282,6 @@ function Vault() {
         )}
       </div>
 
-      {vaultLocked ? null : <FAB />}
       <BottomTabBar active="Vault" />
     </div>
   );
