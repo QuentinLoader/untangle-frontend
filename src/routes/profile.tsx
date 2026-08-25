@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { CreditCard, LogOut } from "lucide-react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { BlockCard } from "@/components/untangle/BlockCard";
@@ -7,18 +8,20 @@ import { useAuth } from "@/auth/useAuth";
 import { usePushReminders } from "@/hooks/usePushReminders";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { friendlyEntitlementError, usageLine } from "@/lib/entitlements";
-import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
-      { title: "Profile — Untangle" },
-      { name: "description", content: "Your Untangle account and notification settings." },
-      { property: "og:title", content: "Profile — Untangle" },
-      { property: "og:description", content: "Your Untangle account and notification settings." },
+      { title: "Account — Untangle" },
+      { name: "description", content: "Your Untangle account, plan, billing and notification settings." },
+      { property: "og:title", content: "Account — Untangle" },
+      {
+        property: "og:description",
+        content: "Your Untangle account, plan, billing and notification settings.",
+      },
     ],
   }),
-  component: withAuth(Profile),
+  component: withAuth(Account),
 });
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -27,7 +30,7 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-soft">
         {label}
       </span>
-      <span className="text-[13px] font-medium text-ink">{value}</span>
+      <span className="text-right text-[13px] font-medium text-ink">{value}</span>
     </div>
   );
 }
@@ -50,11 +53,8 @@ function PushSection() {
       <p className="text-[13px] text-ink-soft">{copy[state]}</p>
       {error ? <p className="mt-2 text-[12.5px] text-stamp-red">{error}</p> : null}
       {state === "requires-plus" ? (
-        <Link
-          to="/upgrade"
-          className="mt-3 block text-[13px] font-semibold text-teal underline"
-        >
-          See Untangle Plus
+        <Link to="/upgrade" className="mt-3 block text-[13px] font-semibold text-teal">
+          View plan & billing →
         </Link>
       ) : null}
       {state === "off" || state === "on" ? (
@@ -72,35 +72,46 @@ function PlanSection() {
   const { entitlements, isPending, error } = useEntitlements();
 
   return (
-    <>
-      <BlockCard title="Your plan">
-        {isPending ? (
-          <p className="text-[13px] text-ink-soft">Checking your plan…</p>
-        ) : error ? (
-          <p className="text-[13px] text-ink-soft">{friendlyEntitlementError(error)}</p>
-        ) : entitlements ? (
-          <>
-            <Row label="Plan" value={entitlements.planLabel} />
-            {usageLine(entitlements) ? (
-              <p className="mt-1 text-[13px] text-ink-soft">{usageLine(entitlements)}</p>
-            ) : null}
-            {entitlements.retentionDays !== null ? (
-              <p className="mt-1 text-[13px] text-ink-soft">
-                Documents are kept for {entitlements.retentionDays} days.
-              </p>
-            ) : null}
-          </>
-        ) : null}
-      </BlockCard>
-
-      {entitlements && !entitlements.isPlus ? (
-        <UpgradePrompt message="Untangle Plus unlocks your Vault, deadline reminders and more analyses each month." />
+    <BlockCard
+      title="Plan & billing"
+      action={
+        <Link to="/upgrade" className="inline-flex items-center gap-1 text-[12px] font-bold text-teal">
+          <CreditCard size={13} aria-hidden />
+          View
+        </Link>
+      }
+    >
+      {isPending ? (
+        <p className="text-[13px] text-ink-soft">Checking your plan…</p>
+      ) : error ? (
+        <p className="text-[13px] text-ink-soft">{friendlyEntitlementError(error)}</p>
+      ) : entitlements ? (
+        <>
+          <Row label="Plan" value={entitlements.planLabel} />
+          {entitlements.subscriptionStatus && entitlements.isPlus ? (
+            <Row label="Status" value={entitlements.subscriptionStatus.replaceAll("_", " ")} />
+          ) : null}
+          {usageLine(entitlements) ? (
+            <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{usageLine(entitlements)}</p>
+          ) : null}
+          {entitlements.retentionDays !== null ? (
+            <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+              Documents are kept for {entitlements.retentionDays} days on this plan.
+            </p>
+          ) : null}
+          <Link
+            to="/upgrade"
+            className="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-teal"
+          >
+            {entitlements.isPlus ? "Open billing details" : "Upgrade to Untangle Plus"} →
+          </Link>
+        </>
       ) : null}
-    </>
+    </BlockCard>
   );
 }
 
-function Profile() {
+function Account() {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -112,24 +123,29 @@ function Profile() {
   return (
     <div className="min-h-screen bg-paper px-5 pt-8 pb-[110px]">
       <div className="mx-auto max-w-md">
-        <h1 className="font-display text-[21px] font-semibold text-ink">Profile</h1>
+        <h1 className="font-display text-[24px] font-semibold text-ink">Account</h1>
+        <p className="mt-1 text-[13px] text-ink-soft">Your details, plan, billing and reminder settings.</p>
 
         <div className="mt-5 space-y-3">
-          <BlockCard title="Account">
+          <BlockCard title="Account details">
             <Row label="Email" value={profile?.email ?? user?.email ?? "—"} />
             <Row label="Name" value={profile?.displayName ?? "Not set"} />
             <Row label="Account type" value={profile?.userType ?? "Individual"} />
           </BlockCard>
 
           <PlanSection />
-
           <PushSection />
 
-          <SecondaryButton onClick={handleSignOut}>Log out</SecondaryButton>
+          <SecondaryButton onClick={handleSignOut}>
+            <span className="inline-flex items-center justify-center gap-2">
+              <LogOut size={16} aria-hidden />
+              Log out
+            </span>
+          </SecondaryButton>
         </div>
       </div>
 
-      <BottomTabBar active="Profile" />
+      <BottomTabBar active="Account" />
     </div>
   );
 }

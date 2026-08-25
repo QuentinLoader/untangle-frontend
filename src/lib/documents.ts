@@ -354,6 +354,14 @@ export type DocumentResult = {
     dateConfidence: string;
     reminderRecommended: boolean;
   }>;
+  timeLimits?: Array<{
+    id: string;
+    fieldKey: string;
+    label: string;
+    periodText: string;
+    exactDueDateKnown: false;
+    caution: string | null;
+  }>;
   amounts: Array<{
     id: string;
     fieldKey: string;
