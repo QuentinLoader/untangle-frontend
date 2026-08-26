@@ -1,6 +1,7 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { MoreVertical, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
@@ -21,11 +22,11 @@ export const Route = createFileRoute("/vault")({
   head: () => ({
     meta: [
       { title: "Vault — Untangle" },
-      { name: "description", content: "Every document you've untangled, stored in one place." },
+      { name: "description", content: "Your uploaded documents, stored and managed in one place." },
       { property: "og:title", content: "Vault — Untangle" },
       {
         property: "og:description",
-        content: "Every document you've untangled, stored in one place.",
+        content: "Your uploaded documents, stored and managed in one place.",
       },
     ],
   }),
@@ -59,6 +60,7 @@ function Vault() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const [menuId, setMenuId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -66,6 +68,7 @@ function Vault() {
     mutationFn: (documentId: string) => deleteDocument(documentId),
     onSuccess: async () => {
       setConfirmId(null);
+      setMenuId(null);
       setDeleteError(null);
       await queryClient.invalidateQueries({ queryKey: ["documents"] });
       await queryClient.invalidateQueries({ queryKey: ["reminders"] });
@@ -84,7 +87,6 @@ function Vault() {
 
   const documents = useMemo(() => data?.data.documents ?? [], [data]);
 
-  // Filters are derived from real data only — never from the product catalogue.
   const filters = useMemo(() => {
     const labels: string[] = [];
     for (const doc of documents) {
@@ -114,6 +116,7 @@ function Vault() {
   }, [documents, filter, search, sort]);
 
   const openDocument = (doc: DocumentListItem) => {
+    setMenuId(null);
     if (doc.processingStatus === "COMPLETED") {
       navigate({ to: "/result", search: { documentId: doc.documentId, from: "vault" as const } });
       return;
@@ -130,8 +133,8 @@ function Vault() {
     <div className="min-h-screen bg-paper pb-[110px]">
       <div className="mx-auto w-full max-w-md px-5 pt-8">
         <h1 className="font-display text-[24px] font-semibold text-ink">Vault</h1>
-        <p className="mt-1 text-[13px] text-ink-soft">
-          Everything you've untangled, searchable and sorted.
+        <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+          This is the one place for your uploaded documents. Open, search or delete them here.
         </p>
 
         {vaultLocked ? (
@@ -149,7 +152,7 @@ function Vault() {
           <div className="mt-10 rounded-[16px] border border-dashed border-line bg-white/60 p-5 text-center">
             <p className="text-[16px] font-bold text-ink">No documents yet</p>
             <p className="mt-2 text-[13px] text-ink-soft">
-              Upload your first document and Untangle will keep it here.
+              Upload your first document and it will appear here.
             </p>
           </div>
         ) : (
@@ -173,9 +176,7 @@ function Vault() {
                     type="button"
                     onClick={() => setFilter(label)}
                     className={`rounded-full px-3.5 py-[6px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] ${
-                      filter === label
-                        ? "bg-ink text-paper"
-                        : "border border-line bg-white text-ink-soft"
+                      filter === label ? "bg-ink text-paper" : "border border-line bg-white text-ink-soft"
                     }`}
                   >
                     {label}
@@ -203,79 +204,110 @@ function Vault() {
               </p>
             ) : null}
 
-
-
             {visible.length === 0 ? (
-              <p className="mt-8 text-[14px] text-ink-soft">
-                No documents match your search.
-              </p>
+              <p className="mt-8 text-[14px] text-ink-soft">No documents match your search.</p>
             ) : (
               <div className="mt-4 space-y-3">
                 {visible.map((doc) => {
-                  const visual = MODULE_ICON[moduleLabel(doc.module)] ?? MODULE_ICON['Other']!;
-                  const card = (
-                    <DocCard
-                      icon={visual.icon}
-                      iconBg={visual.bg}
-                      title={documentDisplayTitle(doc)}
-                      subtitle={`${moduleLabel(doc.module)} · ${documentStatusSubtitle(doc)}`}
-                    />
-                  );
+                  const visual = MODULE_ICON[moduleLabel(doc.module)] ?? MODULE_ICON["Other"]!;
                   const confirming = confirmId === doc.documentId;
+                  const menuOpen = menuId === doc.documentId;
                   const busy = removeDocument.isPending && confirming;
+
                   return (
-                    <div key={doc.documentId}>
+                    <div key={doc.documentId} className="relative">
                       {isOpenable(doc) ? (
                         <button
                           type="button"
                           onClick={() => openDocument(doc)}
-                          className="block w-full text-left"
+                          className="block w-full pr-12 text-left"
                         >
-                          {card}
+                          <DocCard
+                            icon={visual.icon}
+                            iconBg={visual.bg}
+                            title={documentDisplayTitle(doc)}
+                            subtitle={`${moduleLabel(doc.module)} · ${documentStatusSubtitle(doc)}`}
+                          />
                         </button>
                       ) : (
-                        card
-                      )}
-                      {confirming ? (
-                        <div className="mt-2 flex items-center justify-end gap-3 px-1">
-                          <span className="mr-auto text-[12px] text-ink-soft">
-                            Delete this document?
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setConfirmId(null)}
-                            className="text-[12.5px] font-semibold text-ink-soft"
-                            disabled={busy}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeDocument.mutate(doc.documentId)}
-                            className="text-[12.5px] font-bold text-red-600"
-                            disabled={busy}
-                          >
-                            {busy ? "Deleting…" : "Delete"}
-                          </button>
+                        <div className="pr-12">
+                          <DocCard
+                            icon={visual.icon}
+                            iconBg={visual.bg}
+                            title={documentDisplayTitle(doc)}
+                            subtitle={`${moduleLabel(doc.module)} · ${documentStatusSubtitle(doc)}`}
+                          />
                         </div>
-                      ) : (
-                        <div className="mt-1.5 flex justify-end px-1">
+                      )}
+
+                      <button
+                        type="button"
+                        aria-label={`Actions for ${documentDisplayTitle(doc)}`}
+                        aria-expanded={menuOpen}
+                        onClick={() => {
+                          setDeleteError(null);
+                          setConfirmId(null);
+                          setMenuId(menuOpen ? null : doc.documentId);
+                        }}
+                        className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-ink-soft active:bg-paper-2"
+                      >
+                        <MoreVertical className="h-4.5 w-4.5" aria-hidden="true" />
+                      </button>
+
+                      {menuOpen && !confirming ? (
+                        <div className="absolute right-3 top-12 z-10 w-40 overflow-hidden rounded-[12px] border border-line bg-white shadow-lg">
+                          {isOpenable(doc) ? (
+                            <button
+                              type="button"
+                              onClick={() => openDocument(doc)}
+                              className="block w-full px-4 py-3 text-left text-[13px] font-semibold text-ink active:bg-paper-2"
+                            >
+                              Open
+                            </button>
+                          ) : null}
                           <button
                             type="button"
-                            onClick={() => {
-                              setDeleteError(null);
-                              setConfirmId(doc.documentId);
-                            }}
-                            className="text-[12px] font-semibold text-ink-soft"
+                            onClick={() => setConfirmId(doc.documentId)}
+                            className="flex w-full items-center gap-2 border-t border-line px-4 py-3 text-left text-[13px] font-semibold text-red-600 active:bg-paper-2"
                           >
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
                             Delete
                           </button>
                         </div>
-                      )}
+                      ) : null}
+
+                      {confirming ? (
+                        <div className="mt-2 rounded-[14px] border border-line bg-white px-4 py-3">
+                          <p className="text-[13px] font-semibold text-ink">Delete this document?</p>
+                          <p className="mt-1 text-[11.5px] leading-relaxed text-ink-soft">
+                            This removes the uploaded file, its analysis and related reminders from your Vault.
+                          </p>
+                          <div className="mt-3 flex justify-end gap-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setConfirmId(null);
+                                setMenuId(null);
+                              }}
+                              className="text-[12.5px] font-semibold text-ink-soft"
+                              disabled={busy}
+                            >
+                              Keep it
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeDocument.mutate(doc.documentId)}
+                              className="text-[12.5px] font-bold text-red-600"
+                              disabled={busy}
+                            >
+                              {busy ? "Deleting…" : "Delete permanently"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}
-
               </div>
             )}
           </>

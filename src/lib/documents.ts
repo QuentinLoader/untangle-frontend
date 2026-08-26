@@ -339,6 +339,20 @@ export type DocumentResult = {
     plainEnglish: string;
     severity: ResultSeverity;
   };
+  humanGuide?: {
+    whatThisIs: string;
+    whatItMeans: string;
+    nextSteps: Array<{
+      id: string;
+      title: string;
+      detail: string | null;
+      where: string | null;
+      optional: boolean;
+    }>;
+    whereToGo: string | null;
+    deadline: string;
+    sourceGap: string | null;
+  };
   requiredActions: Array<{
     id: string;
     action: string;
