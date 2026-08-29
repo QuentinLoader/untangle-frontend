@@ -164,7 +164,7 @@ function Vault() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search documents"
-                className="w-full rounded-[12px] border border-line bg-white px-4 py-[11px] text-[14px] text-ink outline-none placeholder:text-ink-soft focus:border-teal"
+                className="min-h-[48px] w-full rounded-[12px] border border-line bg-white px-4 py-3 text-[16px] text-ink outline-none placeholder:text-ink-soft focus:border-teal"
               />
             </label>
 
@@ -175,8 +175,8 @@ function Vault() {
                     key={label}
                     type="button"
                     onClick={() => setFilter(label)}
-                    className={`rounded-full px-3.5 py-[6px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] ${
-                      filter === label ? "bg-ink text-paper" : "border border-line bg-white text-ink-soft"
+                    className={`inline-flex min-h-[44px] items-center rounded-full px-4 font-mono text-[10px] font-bold uppercase tracking-[0.08em] transition-colors active:scale-[0.97] ${
+                      filter === label ? "bg-ink text-paper" : "border border-line bg-white text-ink-soft active:bg-paper-2"
                     }`}
                   >
                     {label}
@@ -192,7 +192,7 @@ function Vault() {
               <button
                 type="button"
                 onClick={() => setSort(sort === "newest" ? "oldest" : "newest")}
-                className="text-[12.5px] font-semibold text-teal"
+                className="inline-flex min-h-[44px] items-center rounded-[10px] px-2 text-[12.5px] font-semibold text-teal active:bg-teal-dim"
               >
                 {sort === "newest" ? "Newest first" : "Oldest first"} ⇅
               </button>
@@ -220,7 +220,7 @@ function Vault() {
                         <button
                           type="button"
                           onClick={() => openDocument(doc)}
-                          className="block w-full pr-12 text-left"
+                          className="block w-full rounded-2xl pr-12 text-left transition-transform active:scale-[0.99]"
                         >
                           <DocCard
                             icon={visual.icon}
@@ -249,7 +249,7 @@ function Vault() {
                           setConfirmId(null);
                           setMenuId(menuOpen ? null : doc.documentId);
                         }}
-                        className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-ink-soft active:bg-paper-2"
+                        className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink-soft active:bg-paper-2"
                       >
                         <MoreVertical className="h-4.5 w-4.5" aria-hidden="true" />
                       </button>
@@ -260,7 +260,7 @@ function Vault() {
                             <button
                               type="button"
                               onClick={() => openDocument(doc)}
-                              className="block w-full px-4 py-3 text-left text-[13px] font-semibold text-ink active:bg-paper-2"
+                              className="block min-h-[48px] w-full px-4 py-3 text-left text-[13px] font-semibold text-ink active:bg-paper-2"
                             >
                               Open
                             </button>
@@ -268,7 +268,7 @@ function Vault() {
                           <button
                             type="button"
                             onClick={() => setConfirmId(doc.documentId)}
-                            className="flex w-full items-center gap-2 border-t border-line px-4 py-3 text-left text-[13px] font-semibold text-red-600 active:bg-paper-2"
+                            className="flex min-h-[48px] w-full items-center gap-2 border-t border-line px-4 py-3 text-left text-[13px] font-semibold text-red-600 active:bg-paper-2"
                           >
                             <Trash2 className="h-4 w-4" aria-hidden="true" />
                             Delete
@@ -289,7 +289,7 @@ function Vault() {
                                 setConfirmId(null);
                                 setMenuId(null);
                               }}
-                              className="text-[12.5px] font-semibold text-ink-soft"
+                              className="inline-flex min-h-[44px] items-center rounded-[10px] px-3 text-[12.5px] font-semibold text-ink-soft active:bg-paper-2"
                               disabled={busy}
                             >
                               Keep it
@@ -297,7 +297,7 @@ function Vault() {
                             <button
                               type="button"
                               onClick={() => removeDocument.mutate(doc.documentId)}
-                              className="text-[12.5px] font-bold text-red-600"
+                              className="inline-flex min-h-[44px] items-center rounded-[10px] px-3 text-[12.5px] font-bold text-red-600 active:bg-red-50"
                               disabled={busy}
                             >
                               {busy ? "Deleting…" : "Delete permanently"}
