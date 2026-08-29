@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CreditCard, LogOut } from "lucide-react";
+import { useState } from "react";
+import { CreditCard, LogOut, Pencil } from "lucide-react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { BlockCard } from "@/components/untangle/BlockCard";
@@ -8,6 +9,7 @@ import { useAuth } from "@/auth/useAuth";
 import { usePushReminders } from "@/hooks/usePushReminders";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { friendlyEntitlementError, usageLine } from "@/lib/entitlements";
+import { resolveDisplayName } from "@/lib/display-name";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -111,9 +113,101 @@ function PlanSection() {
   );
 }
 
+function NameRow({ value, onSave }: { value: string; onSave: (name: string) => Promise<void> }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async () => {
+    const name = draft.trim();
+    if (!name || saving) {
+      setError(name ? null : "Enter your name.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await onSave(name);
+      setEditing(false);
+    } catch {
+      setError("Could not save your name. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!editing) {
+    return (
+      <div className="flex items-center justify-between gap-4 py-2">
+        <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-soft">
+          Name
+        </span>
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-right text-[13px] font-medium text-ink">
+            {value || "Not set"}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setDraft(value);
+              setError(null);
+              setEditing(true);
+            }}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-teal transition-colors active:bg-teal-dim"
+            aria-label="Edit your name"
+          >
+            <Pencil size={15} aria-hidden />
+          </button>
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-2">
+      <label
+        htmlFor="display-name"
+        className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-soft"
+      >
+        Name
+      </label>
+      <input
+        id="display-name"
+        type="text"
+        autoComplete="name"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        placeholder="e.g. Quentin Loader"
+        className="mt-1.5 min-h-12 w-full rounded-[12px] border border-line bg-white px-3.5 text-[16px] text-ink outline-none focus:border-teal"
+      />
+      {error ? <p className="mt-1.5 text-[12px] text-stamp-red">{error}</p> : null}
+      <div className="mt-2.5 flex gap-2">
+        <button
+          type="button"
+          onClick={() => void save()}
+          disabled={saving}
+          className="min-h-11 flex-1 rounded-[12px] bg-teal px-4 text-[13px] font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-60"
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          disabled={saving}
+          className="min-h-11 flex-1 rounded-[12px] border border-line bg-white px-4 text-[13px] font-bold text-ink transition-colors active:bg-paper-2 disabled:opacity-60"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Account() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, updateDisplayName } = useAuth();
   const navigate = useNavigate();
+  const displayName = resolveDisplayName(profile, user) ?? "";
 
   const handleSignOut = async () => {
     await signOut();
@@ -129,7 +223,7 @@ function Account() {
         <div className="mt-5 space-y-3">
           <BlockCard title="Account details">
             <Row label="Email" value={profile?.email ?? user?.email ?? "—"} />
-            {profile?.displayName?.trim() ? <Row label="Name" value={profile.displayName} /> : null}
+            <NameRow value={displayName} onSave={updateDisplayName} />
           </BlockCard>
 
           <PlanSection />
