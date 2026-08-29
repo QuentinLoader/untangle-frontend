@@ -9,6 +9,7 @@ import { useEntitlements } from "@/hooks/useEntitlements";
 import { SOLUTIONS } from "@/lib/solutions";
 import { listReminders, reminderDocumentTitle, reminderView } from "@/lib/reminders";
 import { usageLine } from "@/lib/entitlements";
+import { firstName, resolveDisplayName } from "@/lib/display-name";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,13 +37,10 @@ function greeting(now: Date): string {
   return "Good evening";
 }
 
-function firstNameOf(value: string | null | undefined): string | null {
-  return firstName(value);
-}
 
 function Index() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { entitlements } = useEntitlements();
 
   const remindersQuery = useQuery({
@@ -64,7 +62,7 @@ function Index() {
     })
     .slice(0, 3);
 
-  const name = firstName(profile?.displayName);
+  const name = firstName(resolveDisplayName(profile, user));
   const usage = entitlements ? usageLine(entitlements) : null;
 
   return (
