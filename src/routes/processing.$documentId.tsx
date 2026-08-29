@@ -346,19 +346,20 @@ function NeedsReviewState({
   }
 }
 
-function StepRow({ label, done }: { label: string; done: boolean }) {
+function StepRow({ label, done, active }: { label: string; done: boolean; active?: boolean }) {
   return (
     <div className="flex items-center gap-3.5">
       <div
         className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-300 ${
-          done ? "border-teal bg-teal" : "border-teal bg-transparent"
+          done ? "border-teal bg-teal" : active ? "animate-pulse border-teal bg-teal/10" : "border-teal bg-transparent"
         }`}
       >
         {done && <span className="text-[13px] font-bold text-white">✓</span>}
+        {!done && active && <span className="h-2 w-2 rounded-full bg-teal" />}
       </div>
       <span
         className={`text-[14px] transition-colors duration-300 ${
-          done ? "font-medium text-ink" : "text-ink-soft"
+          done ? "font-medium text-ink" : active ? "font-medium text-ink" : "text-ink-soft"
         }`}
       >
         {label}
