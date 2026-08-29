@@ -131,8 +131,8 @@ export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }
             key={value}
             type="button"
             onClick={() => setTab(value)}
-            className={`rounded-full px-4 py-[7px] font-mono text-[10.5px] font-bold uppercase tracking-[0.08em] ${
-              tab === value ? "bg-ink text-paper" : "border border-line bg-white text-ink-soft"
+            className={`inline-flex min-h-[44px] items-center rounded-full px-5 font-mono text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors active:scale-[0.97] ${
+              tab === value ? "bg-ink text-paper" : "border border-line bg-white text-ink-soft active:bg-paper-2"
             }`}
           >
             {value === "upcoming" ? "Upcoming" : "Past"}
@@ -195,7 +195,7 @@ export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }
                               search: { documentId: view.reminder.documentId, from },
                             })
                           }
-                          className="text-[12.5px] font-semibold text-teal"
+                          className="inline-flex min-h-[44px] items-center rounded-[10px] px-2 text-[12.5px] font-semibold text-teal active:bg-teal-dim"
                         >
                           View document →
                         </button>
