@@ -128,13 +128,49 @@ function Processing() {
             />
           ) : (
             <>
-              <div className="flex h-[100px] w-[82px] flex-col justify-start gap-2 rounded-lg border-2 border-ink bg-card p-3 pt-4">
-                <div className="h-[5px] w-full rounded-full bg-paper-2" />
-                <div className="h-[5px] w-[75%] rounded-full bg-teal/40" />
-                <div className="h-[5px] w-[55%] rounded-full bg-paper-2" />
+              {!backendFailed && (
+                <div className="mb-5" aria-hidden>
+                  <svg
+                    className="h-6 w-6 animate-spin text-teal"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                </div>
+              )}
+
+              <div
+                className={`relative flex h-[100px] w-[82px] flex-col justify-start gap-2 overflow-hidden rounded-lg border-2 border-ink bg-card p-3 pt-4 ${
+                  backendFailed ? "" : "animate-pulse"
+                }`}
+                aria-hidden
+              >
+                <div className="h-[5px] w-full rounded-full bg-paper-2 transition-all duration-700" />
+                <div className="h-[5px] w-[75%] rounded-full bg-teal/40 transition-all duration-700" />
+                <div className="h-[5px] w-[55%] rounded-full bg-paper-2 transition-all duration-700" />
+                {!backendFailed && (
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-teal/10 to-transparent" />
+                )}
               </div>
 
-              <h2 className="mt-8 text-center font-display text-[20px] font-semibold leading-snug text-ink">
+              <h2
+                className="mt-8 text-center font-display text-[20px] font-semibold leading-snug text-ink"
+                aria-live="polite"
+              >
                 {copy.title}
               </h2>
               <p className="mt-2 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
@@ -145,12 +181,18 @@ function Processing() {
                   className={`mt-3 font-mono text-[10.5px] font-bold uppercase tracking-wide ${
                     backendFailed ? "text-stamp-red" : "text-teal"
                   }`}
+                  aria-live="polite"
                 >
                   {status}
                 </p>
               )}
+              {!backendFailed && !isLoading && (
+                <p className="mt-2 max-w-[280px] text-center text-[11px] leading-relaxed text-ink-soft">
+                  This usually takes 10–30 seconds. Keep this screen open and we’ll let you know as soon as it’s ready.
+                </p>
+              )}
 
-              <div className="mt-10 w-full max-w-[260px] space-y-4">
+              <div className="mt-8 w-full max-w-[260px] space-y-4">
                 {STEPS.map((step) => {
                   const stepIndex = Math.max(...step.statuses.map((s) => order.indexOf(s)));
                   return (
