@@ -160,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInWithMagicLink,
       sendPasswordReset,
       updatePassword,
+      updateDisplayName,
       signOut,
     }),
     [
@@ -168,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       loading,
       signUpWithPassword,
+      updateDisplayName,
       signInWithPassword,
       signInWithMagicLink,
       sendPasswordReset,

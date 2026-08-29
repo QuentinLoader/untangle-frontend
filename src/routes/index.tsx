@@ -36,10 +36,8 @@ function greeting(now: Date): string {
   return "Good evening";
 }
 
-function firstName(value: string | null | undefined): string | null {
-  const name = value?.trim();
-  if (!name) return null;
-  return name.split(/\s+/)[0] ?? null;
+function firstNameOf(value: string | null | undefined): string | null {
+  return firstName(value);
 }
 
 function Index() {
