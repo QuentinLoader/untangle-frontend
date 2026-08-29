@@ -70,15 +70,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [session?.user?.id]);
 
-  const signUpWithPassword = useCallback(async (email: string, password: string) => {
+  const signUpWithPassword = useCallback(
+    async (email: string, password: string, displayName?: string) => {
+      requireConfig();
+      const name = displayName?.trim();
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+          ...(name ? { data: { full_name: name } } : {}),
+        },
+      });
+      if (error) throw error;
+      return { needsEmailConfirmation: data.session === null };
+    },
+    [],
+  );
+
+  const updateDisplayName = useCallback(async (displayName: string) => {
     requireConfig();
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: `${window.location.origin}/login` },
+    const { data, error } = await supabase.auth.updateUser({
+      data: { full_name: displayName.trim() },
     });
     if (error) throw error;
-    return { needsEmailConfirmation: data.session === null };
+    if (data.user) setUser(data.user);
   }, []);
 
   const signInWithPassword = useCallback(async (email: string, password: string) => {
