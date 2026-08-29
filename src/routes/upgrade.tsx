@@ -15,12 +15,12 @@ export const Route = createFileRoute("/upgrade")({
       { title: "Plan & billing — Untangle" },
       {
         name: "description",
-        content: "View your Untangle plan and upgrade to Untangle Plus for R79 a month.",
+        content: "View your Untangle plan and buy one month of Untangle Plus for R79.",
       },
       { property: "og:title", content: "Plan & billing — Untangle" },
       {
         property: "og:description",
-        content: "View your Untangle plan and upgrade to Untangle Plus for R79 a month.",
+        content: "View your Untangle plan and buy one month of Untangle Plus for R79.",
       },
     ],
   }),
@@ -76,7 +76,7 @@ function PlanBillingPage() {
         </p>
         <h1 className="mt-2 font-display text-[24px] font-semibold text-ink">Plan & billing</h1>
         <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-          See your current access and manage upgrades from one place.
+          Your current plan, access period and renewal options.
         </p>
 
         <div className="mt-5 space-y-3">
@@ -90,52 +90,77 @@ function PlanBillingPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-[18px] font-bold text-ink">{entitlements.planLabel}</p>
-                    {entitlements.isPlus ? (
-                      <p className="mt-1 text-[13px] text-ink-soft">R79 monthly access</p>
-                    ) : (
-                      <p className="mt-1 text-[13px] text-ink-soft">Up to 3 successful analyses per month</p>
-                    )}
+                    <p className="mt-1 text-[13px] text-ink-soft">
+                      {isPlus ? "R79 gives you one month of Plus access." : "Up to 3 successful analyses per month."}
+                    </p>
                   </div>
                   <span className="rounded-full bg-teal-dim px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-teal">
-                    {entitlements.isPlus ? entitlements.subscriptionStatus ?? "Active" : "Free"}
+                    {isPlus ? entitlements.subscriptionStatus ?? "Active" : "Free"}
                   </span>
                 </div>
-                {usageLine(entitlements) ? (
+
+                {!isPlus && usageLine(entitlements) ? (
                   <p className="mt-3 text-[13px] leading-relaxed text-ink-soft">{usageLine(entitlements)}</p>
                 ) : null}
-                {periodEnd ? (
-                  <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                    Current access period ends {periodEnd}.
-                  </p>
+
+                {isPlus ? (
+                  <div className="mt-3 rounded-[12px] bg-paper px-3 py-3 text-[12.5px] leading-relaxed text-ink-soft">
+                    {periodEnd ? <p>Your current Plus access ends {periodEnd}.</p> : null}
+                    <p className={periodEnd ? "mt-1" : ""}>
+                      Plus does not renew automatically. You choose when to pay for another month.
+                    </p>
+                  </div>
                 ) : null}
+
                 {entitlements.retentionDays !== null ? (
-                  <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                    Document retention: {entitlements.retentionDays} days.
+                  <p className="mt-3 text-[12.5px] leading-relaxed text-ink-soft">
+                    Documents are kept for {entitlements.retentionDays} days on this plan.
                   </p>
                 ) : null}
               </>
             ) : null}
           </BlockCard>
 
-          <BlockCard title="Untangle Plus">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[20px] font-bold text-ink">R79</p>
-                <p className="text-[12.5px] text-ink-soft">per month</p>
+          {isPlus ? (
+            <BlockCard title="Renew Plus">
+              <p className="text-[13px] leading-relaxed text-ink-soft">
+                Add another month whenever you want. A successful R79 payment extends your current Plus access by one month.
+              </p>
+              <div className="mt-4">
+                <PrimaryButton onClick={startCheckout} disabled={starting || isPending}>
+                  {starting ? "Opening secure payment…" : "Add another month — R79"}
+                </PrimaryButton>
               </div>
-              <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-teal-dim text-teal">
-                <CreditCard size={19} aria-hidden />
+            </BlockCard>
+          ) : (
+            <BlockCard title="Untangle Plus">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[20px] font-bold text-ink">R79</p>
+                  <p className="text-[12.5px] text-ink-soft">for one month</p>
+                </div>
+                <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-teal-dim text-teal">
+                  <CreditCard size={19} aria-hidden />
+                </div>
               </div>
-            </div>
-            <ul className="mt-4 space-y-2.5">
-              {PLUS_BENEFITS.map((benefit) => (
-                <li key={benefit} className="flex gap-2 text-[13px] text-ink">
-                  <CheckCircle2 size={15} className="mt-[2px] shrink-0 text-teal" aria-hidden />
-                  <span>{benefit}</span>
-                </li>
-              ))}
-            </ul>
-          </BlockCard>
+              <ul className="mt-4 space-y-2.5">
+                {PLUS_BENEFITS.map((benefit) => (
+                  <li key={benefit} className="flex gap-2 text-[13px] text-ink">
+                    <CheckCircle2 size={15} className="mt-[2px] shrink-0 text-teal" aria-hidden />
+                    <span>{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-[12.5px] leading-relaxed text-ink-soft">
+                Plus does not renew automatically. Buy another month only when you choose to.
+              </p>
+              <div className="mt-4">
+                <PrimaryButton onClick={startCheckout} disabled={starting || isPending}>
+                  {starting ? "Opening secure payment…" : "Get Plus for one month — R79"}
+                </PrimaryButton>
+              </div>
+            </BlockCard>
+          )}
 
           <div className="flex items-start gap-2 rounded-[14px] border border-line bg-white/60 px-4 py-3">
             <ShieldCheck size={16} className="mt-[1px] shrink-0 text-teal" aria-hidden />
@@ -145,14 +170,6 @@ function PlanBillingPage() {
           </div>
 
           {checkoutError ? <p className="text-[13px] text-stamp-red">{checkoutError}</p> : null}
-
-          {isPlus ? (
-            <PrimaryButton onClick={() => navigate({ to: "/" })}>Continue to Untangle</PrimaryButton>
-          ) : (
-            <PrimaryButton onClick={startCheckout} disabled={starting || isPending}>
-              {starting ? "Opening secure payment…" : "Upgrade to Plus — R79/month"}
-            </PrimaryButton>
-          )}
 
           <SecondaryButton onClick={() => navigate({ to: "/profile" })}>Back to account</SecondaryButton>
         </div>

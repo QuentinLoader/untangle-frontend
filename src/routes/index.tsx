@@ -124,7 +124,7 @@ function Index() {
               <ScanLine size={20} aria-hidden />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-bold">Analyze a document</span>
+              <span className="block text-[14px] font-bold">Analyse a document</span>
               <span className="mt-0.5 block text-[12px] text-white/70">
                 Upload once. Untangle works out the supported solution.
               </span>
@@ -170,33 +170,29 @@ function Index() {
           </section>
         ) : null}
 
-        <section className="mt-9">
+        <section className="mt-7">
           <Link
             to="/vault"
-            className="flex items-center gap-3 rounded-[16px] border border-line bg-white px-4 py-4"
+            className="flex items-center gap-3 rounded-[14px] border border-line bg-white px-3.5 py-3"
           >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-teal-dim text-teal">
-              <FolderOpen size={19} aria-hidden />
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-teal-dim text-teal">
+              <FolderOpen size={18} aria-hidden />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-bold text-ink">Your documents live in Vault</span>
-              <span className="mt-0.5 block text-[12px] leading-relaxed text-ink-soft">
-                Open, search or delete uploaded documents in one place.
-              </span>
+              <span className="block text-[13.5px] font-bold text-ink">Vault</span>
+              <span className="block text-[11.5px] text-ink-soft">All uploaded documents in one place.</span>
             </span>
             <ArrowRight size={16} className="shrink-0 text-teal" aria-hidden />
           </Link>
         </section>
 
-        {usage ? (
-          <div className="mt-8 rounded-[14px] border border-line bg-white px-4 py-3">
+        {usage && !entitlements?.isPlus ? (
+          <div className="mt-5 rounded-[14px] border border-line bg-white px-4 py-3">
             <p className="text-[12.5px] text-ink-soft">
               {usage}{" "}
-              {!entitlements?.isPlus ? (
-                <Link to="/upgrade" className="font-semibold text-teal">
-                  View plan & billing →
-                </Link>
-              ) : null}
+              <Link to="/upgrade" className="font-semibold text-teal">
+                View plan & billing →
+              </Link>
             </p>
           </div>
         ) : null}

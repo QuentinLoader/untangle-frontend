@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Camera } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
@@ -210,7 +211,7 @@ function Upload() {
           </Link>
           <div>
             <h1 className="font-display text-[17px] font-semibold text-ink">
-              {operationalSolution ? operationalSolution.name : "Analyze a document"}
+              {operationalSolution ? operationalSolution.name : "Analyse a document"}
             </h1>
             {operationalSolution ? (
               <p className="mt-0.5 text-[11.5px] text-ink-soft">{operationalSolution.tagline}</p>
@@ -234,22 +235,26 @@ function Upload() {
           className="hidden"
         />
 
-        <div className="flex flex-1 flex-col items-center justify-center py-10">
+        <div className="flex flex-1 flex-col items-center pt-12">
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={busy}
-            className="grid h-[210px] w-[210px] place-items-center rounded-[24px] border-[3px] border-dashed border-teal bg-teal-dim text-5xl transition-transform active:scale-[0.98] disabled:opacity-60"
-            aria-label="Snap or upload your document"
+            className="grid h-[124px] w-[124px] place-items-center rounded-[22px] border-2 border-dashed border-teal bg-teal-dim text-teal transition-transform active:scale-[0.98] disabled:opacity-60"
+            aria-label="Choose a document to upload"
           >
-            {pending ? "✅" : "📷"}
+            {pending ? (
+              <span className="text-3xl" aria-hidden>✓</span>
+            ) : (
+              <Camera size={34} strokeWidth={1.8} aria-hidden />
+            )}
           </button>
 
-          <h2 className="mt-8 text-center font-display text-[20px] font-semibold leading-snug text-ink">
+          <h2 className="mt-5 text-center font-display text-[20px] font-semibold leading-snug text-ink">
             {uploadStatus === "queued"
               ? "Upload verified"
               : pending
-                ? "Document prepared securely"
-                : "Snap or upload your document"}
+                ? "Document ready"
+                : "Take a photo or upload a file"}
           </h2>
 
           {pending ? (
@@ -272,8 +277,8 @@ function Upload() {
           ) : (
             <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
               {operationalSolution
-                ? `${operationalSolution.name} is selected. Untangle will still verify the document before analysis.`
-                : "Upload a document and Untangle will detect the supported solution automatically."}
+                ? `${operationalSolution.name} is selected. Untangle will confirm the document before analysis.`
+                : "Untangle will work out which supported solution the document belongs to."}
             </p>
           )}
 
@@ -292,13 +297,13 @@ function Upload() {
             </p>
           )}
 
-          {planUsageLine ? (
+          {planUsageLine && !entitlements?.isPlus ? (
             <p className="mt-4 font-mono text-[11px] uppercase tracking-wide text-ink-soft">
               {planUsageLine}
             </p>
           ) : null}
 
-          <div className="mt-8 w-full max-w-[280px] space-y-3">
+          <div className="mt-6 w-full max-w-[300px] space-y-3">
             {analysesUsedUp && !pending ? (
               <UpgradePrompt
                 title="Free analyses used"
@@ -334,7 +339,7 @@ function Upload() {
 
         </div>
       </div>
-      <BottomTabBar active="Analyze" />
+      <BottomTabBar active="Analyse" />
     </div>
   );
 }

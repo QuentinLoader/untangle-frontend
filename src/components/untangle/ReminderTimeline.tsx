@@ -97,9 +97,16 @@ export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }
       <div className="mt-8 rounded-[16px] border border-dashed border-line bg-white/60 p-5">
         <p className="text-[15px] font-bold text-ink">No reminders yet</p>
         <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
-          When Untangle finds an important date, or when you add a reminder yourself, it will
+          When Untangle finds an important date, or when you add a reminder from a result, it will
           appear here.
         </p>
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/upload" })}
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-[12px] bg-ink px-4 py-2.5 text-[13px] font-semibold text-paper"
+        >
+          Analyse a document
+        </button>
       </div>
     );
 
