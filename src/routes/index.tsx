@@ -85,7 +85,7 @@ function Index() {
             </div>
             <Link
               to="/upgrade"
-              className="rounded-full border border-line bg-white px-3 py-2 text-[11.5px] font-bold text-ink shadow-sm"
+              className="inline-flex min-h-[44px] items-center rounded-full border border-line bg-white px-4 text-[11.5px] font-bold text-ink shadow-sm transition-colors active:bg-paper-2"
             >
               {entitlements?.isPlus ? "Plus" : "Free plan"}
             </Link>
@@ -139,7 +139,10 @@ function Index() {
               <h2 className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-ink-soft">
                 Needs your attention
               </h2>
-              <Link to="/reminders" className="text-[12.5px] font-semibold text-teal">
+              <Link
+                to="/reminders"
+                className="inline-flex min-h-[44px] items-center rounded-[10px] px-2 text-[12.5px] font-semibold text-teal active:bg-teal-dim"
+              >
                 All reminders →
               </Link>
             </div>
@@ -187,14 +190,15 @@ function Index() {
         </section>
 
         {usage && !entitlements?.isPlus ? (
-          <div className="mt-5 rounded-[14px] border border-line bg-white px-4 py-3">
-            <p className="text-[12.5px] text-ink-soft">
-              {usage}{" "}
-              <Link to="/upgrade" className="font-semibold text-teal">
-                View plan & billing →
-              </Link>
-            </p>
-          </div>
+          <Link
+            to="/upgrade"
+            className="mt-5 flex min-h-[52px] items-center justify-between gap-3 rounded-[14px] border border-line bg-white px-4 transition-colors active:bg-paper-2"
+          >
+            <span className="text-[12.5px] text-ink-soft">{usage}</span>
+            <span className="shrink-0 text-[12.5px] font-semibold text-teal">
+              Plan & billing →
+            </span>
+          </Link>
         ) : null}
       </div>
 
