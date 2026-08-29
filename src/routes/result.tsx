@@ -186,13 +186,15 @@ function ResultBody({ result }: { result: DocumentResult }) {
         where: null,
         optional: action.priority !== "HIGH",
       }));
+  const requiredItems = guide?.requiredItems ?? [];
+  const guidanceSources = guide?.guidanceSources ?? [];
 
   return (
     <div className="space-y-3">
       <section className="rounded-[18px] border border-line bg-white p-4 shadow-[0_1px_0_rgba(31,42,36,0.03)]">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <SectionLabel>In plain English</SectionLabel>
+            <SectionLabel>What this is</SectionLabel>
             <h2 className="mt-2 font-display text-[23px] font-semibold leading-[1.15] text-ink">
               {mainTitle}
             </h2>
@@ -208,13 +210,18 @@ function ResultBody({ result }: { result: DocumentResult }) {
           {mainMeaning}
         </p>
 
-        {guide?.sourceGap ? (
-          <div className="mt-4 rounded-[12px] bg-paper px-3 py-3">
-            <p className="text-[12.5px] font-semibold text-ink">What this letter does not tell you</p>
-            <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">{guide.sourceGap}</p>
+        {guide?.context ? (
+          <div className="mt-3 rounded-[12px] bg-teal-dim px-3 py-2.5">
+            <p className="text-[12px] font-semibold leading-relaxed text-ink">{guide.context}</p>
           </div>
         ) : null}
       </section>
+
+      {guide?.whatSarsWants ? (
+        <BlockCard title="What SARS wants" className="!rounded-[18px] !p-4">
+          <p className="text-[13px] leading-relaxed text-ink">{guide.whatSarsWants}</p>
+        </BlockCard>
+      ) : null}
 
       {steps.length > 0 ? (
         <BlockCard title="Do this next" className="!rounded-[18px] !p-4">
@@ -249,8 +256,35 @@ function ResultBody({ result }: { result: DocumentResult }) {
         </BlockCard>
       ) : null}
 
+      {requiredItems.length > 0 ? (
+        <BlockCard title="What you need" className="!rounded-[18px] !p-4">
+          <div className="space-y-3">
+            {requiredItems.map((item) => (
+              <div key={item.id} className="rounded-[14px] bg-paper px-3 py-3">
+                <p className="text-[13.5px] font-semibold text-ink">{item.name}</p>
+                {item.whatItIs ? (
+                  <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">{item.whatItIs}</p>
+                ) : null}
+                {item.whereToGet ? (
+                  <div className="mt-2 border-t border-line/70 pt-2">
+                    <p className="font-mono text-[9px] font-bold uppercase tracking-[0.07em] text-teal">
+                      Where to get it
+                    </p>
+                    <p className="mt-1 text-[11.5px] leading-relaxed text-ink">{item.whereToGet}</p>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </BlockCard>
+      ) : guide?.sourceGap ? (
+        <BlockCard title="What you still need to check" className="!rounded-[18px] !p-4">
+          <p className="text-[13px] leading-relaxed text-ink">{guide.sourceGap}</p>
+        </BlockCard>
+      ) : null}
+
       {guide?.whereToGo ? (
-        <BlockCard title="Where to go" className="!rounded-[18px] !p-4">
+        <BlockCard title="Where to submit / respond" className="!rounded-[18px] !p-4">
           <div className="flex gap-3">
             <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-teal" aria-hidden="true" />
             <p className="text-[13px] leading-relaxed text-ink">{guide.whereToGo}</p>
@@ -371,6 +405,7 @@ function ResultBody({ result }: { result: DocumentResult }) {
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-stamp-amber" aria-hidden="true" />
                     <div>
                       <p className="font-medium text-ink">{flag.flag}</p>
+                      <p className="mt-1">{flag.explanation}</p>
                       {flag.legalBasis ? <p className="mt-1 text-[10px]">{flag.legalBasis}</p> : null}
                     </div>
                   </div>
@@ -391,6 +426,25 @@ function ResultBody({ result }: { result: DocumentResult }) {
                     </p>
                   ) : null}
                 </div>
+              </div>
+            </div>
+          ) : null}
+
+          {guidanceSources.length > 0 ? (
+            <div className="border-t border-dashed border-line pt-4">
+              <p className="font-semibold text-ink">SARS guidance used</p>
+              <div className="mt-2 space-y-2">
+                {guidanceSources.map((source) => (
+                  <a
+                    key={source.id}
+                    href={source.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block text-teal underline decoration-teal/30 underline-offset-2"
+                  >
+                    {source.title}
+                  </a>
+                ))}
               </div>
             </div>
           ) : null}
@@ -416,3 +470,4 @@ function ResultBody({ result }: { result: DocumentResult }) {
     </div>
   );
 }
+

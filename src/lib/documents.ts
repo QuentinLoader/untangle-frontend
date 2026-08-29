@@ -342,16 +342,32 @@ export type DocumentResult = {
   humanGuide?: {
     whatThisIs: string;
     whatItMeans: string;
+    context?: string | null;
+    whatSarsWants?: string | null;
     nextSteps: Array<{
       id: string;
       title: string;
       detail: string | null;
       where: string | null;
       optional: boolean;
+      sourceKind?: "LETTER" | "SARS_GUIDANCE" | "UNTANGLE_EXPLANATION";
+    }>;
+    requiredItems?: Array<{
+      id: string;
+      name: string;
+      whatItIs: string | null;
+      whereToGet: string | null;
+      sourceKind: "LETTER" | "SARS_GUIDANCE" | "UNTANGLE_EXPLANATION";
     }>;
     whereToGo: string | null;
     deadline: string;
     sourceGap: string | null;
+    guidanceSources?: Array<{
+      id: string;
+      title: string;
+      url: string;
+      checkedOn: string;
+    }>;
   };
   requiredActions: Array<{
     id: string;
