@@ -117,7 +117,7 @@ function Index() {
         <section className="mt-6">
           <button
             type="button"
-            onClick={() => navigate({ to: "/upload" })}
+            onClick={() => navigate({ to: "/upload", search: {} })}
             className="flex w-full items-center gap-3 rounded-[16px] bg-ink px-4 py-4 text-left text-paper shadow-sm transition-transform active:scale-[0.99]"
           >
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-white/10">

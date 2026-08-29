@@ -24,12 +24,13 @@ import {
   type PendingDocumentUpload,
 } from "@/lib/documents";
 
-type UploadSearch = { solution: string | undefined };
+type UploadSearch = { solution?: string };
 
 export const Route = createFileRoute("/upload")({
-  validateSearch: (search: Record<string, unknown>): UploadSearch => ({
-    solution: typeof search["solution"] === "string" ? search["solution"] : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): UploadSearch => {
+    const solution = typeof search["solution"] === "string" ? search["solution"] : undefined;
+    return solution ? { solution } : {};
+  },
   head: () => ({
     meta: [
       { title: "New document — Untangle" },
