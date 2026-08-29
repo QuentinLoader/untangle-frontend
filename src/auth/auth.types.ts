@@ -23,7 +23,9 @@ export type AuthContextValue = {
   signUpWithPassword: (
     email: string,
     password: string,
+    displayName?: string,
   ) => Promise<{ needsEmailConfirmation: boolean }>;
+  updateDisplayName: (displayName: string) => Promise<void>;
   signInWithPassword: (email: string, password: string) => Promise<void>;
   signInWithMagicLink: (email: string) => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
