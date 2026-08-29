@@ -194,12 +194,21 @@ function Processing() {
 
               <div className="mt-8 w-full max-w-[260px] space-y-4">
                 {STEPS.map((step) => {
-                  const stepIndex = Math.max(...step.statuses.map((s) => order.indexOf(s)));
+                  const indices = step.statuses.map((s) => order.indexOf(s));
+                  const stepIndex = Math.max(...indices);
+                  const stepMinIndex = Math.min(...indices);
+                  const done = currentIndex > stepIndex && currentIndex >= 0;
+                  const active =
+                    !done &&
+                    currentIndex >= stepMinIndex &&
+                    currentIndex <= stepIndex &&
+                    currentIndex >= 0;
                   return (
                     <StepRow
                       key={step.label}
                       label={step.label}
-                      done={currentIndex > stepIndex && currentIndex >= 0}
+                      done={done}
+                      active={active}
                     />
                   );
                 })}
