@@ -54,8 +54,8 @@ export function SolutionCard({
     <Link
       to="/solutions/$slug"
       params={{ slug: solution.slug }}
-      className={`flex h-full flex-col rounded-[16px] border bg-white p-[14px] transition-colors ${
-        available ? "border-teal/40 hover:border-teal" : "border-line hover:bg-paper-2/50"
+      className={`flex h-full flex-col rounded-[16px] border bg-white p-[14px] transition-all active:scale-[0.98] ${
+        available ? "border-teal/40 hover:border-teal active:bg-teal-dim/30" : "border-line hover:bg-paper-2/50 active:bg-paper-2"
       }`}
     >
       <div

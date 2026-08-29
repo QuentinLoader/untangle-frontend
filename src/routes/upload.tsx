@@ -204,7 +204,7 @@ function Upload() {
         <header className="flex items-center gap-3 pt-7">
           <Link
             to="/"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper-2"
+            className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper-2 active:bg-paper-2"
             aria-label="Go back"
           >
             <span className="text-[19px]">←</span>
