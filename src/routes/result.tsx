@@ -154,6 +154,65 @@ function SectionLabel({ children }: { children: ReactNode }) {
   );
 }
 
+function friendlyTaxArea(result: DocumentResult): string {
+  const { taxType, taxonomyDocumentType, taxpayerType } = result.document;
+
+  if (taxonomyDocumentType === "sars_cit_verification_final_request" ||
+      taxonomyDocumentType === "sars_company_assessment_itr14") {
+    return "Company Income Tax (CIT)";
+  }
+
+  switch (taxType) {
+    case "income_tax":
+      return taxpayerType === "company" ? "Company Income Tax (CIT)" : "Income tax";
+    case "vat":
+      return "VAT";
+    case "paye":
+      return "PAYE";
+    case "provisional_tax":
+      return "Provisional tax";
+    case "customs_excise":
+      return "Customs & Excise";
+    default:
+      return "Other / not confirmed";
+  }
+}
+
+const WARNING_LABELS: Record<string, string> = {
+  RESPONSE_DUE_DATE: "response deadline",
+  SUBMISSION_DUE_DATE: "submission deadline",
+  PAYMENT_DUE_DATE: "payment deadline",
+  APPEAL_DUE_DATE: "appeal deadline",
+  OBJECTION_DUE_DATE: "objection deadline",
+  CORRECTION_DUE_DATE: "correction deadline",
+  APPEAL_PERIOD: "appeal period",
+  RESPONSE_PERIOD: "response period",
+  AMOUNT_DUE: "amount due",
+  ASSESSED_AMOUNT: "assessed amount",
+  REFUND_AMOUNT: "refund amount",
+  ACCOUNT_BALANCE: "account balance",
+  TAXPAYER_REFERENCE_NUMBER: "taxpayer reference number",
+  CASE_NUMBER: "SARS case number",
+  REQUESTED_ACTION: "requested action",
+  REQUESTED_DOCUMENTS: "requested documents",
+};
+
+function warningCopy(fieldKeys: string[]): string {
+  const labels = [...new Set(fieldKeys.map((key) => WARNING_LABELS[key] ?? key.replaceAll("_", " ").toLowerCase()))];
+  if (labels.length === 1) {
+    return `Untangle could not confidently confirm the ${labels[0]}. Compare it with the original document before relying on it.`;
+  }
+  if (labels.length > 1) {
+    return `Untangle could not confidently confirm: ${labels.slice(0, 3).join(", ")}. Compare these details with the original document before relying on them.`;
+  }
+  return "Some important wording was not clear enough to confirm automatically. Compare the action and dates with the original document.";
+}
+
+function sameMeaning(left: string, right: string): boolean {
+  const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return normalize(left) === normalize(right);
+}
+
 function ResultBody({ result }: { result: DocumentResult }) {
   const {
     summary,
@@ -169,10 +228,14 @@ function ResultBody({ result }: { result: DocumentResult }) {
   const materialWarnings = validationWarnings.filter((warning) =>
     MATERIAL_WARNING_FIELDS.has(warning.fieldKey.toUpperCase()),
   );
+  const mainWarnings = materialWarnings.filter((warning) => {
+    const key = warning.fieldKey.toUpperCase();
+    return key !== "TAXPAYER_REFERENCE_NUMBER" && key !== "CASE_NUMBER";
+  });
   const shouldShowCheck =
     document.confidence === "MEDIUM" ||
     document.confidence === "LOW" ||
-    materialWarnings.length > 0;
+    mainWarnings.length > 0;
   const hasExactReminder = result.reminderCandidates.length > 0;
 
   const mainTitle = guide?.whatThisIs ?? summary.headline;
@@ -188,6 +251,13 @@ function ResultBody({ result }: { result: DocumentResult }) {
       }));
   const requiredItems = guide?.requiredItems ?? [];
   const guidanceSources = guide?.guidanceSources ?? [];
+  const hasStepDestination = steps.some((step) => Boolean(step.where?.trim()));
+  const shouldShowProfessionalHelp =
+    result.escalation.recommended &&
+    (document.confidence === "LOW" ||
+      document.confidence === "MEDIUM" ||
+      summary.severity === "CRITICAL" ||
+      document.taxonomyDocumentType === "sars_customs_suspension_notice");
 
   return (
     <div className="space-y-3">
@@ -283,7 +353,7 @@ function ResultBody({ result }: { result: DocumentResult }) {
         </BlockCard>
       ) : null}
 
-      {guide?.whereToGo ? (
+      {guide?.whereToGo && !hasStepDestination ? (
         <BlockCard title="Where to submit / respond" className="!rounded-[18px] !p-4">
           <div className="flex gap-3">
             <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-teal" aria-hidden="true" />
@@ -336,7 +406,7 @@ function ResultBody({ result }: { result: DocumentResult }) {
               <p className="text-[12.5px] font-semibold text-ink">Check this detail before you act</p>
               <p className="mt-1 text-[11.5px] leading-relaxed text-ink-soft">
                 {materialWarnings.length > 0
-                  ? "Untangle could not confidently confirm an important date, amount, action or reference number. Compare that detail with the original document."
+                  ? warningCopy(mainWarnings.map((warning) => warning.fieldKey.toUpperCase()))
                   : "Some important wording was not clear enough to confirm automatically. Compare the action and dates with the original document."}
               </p>
             </div>
@@ -361,7 +431,7 @@ function ResultBody({ result }: { result: DocumentResult }) {
                 Issued {formatResultDate(document.issueDate)}
               </p>
             ) : null}
-            <p className="mt-1">Tax area: {document.taxType.replaceAll("_", " ")}</p>
+            <p className="mt-1">Tax area: {friendlyTaxArea(result)}</p>
           </div>
 
           {keyDates.length > 0 ? (
@@ -405,7 +475,9 @@ function ResultBody({ result }: { result: DocumentResult }) {
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-stamp-amber" aria-hidden="true" />
                     <div>
                       <p className="font-medium text-ink">{flag.flag}</p>
-                      <p className="mt-1">{flag.explanation}</p>
+                      {!sameMeaning(flag.flag, flag.explanation) ? (
+                        <p className="mt-1">{flag.explanation}</p>
+                      ) : null}
                       {flag.legalBasis ? <p className="mt-1 text-[10px]">{flag.legalBasis}</p> : null}
                     </div>
                   </div>
@@ -414,7 +486,7 @@ function ResultBody({ result }: { result: DocumentResult }) {
             </div>
           ) : null}
 
-          {result.escalation.recommended ? (
+          {shouldShowProfessionalHelp ? (
             <div className="border-t border-dashed border-line pt-4">
               <div className="flex gap-2.5">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />

@@ -21,7 +21,7 @@ function Reminders() {
       <div className="mx-auto w-full max-w-md">
         <h1 className="font-display text-[24px] font-semibold text-ink">Reminders</h1>
         <p className="mt-1 text-[13px] text-ink-soft">
-          A timeline of deadlines Untangle found in your documents.
+          Deadlines Untangle found and reminders you’ve added.
         </p>
         <ReminderTimeline from="reminders" />
       </div>

@@ -3,7 +3,7 @@ import { Bell, FolderArchive, Home, ScanLine, UserRound } from "lucide-react";
 
 const TABS = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/upload", label: "Analyze", icon: ScanLine },
+  { to: "/upload", label: "Analyse", icon: ScanLine },
   { to: "/vault", label: "Vault", icon: FolderArchive },
   { to: "/reminders", label: "Reminders", icon: Bell },
   { to: "/profile", label: "Account", icon: UserRound },

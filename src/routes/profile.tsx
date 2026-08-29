@@ -129,8 +129,7 @@ function Account() {
         <div className="mt-5 space-y-3">
           <BlockCard title="Account details">
             <Row label="Email" value={profile?.email ?? user?.email ?? "—"} />
-            <Row label="Name" value={profile?.displayName ?? "Not set"} />
-            <Row label="Account type" value={profile?.userType ?? "Individual"} />
+            {profile?.displayName?.trim() ? <Row label="Name" value={profile.displayName} /> : null}
           </BlockCard>
 
           <PlanSection />

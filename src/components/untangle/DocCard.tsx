@@ -25,7 +25,7 @@ export function DocCard({
         {icon}
       </div>
       <div className="min-w-0">
-        <h3 className="text-[14px] font-bold leading-snug text-ink">{title}</h3>
+        <h3 className="line-clamp-2 text-[14px] font-bold leading-snug text-ink">{title}</h3>
         <p className="mt-[3px] text-[12px] text-ink-soft">{subtitle}</p>
         {stampLabel ? (
           <div className="mt-2">
