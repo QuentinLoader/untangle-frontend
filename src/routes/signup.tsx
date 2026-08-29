@@ -29,6 +29,7 @@ function SignupPage() {
   const navigate = useNavigate();
   const { redirect } = Route.useSearch();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -46,6 +47,7 @@ function SignupPage() {
 
   const validate = () => {
     const next: Record<string, string> = {};
+    if (!name.trim()) next['name'] = "Tell us your name so we can greet you properly.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next['email'] = "Enter a valid email address.";
     if (password.length < 8) next['password'] = "Use at least 8 characters.";
     if (password !== confirm) next['confirm'] = "Passwords do not match.";
@@ -60,7 +62,7 @@ function SignupPage() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const { needsEmailConfirmation } = await signUpWithPassword(email.trim(), password);
+      const { needsEmailConfirmation } = await signUpWithPassword(email.trim(), password, name.trim());
       if (needsEmailConfirmation) setCheckEmail(true);
     } catch (err) {
       setError(friendlyAuthError(err));
@@ -90,6 +92,16 @@ function SignupPage() {
       <form onSubmit={onSubmit} className="space-y-4">
         {error ? <FormError message={error} /> : null}
 
+        <Field
+          id="name"
+          label="Your name"
+          type="text"
+          autoComplete="name"
+          placeholder="e.g. Quentin Loader"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          {...(errors['name'] ? { error: errors['name'] } : {})}
+        />
         <Field
           id="email"
           label="Email"
