@@ -16,13 +16,12 @@ export const Route = createFileRoute("/")({
       { title: "Untangle — Understand what to do next" },
       {
         name: "description",
-        content:
-          "Untangle explains official documents in plain English and tells you what to do next.",
+        content: "Untangle explains important documents in plain English and tells you what to do next.",
       },
       { property: "og:title", content: "Untangle — Understand what to do next" },
       {
         property: "og:description",
-        content: "Plain-English answers and practical next steps for official documents.",
+        content: "Understand the paperwork. Know what to do next.",
       },
     ],
   }),
@@ -75,9 +74,7 @@ function Index() {
         <header>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-teal">
-                Untangle
-              </p>
+              <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-teal">Untangle</p>
               <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight text-ink">
                 {greeting(new Date())}
                 {name ? `, ${name}` : ""}
@@ -91,7 +88,7 @@ function Index() {
             </Link>
           </div>
           <p className="mt-2 max-w-[340px] text-[14px] leading-relaxed text-ink-soft">
-            Upload the document. Untangle tells you what it means, what to do, where to go and by when.
+            Understand the paperwork. Know what to do next.
           </p>
         </header>
 
@@ -100,7 +97,9 @@ function Index() {
             <h2 className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-ink-soft">
               Your solutions
             </h2>
-            <p className="mt-1 text-[12.5px] text-ink-soft">Choose the problem you want Untangle to simplify.</p>
+            <p className="mt-1 text-[12.5px] text-ink-soft">
+              Choose what you need help understanding.
+            </p>
           </div>
 
           <div className="mt-3">
@@ -117,7 +116,7 @@ function Index() {
         <section className="mt-6">
           <button
             type="button"
-            onClick={() => navigate({ to: "/upload", search: {} })}
+            onClick={() => navigate({ to: "/upload" })}
             className="flex w-full items-center gap-3 rounded-[16px] bg-ink px-4 py-4 text-left text-paper shadow-sm transition-transform active:scale-[0.99]"
           >
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-white/10">
@@ -156,9 +155,7 @@ function Index() {
                     <span className="text-[16px]" aria-hidden>⏰</span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[14px] font-bold text-ink">{view.reminder.label}</span>
-                      <span className="block truncate text-[12px] text-ink-soft">
-                        {reminderDocumentTitle(view.reminder)}
-                      </span>
+                      <span className="block truncate text-[12px] text-ink-soft">{reminderDocumentTitle(view.reminder)}</span>
                     </span>
                     <span className="shrink-0 font-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-teal">
                       {view.statusLabel}
@@ -171,10 +168,7 @@ function Index() {
         ) : null}
 
         <section className="mt-7">
-          <Link
-            to="/vault"
-            className="flex items-center gap-3 rounded-[14px] border border-line bg-white px-3.5 py-3"
-          >
+          <Link to="/vault" className="flex items-center gap-3 rounded-[14px] border border-line bg-white px-3.5 py-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-teal-dim text-teal">
               <FolderOpen size={18} aria-hidden />
             </span>
@@ -190,9 +184,7 @@ function Index() {
           <div className="mt-5 rounded-[14px] border border-line bg-white px-4 py-3">
             <p className="text-[12.5px] text-ink-soft">
               {usage}{" "}
-              <Link to="/upgrade" className="font-semibold text-teal">
-                View plan & billing →
-              </Link>
+              <Link to="/upgrade" className="font-semibold text-teal">View plan & billing →</Link>
             </p>
           </div>
         ) : null}
