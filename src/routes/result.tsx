@@ -22,6 +22,8 @@ import {
   getDocumentResult,
   severityLabel,
   type DocumentResult,
+  type LeaseDocumentResult,
+  type TaxDocumentResult,
   type ResultSeverity,
 } from "@/lib/documents";
 import { parseResultOrigin, resultBackTarget, type ResultOrigin } from "@/lib/navigation";
@@ -40,15 +42,15 @@ export const Route = createFileRoute("/result")({
   },
   head: () => ({
     meta: [
-      { title: "TaxSnap result — Untangle" },
+      { title: "Document result — Untangle" },
       {
         name: "description",
-        content: "A plain-English answer that tells you what the SARS document means and what to do next.",
+        content: "A plain-English answer that tells you what the document means and what to do next.",
       },
-      { property: "og:title", content: "TaxSnap result — Untangle" },
+      { property: "og:title", content: "Document result — Untangle" },
       {
         property: "og:description",
-        content: "A plain-English answer that tells you what the SARS document means and what to do next.",
+        content: "A plain-English answer that tells you what the document means and what to do next.",
       },
     ],
   }),
@@ -110,7 +112,7 @@ function Result() {
               Result
             </p>
             <h1 className="truncate font-display text-[17px] font-semibold text-ink">
-              {result?.document.moduleDisplayName ?? "TaxSnap"}
+              {result?.document.moduleDisplayName ?? "Result"}
             </h1>
           </div>
         </div>
@@ -154,7 +156,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
   );
 }
 
-function friendlyTaxArea(result: DocumentResult): string {
+function friendlyTaxArea(result: TaxDocumentResult): string {
   const { taxType, taxonomyDocumentType, taxpayerType } = result.document;
 
   if (taxonomyDocumentType === "sars_cit_verification_final_request" ||
@@ -214,6 +216,215 @@ function sameMeaning(left: string, right: string): boolean {
 }
 
 function ResultBody({ result }: { result: DocumentResult }) {
+  if (result.document.module === "LEASE") {
+    return <LeaseResultBody result={result} />;
+  }
+
+  return <TaxResultBody result={result} />;
+}
+
+function ClauseSeverity({ severity }: { severity: "LOW" | "MEDIUM" | "HIGH" }) {
+  const label = severity === "HIGH" ? "Needs attention" : severity === "MEDIUM" ? "Check this" : "Note";
+  return (
+    <span className="rounded-full border border-line bg-paper px-2 py-1 font-mono text-[8.5px] font-bold uppercase tracking-[0.06em] text-ink-soft">
+      {label}
+    </span>
+  );
+}
+
+function LeaseResultBody({ result }: { result: LeaseDocumentResult }) {
+  const { summary, document, humanGuide, yourRights } = result;
+  const hasResponsibilities =
+    humanGuide.tenantResponsibilities.length > 0 || humanGuide.landlordResponsibilities.length > 0;
+
+  return (
+    <div className="space-y-3">
+      <section className="rounded-[18px] border border-line bg-white p-4 shadow-[0_1px_0_rgba(31,42,36,0.03)]">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <SectionLabel>What this is</SectionLabel>
+            <h2 className="mt-2 font-display text-[23px] font-semibold leading-[1.15] text-ink">
+              {humanGuide.whatThisIs || summary.headline}
+            </h2>
+          </div>
+          <StampBadge
+            label={severityLabel(summary.severity)}
+            color={SEVERITY_COLOR[summary.severity]}
+            className="mt-1 shrink-0 rotate-[-4deg]"
+          />
+        </div>
+        <p className="mt-3 whitespace-pre-line text-[14px] leading-[1.6] text-ink-soft">
+          {summary.plainEnglish}
+        </p>
+        {document.confidence === "MEDIUM" || document.confidence === "LOW" ? (
+          <div className="mt-3 rounded-[12px] bg-amber-50 px-3 py-2.5 text-[12px] leading-relaxed text-ink">
+            Compare important money, dates and notice wording with the original lease before relying on it.
+          </div>
+        ) : null}
+      </section>
+
+      <BlockCard title="What you are agreeing to" className="!rounded-[18px] !p-4">
+        <p className="text-[13px] leading-relaxed text-ink">{humanGuide.whatYouAreAgreeingTo}</p>
+      </BlockCard>
+
+      {humanGuide.importantMoney.length > 0 ? (
+        <BlockCard title="Important money" className="!rounded-[18px] !p-4">
+          <div className="space-y-2.5">
+            {humanGuide.importantMoney.map((item) => (
+              <div key={item.id} className="flex items-start justify-between gap-4 rounded-[12px] bg-paper px-3 py-2.5">
+                <span className="text-[12px] text-ink-soft">{item.label}</span>
+                <span className="text-right text-[13px] font-semibold text-ink">{item.value}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[10.5px] leading-relaxed text-ink-soft">These figures come from the lease wording; LeaseCheck does not fill in missing amounts.</p>
+        </BlockCard>
+      ) : null}
+
+      {humanGuide.importantDates.length > 0 ? (
+        <BlockCard title="Important dates" className="!rounded-[18px] !p-4">
+          <div className="space-y-2.5">
+            {humanGuide.importantDates.map((item) => (
+              <div key={item.id} className="flex items-start justify-between gap-4 rounded-[12px] bg-paper px-3 py-2.5">
+                <span className="text-[12px] text-ink-soft">{item.label}</span>
+                <span className="text-right text-[13px] font-semibold text-ink">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </BlockCard>
+      ) : null}
+
+      {hasResponsibilities ? (
+        <BlockCard title="Responsibilities in this lease" className="!rounded-[18px] !p-4">
+          {humanGuide.tenantResponsibilities.length > 0 ? (
+            <div>
+              <p className="text-[12px] font-semibold text-ink">Tenant</p>
+              <ul className="mt-2 space-y-2">
+                {humanGuide.tenantResponsibilities.map((item) => (
+                  <li key={item} className="flex gap-2 text-[12px] leading-relaxed text-ink-soft">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {humanGuide.landlordResponsibilities.length > 0 ? (
+            <div className={humanGuide.tenantResponsibilities.length > 0 ? "mt-4 border-t border-line pt-4" : ""}>
+              <p className="text-[12px] font-semibold text-ink">Landlord</p>
+              <ul className="mt-2 space-y-2">
+                {humanGuide.landlordResponsibilities.map((item) => (
+                  <li key={item} className="flex gap-2 text-[12px] leading-relaxed text-ink-soft">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          <p className="mt-3 text-[10.5px] leading-relaxed text-ink-soft">LeaseCheck only assigns a responsibility when the accepted lease wording does.</p>
+        </BlockCard>
+      ) : null}
+
+      {humanGuide.clausesToCheck.length > 0 ? (
+        <BlockCard title="Clauses to pay attention to" className="!rounded-[18px] !p-4">
+          <div className="space-y-3">
+            {humanGuide.clausesToCheck.map((flag) => (
+              <div key={flag.id} className="rounded-[14px] border border-line bg-paper px-3 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[13px] font-semibold leading-snug text-ink">{flag.title}</p>
+                  <ClauseSeverity severity={flag.severity} />
+                </div>
+                <p className="mt-2 text-[12px] leading-relaxed text-ink-soft">{flag.explanation}</p>
+                {flag.leaseText ? (
+                  <div className="mt-2 rounded-[10px] bg-white px-3 py-2 text-[11px] leading-relaxed text-ink">
+                    <span className="font-semibold">Your lease says: </span>{flag.leaseText}
+                  </div>
+                ) : null}
+                {flag.legalBasis ? (
+                  <p className="mt-2 text-[10.5px] leading-relaxed text-ink-soft">General legal context: {flag.legalBasis}</p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </BlockCard>
+      ) : null}
+
+      {humanGuide.nextSteps.length > 0 ? (
+        <BlockCard title="Do this next" className="!rounded-[18px] !p-4">
+          <div className="space-y-3">
+            {humanGuide.nextSteps.map((step, index) => (
+              <div key={step.id} className="flex gap-3 rounded-[14px] bg-paper px-3 py-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal text-[12px] font-bold text-white">{index + 1}</div>
+                <div className="min-w-0 pt-0.5">
+                  <p className="text-[13.5px] font-semibold leading-snug text-ink">{step.title}</p>
+                  {step.detail ? <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">{step.detail}</p> : null}
+                  <p className="mt-1 font-mono text-[8.5px] font-bold uppercase tracking-[0.06em] text-teal">
+                    {step.sourceKind === "LEASE" ? "Your lease says" : step.sourceKind === "LAW_GENERAL" ? "General legal guidance" : "Untangle explanation"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </BlockCard>
+      ) : null}
+
+      {yourRights.length > 0 ? (
+        <BlockCard title="General protections that may matter" className="!rounded-[18px] !p-4">
+          <div className="space-y-3">
+            {yourRights.map((right) => (
+              <div key={right.id} className="flex gap-3">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal" aria-hidden="true" />
+                <div>
+                  <p className="text-[13px] font-semibold text-ink">{right.title}</p>
+                  <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">{right.explanation}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </BlockCard>
+      ) : null}
+
+      {humanGuide.whereToGetHelp ? (
+        <BlockCard title="Where to get help" className="!rounded-[18px] !p-4">
+          <p className="text-[13px] leading-relaxed text-ink">{humanGuide.whereToGetHelp}</p>
+        </BlockCard>
+      ) : null}
+
+      {(humanGuide.legalNotes.length > 0 || humanGuide.guidanceSources.length > 0) ? (
+        <details className="rounded-[18px] border border-line bg-white p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[13px] font-semibold text-ink">
+            More details
+            <ChevronDown className="h-4 w-4 text-ink-soft" aria-hidden="true" />
+          </summary>
+          {humanGuide.legalNotes.length > 0 ? (
+            <div className="mt-3 space-y-2">
+              {humanGuide.legalNotes.map((note) => <p key={note} className="text-[11.5px] leading-relaxed text-ink-soft">{note}</p>)}
+            </div>
+          ) : null}
+          {humanGuide.guidanceSources.length > 0 ? (
+            <div className="mt-4 border-t border-line pt-3">
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.07em] text-teal">Sources checked</p>
+              <div className="mt-2 space-y-2">
+                {humanGuide.guidanceSources.map((source) => (
+                  <a key={source.id} href={source.url} target="_blank" rel="noreferrer" className="block text-[11.5px] font-medium leading-relaxed text-teal underline-offset-2 hover:underline">
+                    {source.title}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </details>
+      ) : null}
+
+      <div className="mt-5 border-t border-dashed border-line pt-4 pb-2">
+        <p className="text-[10px] leading-relaxed text-ink-soft">{result.disclaimer.wording}</p>
+      </div>
+    </div>
+  );
+}
+
+function TaxResultBody({ result }: { result: TaxDocumentResult }) {
   const {
     summary,
     document,

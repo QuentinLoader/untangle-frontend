@@ -320,12 +320,12 @@ export function processingCopy(status: DocumentProcessingStatus) {
 
 export type ResultSeverity = "INFO" | "ACTION_NEEDED" | "URGENT" | "CRITICAL";
 
-export type DocumentResult = {
+export type TaxDocumentResult = {
   version: string;
   document: {
     id: string;
-    module: string;
-    moduleDisplayName: string;
+    module: "TAX";
+    moduleDisplayName: "TaxSnap" | string;
     detectedDocumentType: string | null;
     taxonomyDocumentType: string;
     documentTitle: string | null;
@@ -437,6 +437,73 @@ export type DocumentResult = {
   }>;
   completedAt: string;
 };
+
+export type LeaseDocumentResult = {
+  version: "leasecheck-result-v1" | string;
+  document: {
+    module: "LEASE";
+    moduleDisplayName: "LeaseCheck" | string;
+    detectedDocumentType: string | null;
+    taxonomyDocumentType: string;
+    documentTitle: string | null;
+    confidence: "HIGH" | "MEDIUM" | "LOW" | null;
+  };
+  summary: {
+    headline: string;
+    plainEnglish: string;
+    severity: Exclude<ResultSeverity, "CRITICAL">;
+  };
+  humanGuide: {
+    whatThisIs: string;
+    whatYouAreAgreeingTo: string;
+    importantMoney: Array<{
+      id: string;
+      label: string;
+      value: string;
+      sourceKind: "LEASE";
+    }>;
+    importantDates: Array<{
+      id: string;
+      label: string;
+      value: string;
+      sourceKind: "LEASE";
+    }>;
+    tenantResponsibilities: string[];
+    landlordResponsibilities: string[];
+    clausesToCheck: Array<{
+      id: string;
+      title: string;
+      severity: "LOW" | "MEDIUM" | "HIGH";
+      explanation: string;
+      leaseText: string | null;
+      legalBasis: string | null;
+      sourceIds: string[];
+    }>;
+    nextSteps: Array<{
+      id: string;
+      title: string;
+      detail: string | null;
+      sourceKind: "LEASE" | "LAW_GENERAL" | "UNTANGLE_EXPLANATION";
+    }>;
+    whereToGetHelp: string | null;
+    legalNotes: string[];
+    guidanceSources: Array<{
+      id: string;
+      title: string;
+      url: string;
+      checkedOn: string;
+    }>;
+  };
+  yourRights: Array<{
+    id: string;
+    title: string;
+    explanation: string;
+    sourceIds: string[];
+  }>;
+  disclaimer: { wording: string };
+};
+
+export type DocumentResult = TaxDocumentResult | LeaseDocumentResult;
 
 export type GetDocumentResultResponse = {
   success: true;
