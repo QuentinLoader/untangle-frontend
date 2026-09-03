@@ -453,6 +453,12 @@ export type LeaseDocumentResult = {
     plainEnglish: string;
     severity: Exclude<ResultSeverity, "CRITICAL">;
   };
+  validationWarnings?: Array<{
+    fieldKey: string;
+    code: string;
+    message: string;
+    userAction: "CHECK_AGAINST_ORIGINAL";
+  }>;
   humanGuide: {
     whatThisIs: string;
     whatYouAreAgreeingTo: string;
