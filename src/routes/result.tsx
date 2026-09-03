@@ -232,8 +232,56 @@ function ClauseSeverity({ severity }: { severity: "LOW" | "MEDIUM" | "HIGH" }) {
   );
 }
 
+const LEASE_WARNING_LABELS: Record<string, string> = {
+  PROPERTY_ADDRESS: "property address",
+  RENT_AMOUNT: "rent amount",
+  DEPOSIT_AMOUNT: "deposit amount",
+  LEASE_START_DATE: "lease start date",
+  LEASE_END_DATE: "lease end date",
+  START_DATE: "start date",
+  END_DATE: "end date",
+  NOTICE_PERIOD: "notice period",
+  RENT_ESCALATION: "rent escalation",
+  ESCALATION_CLAUSE: "rent escalation clause",
+  MAINTENANCE_RESPONSIBILITY: "maintenance responsibility",
+  MAINTENANCE_CLAUSE: "maintenance clause",
+  LANDLORD_ACCESS: "landlord access term",
+  ACCESS_CLAUSE: "access clause",
+  EARLY_TERMINATION: "early termination term",
+  TERMINATION_CLAUSE: "termination clause",
+  OCCUPATION_DATE: "occupation date",
+};
+
+function leaseWarningFieldLabel(fieldKey: string): string {
+  return fieldKey
+    .split("/")
+    .map((part) => {
+      const key = part.trim().toUpperCase();
+      return LEASE_WARNING_LABELS[key] ?? key.replaceAll("_", " ").toLowerCase();
+    })
+    .join(" and ");
+}
+
+function leaseWarningCopy(
+  warning: NonNullable<LeaseDocumentResult["validationWarnings"]>[number],
+): string {
+  const label = leaseWarningFieldLabel(warning.fieldKey);
+
+  switch (warning.code) {
+    case "LOW_CONFIDENCE_IMPORTANT_TERM":
+      return `LeaseCheck could not confidently confirm the ${label}.`;
+    case "IMPORTANT_TERM_MISSING_SOURCE_ANCHOR":
+      return `LeaseCheck found the ${label}, but could not retain the exact source wording for it.`;
+    case "IMPOSSIBLE_DATE_ORDER":
+      return `The ${label} appear to be in an impossible order. LeaseCheck has kept the extracted dates unchanged.`;
+    default:
+      return warning.message || `Check the ${label} against the original lease before relying on it.`;
+  }
+}
+
 function LeaseResultBody({ result }: { result: LeaseDocumentResult }) {
   const { summary, document, humanGuide, yourRights } = result;
+  const validationWarnings = result.validationWarnings ?? [];
   const hasResponsibilities =
     humanGuide.tenantResponsibilities.length > 0 || humanGuide.landlordResponsibilities.length > 0;
 
@@ -256,13 +304,46 @@ function LeaseResultBody({ result }: { result: LeaseDocumentResult }) {
         <p className="mt-3 whitespace-pre-line text-[14px] leading-[1.6] text-ink-soft">
           {summary.plainEnglish}
         </p>
-        {document.confidence === "MEDIUM" || document.confidence === "LOW" ? (
+        {validationWarnings.length === 0 &&
+        (document.confidence === "MEDIUM" || document.confidence === "LOW") ? (
           <div className="mt-3 rounded-[12px] bg-amber-50 px-3 py-2.5 text-[12px] leading-relaxed text-ink">
             Compare important money, dates and notice wording with the original lease before relying on it.
           </div>
         ) : null}
       </section>
 
+      {validationWarnings.length > 0 ? (
+        <div
+          className="rounded-[16px] border border-stamp-amber/35 bg-tint-sand p-4"
+          role="alert"
+        >
+          <div className="flex gap-3">
+            <AlertTriangle
+              className="mt-0.5 h-5 w-5 shrink-0 text-stamp-amber"
+              aria-hidden="true"
+            />
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-ink">
+                Check against the original
+              </p>
+              <p className="mt-1 text-[11.5px] leading-relaxed text-ink-soft">
+                Some important lease terms need you to compare them with the original before relying on them. LeaseCheck has not changed the extracted facts.
+              </p>
+              <ul className="mt-2.5 space-y-1.5">
+                {validationWarnings.map((warning, index) => (
+                  <li
+                    key={`${warning.code}-${warning.fieldKey}-${index}`}
+                    className="flex gap-2 text-[11.5px] leading-relaxed text-ink"
+                  >
+                    <span className="text-stamp-amber" aria-hidden="true">•</span>
+                    <span>{leaseWarningCopy(warning)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <BlockCard title="What you are agreeing to" className="!rounded-[18px] !p-4">
         <p className="text-[13px] leading-relaxed text-ink">{humanGuide.whatYouAreAgreeingTo}</p>
       </BlockCard>

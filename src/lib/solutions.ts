@@ -7,6 +7,9 @@
  */
 import type { DocumentModule } from "./documents";
 
+const LEASECHECK_AVAILABLE =
+  import.meta.env.VITE_LEASECHECK_AVAILABLE === "true";
+
 export type SolutionStatus = "AVAILABLE" | "COMING_SOON";
 
 export type Solution = {
@@ -64,11 +67,11 @@ export const SOLUTIONS: Solution[] = [
     headline: "Understand your residential lease",
     shortDescription:
       "See the important terms, costs and responsibilities before signing — or understand your options when there is a dispute.",
-    status: "COMING_SOON",
-    operational: false,
+    status: LEASECHECK_AVAILABLE ? "AVAILABLE" : "COMING_SOON",
+    operational: LEASECHECK_AVAILABLE,
     icon: "🏠",
     tint: "var(--teal-dim)",
-    moduleKey: null,
+    moduleKey: LEASECHECK_AVAILABLE ? "LEASE" : null,
     tags: ["Deposits", "Rent increases", "Maintenance"],
     helps: [
       "Understand deposits, rent, escalation clauses and notice periods.",
