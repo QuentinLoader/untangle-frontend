@@ -84,14 +84,15 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function LandingPage({ signedInHome = "/" }: { signedInHome?: "/" }) {
+export function LandingPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
-  // Signed-in visitors go straight to their Home (no-op when already rendered at "/").
+  // Signed-in visitors go straight to their Home. (At "/" the gate shows Home
+  // instead, so this only fires on /landing.)
   useEffect(() => {
-    if (!loading && session && signedInHome !== "/") navigate({ to: "/", replace: true });
-  }, [loading, session, navigate, signedInHome]);
+    if (!loading && session) navigate({ to: "/", replace: true });
+  }, [loading, session, navigate]);
 
   const toUpload = () => navigate({ to: "/upload", search: {} });
   const scrollToHow = () =>
