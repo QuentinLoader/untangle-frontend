@@ -99,9 +99,10 @@ export function LandingPage() {
   useEffect(() => {
     const el = document.getElementById("final-cta");
     if (!el || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(([entry]) => setFinalCtaVisible(entry.isIntersecting), {
-      rootMargin: "0px 0px -80px 0px",
-    });
+    const observer = new IntersectionObserver(
+      (entries) => setFinalCtaVisible(entries[0]?.isIntersecting ?? false),
+      { rootMargin: "0px 0px -80px 0px" },
+    );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
