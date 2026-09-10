@@ -30,7 +30,7 @@ export const Route = createFileRoute("/landing")({
     ],
     links: [{ rel: "canonical", href: "/landing" }],
   }),
-  component: Landing,
+  component: LandingPage,
 });
 
 const STEPS = [
