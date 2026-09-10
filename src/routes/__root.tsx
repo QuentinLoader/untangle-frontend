@@ -84,7 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Upload a SARS letter, lease, purchase agreement or job offer and get a plain-English explanation with deadline reminders.",
+          "Upload a South African tax letter, residential lease, insurance policy or employment document and get a plain-English explanation with deadline reminders.",
       },
       { property: "og:site_name", content: "Untangle" },
       { property: "og:type", content: "website" },
