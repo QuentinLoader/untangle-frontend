@@ -1,6 +1,7 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { FileQuestion, FileText, Globe, Search } from "lucide-react";
 import {
   getDocumentStatus,
   friendlyDocumentError,
@@ -34,6 +35,7 @@ const STEPS: { label: string; statuses: DocumentProcessingStatus[] }[] = [
   { label: "Identifying important information", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
   { label: "Analysing terms", statuses: ["EXTRACTING"] },
   { label: "Checking important risks and actions", statuses: ["VALIDATING_RESULT", "MATCHING_RULES"] },
+  { label: "Preparing your results", statuses: ["COMPLETED"] },
 ];
 
 /** Number of consecutive polling failures tolerated before surfacing an error. */
@@ -117,7 +119,7 @@ function Processing() {
     <div className="flex min-h-screen flex-col bg-paper">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-7">
         <header className="flex items-center justify-center pt-2">
-          <h1 className="font-display text-[17px] font-semibold text-ink">Reading your document</h1>
+          <h1 className="font-display text-[17px] font-semibold text-ink">Analysing your document</h1>
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center pb-16">
@@ -212,8 +214,8 @@ function NeedsReviewState({
     case "DOCUMENT_NOT_SUPPORTED":
       return (
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-[28px]">
-            📄
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-stamp-amber">
+            <FileText size={26} strokeWidth={1.8} aria-hidden />
           </div>
           <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
             This document isn't supported yet
@@ -238,8 +240,8 @@ function NeedsReviewState({
     case "MODULE_NOT_ACTIVE":
       return (
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-teal/10 text-[28px]">
-            🔍
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-teal/10 text-teal">
+            <Search size={26} strokeWidth={1.8} aria-hidden />
           </div>
           <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
             We recognised this document
@@ -257,8 +259,8 @@ function NeedsReviewState({
     case "JURISDICTION_NOT_SUPPORTED":
       return (
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-[28px]">
-            🌍
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-stamp-amber">
+            <Globe size={26} strokeWidth={1.8} aria-hidden />
           </div>
           <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
             This document is outside the current TaxSnap scope
@@ -276,8 +278,8 @@ function NeedsReviewState({
     case "MODULE_DETECTION_LOW_CONFIDENCE":
       return (
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-[28px]">
-            ❓
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-stamp-amber">
+            <FileQuestion size={26} strokeWidth={1.8} aria-hidden />
           </div>
           <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
             We couldn't identify this document confidently
@@ -295,8 +297,8 @@ function NeedsReviewState({
     default:
       return (
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-[28px]">
-            📄
+          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-stamp-amber">
+            <FileText size={26} strokeWidth={1.8} aria-hidden />
           </div>
           <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
             This one needs a closer look
