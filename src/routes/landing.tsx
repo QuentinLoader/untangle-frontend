@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/auth/useAuth";
 import { Check } from "lucide-react";
 import { BrandMark } from "@/components/untangle/BrandMark";
 import welcomeImage from "@/assets/welcome-mountains.jpg";
