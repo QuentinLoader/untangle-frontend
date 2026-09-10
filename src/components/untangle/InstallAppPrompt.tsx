@@ -23,7 +23,11 @@ export function InstallAppPrompt() {
   const [isIos, setIsIos] = useState(false);
 
   useEffect(() => {
-    if (window.localStorage.getItem(DISMISS_KEY) === "1" || isInstalled()) return;
+    try {
+      if (window.localStorage.getItem(DISMISS_KEY) === "1" || isInstalled()) return;
+    } catch {
+      if (isInstalled()) return;
+    }
 
     const userAgent = window.navigator.userAgent;
     const iosDevice = /iPad|iPhone|iPod/.test(userAgent) && !("MSStream" in window);
@@ -82,14 +86,15 @@ export function InstallAppPrompt() {
               Screen.
             </p>
           ) : (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => void install()}
-              className="mt-0.5 inline-flex min-h-[28px] items-center gap-1 text-[12px] font-semibold text-teal"
+              className="mt-0.5 h-auto min-h-[28px] justify-start gap-1 rounded-none p-0 text-[12px] font-semibold text-teal hover:bg-transparent hover:text-teal"
             >
               <Download className="h-3.5 w-3.5" aria-hidden />
               Add to phone
-            </button>
+            </Button>
           )}
         </div>
         <Button
