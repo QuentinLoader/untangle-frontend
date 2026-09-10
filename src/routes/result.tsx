@@ -209,6 +209,19 @@ function NextSectionButton({ label, onClick }: { label: string; onClick: () => v
   );
 }
 
+function AskQuestionButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-[15px] font-semibold text-ink transition-colors active:bg-paper-2"
+    >
+      <MessageSquare size={17} aria-hidden />
+      Ask a question
+    </button>
+  );
+}
+
 function Disclaimer({ wording }: { wording: string }) {
   return <p className="px-1 pt-2 text-[10.5px] leading-relaxed text-ink-soft">{wording}</p>;
 }
