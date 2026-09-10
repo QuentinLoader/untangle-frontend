@@ -135,19 +135,12 @@ function Processing() {
             />
           ) : (
             <>
-              <div className="w-full max-w-[320px]">
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-paper-2">
-                  <div
-                    className="h-full rounded-full bg-teal transition-all duration-700"
-                    style={{
-                      width: backendFailed
-                        ? "100%"
-                        : `${Math.max(8, ((currentIndex + 1) / order.length) * 100)}%`,
-                    }}
-                    aria-hidden
-                  />
-                </div>
-              </div>
+              <ProgressRing
+                percent={
+                  backendFailed ? 100 : Math.max(8, ((currentIndex + 1) / order.length) * 100)
+                }
+              />
+
 
               <h2
                 className="mt-7 text-center font-display text-[22px] font-semibold leading-snug text-ink"
