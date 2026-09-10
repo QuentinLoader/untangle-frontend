@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Apple, Leaf, Play, Share, SquarePlus } from "lucide-react";
+import { Leaf } from "lucide-react";
 import { useAuth } from "@/auth/useAuth";
 import welcomeImage from "@/assets/welcome-mountains.jpg";
 import { BlockCard } from "@/components/untangle/BlockCard";
@@ -79,44 +79,6 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
     <h2 className="font-display text-[24px] font-semibold leading-tight md:text-[30px]">
       {children}
     </h2>
-  );
-}
-
-function InstallCard({
-  platform,
-  icon,
-  steps,
-}: {
-  platform: string;
-  icon: React.ReactNode;
-  steps: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="rounded-2xl border border-line bg-white p-4">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex min-h-[48px] w-full items-center gap-3 text-left"
-      >
-        <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-xl bg-teal-dim text-teal">
-          {icon}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-semibold text-ink">{platform}</span>
-          <span className="block text-[12.5px] text-ink-soft">
-            {open ? "Hide install steps" : "Add to your home screen"}
-          </span>
-        </span>
-        <Leaf className="h-[18px] w-[18px] shrink-0 text-teal" aria-hidden />
-      </button>
-      {open && (
-        <ol className="mt-2 space-y-2 border-t border-line pt-3 text-[13.5px] leading-relaxed text-ink-soft">
-          {steps}
-        </ol>
-      )}
-    </div>
   );
 }
 
@@ -261,59 +223,6 @@ export function LandingPage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* GET THE APP */}
-      <section className="mx-auto max-w-3xl px-5 py-9">
-        <SectionHeading>Keep Untangle on your phone</SectionHeading>
-        <p className="mt-2 text-[14.5px] leading-relaxed text-ink-soft">
-          Untangle works in your browser — no app store needed. Add it to your home screen for
-          one-tap access.
-        </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <InstallCard
-            platform="Android"
-            icon={<Play className="h-[20px] w-[20px]" aria-hidden />}
-            steps={
-              <>
-                <li className="flex gap-2">
-                  <span className="font-semibold text-ink">1.</span>
-                  Open Untangle in Chrome.
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-semibold text-ink">2.</span>
-                  Tap the <span className="font-semibold text-ink">⋮ menu</span> (top right).
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-semibold text-ink">3.</span>
-                  Tap <span className="font-semibold text-ink">Add to Home screen</span>.
-                </li>
-              </>
-            }
-          />
-          <InstallCard
-            platform="iPhone & iPad"
-            icon={<Apple className="h-[20px] w-[20px]" aria-hidden />}
-            steps={
-              <>
-                <li className="flex gap-2">
-                  <span className="font-semibold text-ink">1.</span>
-                  Open Untangle in Safari.
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="font-semibold text-ink">2.</span>
-                  Tap the <Share className="inline h-[14px] w-[14px]" aria-hidden />
-                  <span className="font-semibold text-ink">Share</span> button.
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="font-semibold text-ink">3.</span>
-                  Tap <SquarePlus className="inline h-[14px] w-[14px]" aria-hidden />
-                  <span className="font-semibold text-ink">Add to Home Screen</span>.
-                </li>
-              </>
-            }
-          />
         </div>
       </section>
 
