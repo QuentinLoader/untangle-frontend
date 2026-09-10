@@ -105,28 +105,6 @@ export const SOLUTIONS: Solution[] = [
     groundedIn: ["Basic Conditions of Employment Act", "Labour Relations Act", "CCMA rules"],
   },
   {
-    slug: "debtcheck",
-    name: "DebtCheck",
-    tagline: "Debt letters & notices",
-    headline: "Understand a debt demand or notice",
-    shortDescription:
-      "Find out what the creditor or collector is asking for, what needs checking and what your practical options are.",
-    status: "COMING_SOON",
-    operational: false,
-    icon: "🧾",
-    tint: "var(--tint-sand)",
-    moduleKey: null,
-    tags: ["Demand letters", "Debt collectors", "Debt review"],
-    helps: [
-      "Explain what a demand, collector letter or debt-review document means.",
-      "Highlight dates and facts needed to assess whether prescription may be relevant.",
-      "Flag interest or balance issues that may need an in-duplum check.",
-      "Explain whether the document shows the next collection or court step and what to do next.",
-    ],
-    documentExamples: ["Letters of demand", "Debt collector correspondence", "EAO/garnishee notices", "Debt-review correspondence"],
-    groundedIn: ["National Credit Act", "Prescription Act", "Applicable debt-collection procedure"],
-  },
-  {
     slug: "policycheck",
     name: "PolicyCheck",
     tagline: "Insurance policies & claims",
@@ -148,28 +126,6 @@ export const SOLUTIONS: Solution[] = [
     documentExamples: ["Insurance policy wording", "Policy schedules", "Claim rejection or repudiation letters"],
     groundedIn: ["Policy wording", "FAIS framework", "Insurance conduct standards", "Relevant ombudsman rules"],
     scopeNote: "Initial release focus: insurance policies and insurance claim decisions. Retirement and investment product documents can follow later.",
-  },
-  {
-    slug: "aartocheck",
-    name: "AARTOCheck",
-    tagline: "Traffic infringement notices",
-    headline: "Understand a traffic infringement notice",
-    shortDescription:
-      "See what the notice means, what action it requires and the options and demerit-point consequences shown for the infringement.",
-    status: "COMING_SOON",
-    operational: false,
-    icon: "🚦",
-    tint: "var(--tint-red)",
-    moduleKey: null,
-    tags: ["Notices", "Disputes", "Demerit points"],
-    helps: [
-      "Explain the infringement notice in plain English.",
-      "Show what the notice says you can do next, including payment or representation options where applicable.",
-      "Highlight procedural details that may need checking.",
-      "Explain any demerit-point consequence supported by the notice and applicable AARTO rules.",
-    ],
-    documentExamples: ["AARTO infringement notices", "AARTO-related notices and correspondence"],
-    groundedIn: ["AARTO Act and applicable regulations/processes"],
   },
 ];
 
