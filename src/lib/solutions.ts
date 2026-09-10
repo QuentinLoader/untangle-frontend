@@ -6,18 +6,10 @@
  * Adding a future product should mean adding one entry below plus its backend
  * module + result adapter — never re-laying-out Home or navigation.
  */
-import {
-  Briefcase,
-  FileText,
-  Home,
-  Receipt,
-  ShieldCheck,
-  type LucideIcon,
-} from "lucide-react";
+import { Briefcase, FileText, Home, Receipt, ShieldCheck, type LucideIcon } from "lucide-react";
 import type { DocumentModule } from "./documents";
 
-const LEASECHECK_AVAILABLE =
-  import.meta.env['VITE_LEASECHECK_AVAILABLE'] === "true";
+const LEASECHECK_AVAILABLE = import.meta.env["VITE_LEASECHECK_AVAILABLE"] === "true";
 
 export type SolutionStatus = "AVAILABLE" | "COMING_SOON";
 
@@ -155,8 +147,7 @@ export const SOLUTIONS: Solution[] = [
       { id: "risks", label: "Exclusions" },
       { id: "ask", label: "Ask" },
     ],
-    scopeNote:
-      "Initial release focus: insurance policies and insurance claim decisions.",
+    scopeNote: "Initial release focus: insurance policies and insurance claim decisions.",
   },
   {
     slug: "workcheck",
@@ -183,11 +174,7 @@ export const SOLUTIONS: Solution[] = [
       "Disciplinary notices",
       "Dismissal or termination letters",
     ],
-    groundedIn: [
-      "Basic Conditions of Employment Act",
-      "Labour Relations Act",
-      "CCMA rules",
-    ],
+    groundedIn: ["Basic Conditions of Employment Act", "Labour Relations Act", "CCMA rules"],
     resultSections: [
       { id: "overview", label: "Overview" },
       { id: "terms", label: "Key terms" },
@@ -206,8 +193,10 @@ export function findSolution(slug: string): Solution | undefined {
 
 export function solutionForModule(module: DocumentModule | null): Solution | undefined {
   if (!module) return undefined;
-  return SOLUTIONS.find((solution) => solution.moduleKey === module)
-    ?? SOLUTIONS.find((solution) => solution.name.toUpperCase().startsWith(module));
+  return (
+    SOLUTIONS.find((solution) => solution.moduleKey === module) ??
+    SOLUTIONS.find((solution) => solution.name.toUpperCase().startsWith(module))
+  );
 }
 
 /** Icon + tint for a backend module, including modules with no live product. */

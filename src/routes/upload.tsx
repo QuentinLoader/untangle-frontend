@@ -1,7 +1,15 @@
 import { useRef, useState } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Camera, FileText, Lock, ShieldCheck, Timer, Upload as UploadIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  Camera,
+  FileText,
+  Lock,
+  ShieldCheck,
+  Timer,
+  Upload as UploadIcon,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
@@ -142,7 +150,11 @@ function Upload() {
 
   const startUpload = async () => {
     if (!pending) return;
-    if (uploadStatus === "requesting-url" || uploadStatus === "uploading" || uploadStatus === "verifying")
+    if (
+      uploadStatus === "requesting-url" ||
+      uploadStatus === "uploading" ||
+      uploadStatus === "verifying"
+    )
       return;
 
     setError(null);

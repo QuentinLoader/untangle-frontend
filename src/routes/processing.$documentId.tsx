@@ -34,7 +34,10 @@ const STEPS: { label: string; statuses: DocumentProcessingStatus[] }[] = [
   { label: "Reading document", statuses: ["QUEUED"] },
   { label: "Identifying important information", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
   { label: "Analysing terms", statuses: ["EXTRACTING"] },
-  { label: "Checking important risks and actions", statuses: ["VALIDATING_RESULT", "MATCHING_RULES"] },
+  {
+    label: "Checking important risks and actions",
+    statuses: ["VALIDATING_RESULT", "MATCHING_RULES"],
+  },
   { label: "Preparing your results", statuses: ["COMPLETED"] },
 ];
 
@@ -75,7 +78,6 @@ function Processing() {
           }
           return;
         }
-
       } catch (err) {
         if (stoppedRef.current) return;
         failures += 1;
@@ -119,7 +121,9 @@ function Processing() {
     <div className="flex min-h-screen flex-col bg-paper">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-7">
         <header className="flex items-center justify-center pt-2">
-          <h1 className="font-display text-[17px] font-semibold text-ink">Analysing your document</h1>
+          <h1 className="font-display text-[17px] font-semibold text-ink">
+            Analysing your document
+          </h1>
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center pb-16">
@@ -156,8 +160,8 @@ function Processing() {
               </p>
               {!backendFailed && !isLoading && (
                 <p className="mt-2 max-w-[300px] text-center text-[12px] leading-relaxed text-ink-soft">
-                  This usually takes 10–30 seconds. Keep this screen open and we’ll show your
-                  result as soon as it’s ready.
+                  This usually takes 10–30 seconds. Keep this screen open and we’ll show your result
+                  as soon as it’s ready.
                 </p>
               )}
 
@@ -173,19 +177,16 @@ function Processing() {
                     currentIndex <= stepIndex &&
                     currentIndex >= 0;
                   return (
-                    <StepRow
-                      key={step.label}
-                      label={step.label}
-                      done={done}
-                      active={active}
-                    />
+                    <StepRow key={step.label} label={step.label} done={done} active={active} />
                   );
                 })}
               </div>
 
-
               {showProcessingError && (
-                <p className="mt-6 max-w-[280px] text-center text-[13px] text-stamp-red" role="alert">
+                <p
+                  className="mt-6 max-w-[280px] text-center text-[13px] text-stamp-red"
+                  role="alert"
+                >
                   {backendFailed
                     ? copy.body
                     : (queryError ?? "We could not check this document. Please try again.")}
@@ -321,7 +322,11 @@ function StepRow({ label, done, active }: { label: string; done: boolean; active
     <div className="flex items-center gap-3.5">
       <div
         className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-300 ${
-          done ? "border-teal bg-teal" : active ? "animate-pulse border-teal bg-teal/10" : "border-teal bg-transparent"
+          done
+            ? "border-teal bg-teal"
+            : active
+              ? "animate-pulse border-teal bg-teal/10"
+              : "border-teal bg-transparent"
         }`}
       >
         {done && <span className="text-[13px] font-bold text-white">✓</span>}

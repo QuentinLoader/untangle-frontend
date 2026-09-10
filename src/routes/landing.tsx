@@ -282,7 +282,6 @@ function Landing() {
         >
           Upload a document — free
         </Link>
-
       </div>
     </div>
   );

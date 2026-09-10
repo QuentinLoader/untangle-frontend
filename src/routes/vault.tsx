@@ -270,7 +270,9 @@ function Vault() {
 
                       {confirming ? (
                         <div className="mt-2 rounded-2xl border border-line bg-white px-4 py-3">
-                          <p className="text-[14px] font-semibold text-ink">Delete this document?</p>
+                          <p className="text-[14px] font-semibold text-ink">
+                            Delete this document?
+                          </p>
                           <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
                             This removes the uploaded file, its analysis and related reminders.
                           </p>

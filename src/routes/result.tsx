@@ -14,10 +14,7 @@ import {
   MapPin,
   ShieldCheck,
 } from "lucide-react";
-import {
-  AskSectionPlaceholder,
-  ResultSectionNav,
-} from "@/components/untangle/ResultSectionNav";
+import { AskSectionPlaceholder, ResultSectionNav } from "@/components/untangle/ResultSectionNav";
 import {
   formatResultAmount,
   formatResultDate,
@@ -49,12 +46,14 @@ export const Route = createFileRoute("/result")({
       { title: "Document result — Untangle" },
       {
         name: "description",
-        content: "A plain-English answer that tells you what the document means and what to do next.",
+        content:
+          "A plain-English answer that tells you what the document means and what to do next.",
       },
       { property: "og:title", content: "Document result — Untangle" },
       {
         property: "og:description",
-        content: "A plain-English answer that tells you what the document means and what to do next.",
+        content:
+          "A plain-English answer that tells you what the document means and what to do next.",
       },
     ],
   }),
@@ -211,16 +210,16 @@ function NextSectionButton({ label, onClick }: { label: string; onClick: () => v
 }
 
 function Disclaimer({ wording }: { wording: string }) {
-  return (
-    <p className="px-1 pt-2 text-[10.5px] leading-relaxed text-ink-soft">{wording}</p>
-  );
+  return <p className="px-1 pt-2 text-[10.5px] leading-relaxed text-ink-soft">{wording}</p>;
 }
 
 function friendlyTaxArea(result: TaxDocumentResult): string {
   const { taxType, taxonomyDocumentType, taxpayerType } = result.document;
 
-  if (taxonomyDocumentType === "sars_cit_verification_final_request" ||
-      taxonomyDocumentType === "sars_company_assessment_itr14") {
+  if (
+    taxonomyDocumentType === "sars_cit_verification_final_request" ||
+    taxonomyDocumentType === "sars_company_assessment_itr14"
+  ) {
     return "Company Income Tax (CIT)";
   }
 
@@ -260,7 +259,11 @@ const WARNING_LABELS: Record<string, string> = {
 };
 
 function warningCopy(fieldKeys: string[]): string {
-  const labels = [...new Set(fieldKeys.map((key) => WARNING_LABELS[key] ?? key.replaceAll("_", " ").toLowerCase()))];
+  const labels = [
+    ...new Set(
+      fieldKeys.map((key) => WARNING_LABELS[key] ?? key.replaceAll("_", " ").toLowerCase()),
+    ),
+  ];
   if (labels.length === 1) {
     return `Untangle could not confidently confirm the ${labels[0]}. Compare it with the original document before relying on it.`;
   }
@@ -271,7 +274,11 @@ function warningCopy(fieldKeys: string[]): string {
 }
 
 function sameMeaning(left: string, right: string): boolean {
-  const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const normalize = (value: string) =>
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
   return normalize(left) === normalize(right);
 }
 
@@ -280,7 +287,8 @@ function isLeaseResult(result: DocumentResult): result is LeaseDocumentResult {
 }
 
 function ClauseSeverity({ severity }: { severity: "LOW" | "MEDIUM" | "HIGH" }) {
-  const label = severity === "HIGH" ? "Needs attention" : severity === "MEDIUM" ? "Check this" : "Note";
+  const label =
+    severity === "HIGH" ? "Needs attention" : severity === "MEDIUM" ? "Check this" : "Note";
   const style =
     severity === "HIGH"
       ? "bg-tint-red text-stamp-red"
@@ -337,7 +345,9 @@ function leaseWarningCopy(
     case "IMPOSSIBLE_DATE_ORDER":
       return `The ${label} appear to be in an impossible order. LeaseCheck has kept the extracted dates unchanged.`;
     default:
-      return warning.message || `Check the ${label} against the original lease before relying on it.`;
+      return (
+        warning.message || `Check the ${label} against the original lease before relying on it.`
+      );
   }
 }
 
@@ -363,7 +373,9 @@ function LeaseWarningBlock({
                 key={`${warning.code}-${warning.fieldKey}-${index}`}
                 className="flex gap-2 text-[12.5px] leading-relaxed text-ink"
               >
-                <span className="text-stamp-amber" aria-hidden="true">•</span>
+                <span className="text-stamp-amber" aria-hidden="true">
+                  •
+                </span>
                 <span>{leaseWarningCopy(warning)}</span>
               </li>
             ))}
@@ -401,14 +413,20 @@ function LeaseResultBody({
           <Panel title="Rent, deposit and other money">
             <div className="space-y-2">
               {humanGuide.importantMoney.map((item) => (
-                <div key={item.id} className="flex items-start justify-between gap-4 rounded-xl bg-paper px-3 py-2.5">
+                <div
+                  key={item.id}
+                  className="flex items-start justify-between gap-4 rounded-xl bg-paper px-3 py-2.5"
+                >
                   <span className="text-[13px] text-ink-soft">{item.label}</span>
-                  <span className="text-right text-[14px] font-semibold text-ink">{item.value}</span>
+                  <span className="text-right text-[14px] font-semibold text-ink">
+                    {item.value}
+                  </span>
                 </div>
               ))}
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-ink-soft">
-              These figures come from the lease wording; LeaseCheck does not fill in missing amounts.
+              These figures come from the lease wording; LeaseCheck does not fill in missing
+              amounts.
             </p>
           </Panel>
         ) : null}
@@ -417,9 +435,14 @@ function LeaseResultBody({
           <Panel title="Lease period, escalation and notice">
             <div className="space-y-2">
               {humanGuide.importantDates.map((item) => (
-                <div key={item.id} className="flex items-start justify-between gap-4 rounded-xl bg-paper px-3 py-2.5">
+                <div
+                  key={item.id}
+                  className="flex items-start justify-between gap-4 rounded-xl bg-paper px-3 py-2.5"
+                >
                   <span className="text-[13px] text-ink-soft">{item.label}</span>
-                  <span className="text-right text-[14px] font-semibold text-ink">{item.value}</span>
+                  <span className="text-right text-[14px] font-semibold text-ink">
+                    {item.value}
+                  </span>
                 </div>
               ))}
             </div>
@@ -434,7 +457,10 @@ function LeaseResultBody({
                 <ul className="mt-2 space-y-2">
                   {humanGuide.tenantResponsibilities.map((item) => (
                     <li key={item} className="flex gap-2 text-[13px] leading-relaxed text-ink-soft">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+                      <CheckCircle2
+                        className="mt-0.5 h-4 w-4 shrink-0 text-teal"
+                        aria-hidden="true"
+                      />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -442,12 +468,21 @@ function LeaseResultBody({
               </div>
             ) : null}
             {humanGuide.landlordResponsibilities.length > 0 ? (
-              <div className={humanGuide.tenantResponsibilities.length > 0 ? "mt-4 border-t border-line pt-4" : ""}>
+              <div
+                className={
+                  humanGuide.tenantResponsibilities.length > 0
+                    ? "mt-4 border-t border-line pt-4"
+                    : ""
+                }
+              >
                 <p className="text-[13px] font-semibold text-ink">Landlord</p>
                 <ul className="mt-2 space-y-2">
                   {humanGuide.landlordResponsibilities.map((item) => (
                     <li key={item} className="flex gap-2 text-[13px] leading-relaxed text-ink-soft">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+                      <CheckCircle2
+                        className="mt-0.5 h-4 w-4 shrink-0 text-teal"
+                        aria-hidden="true"
+                      />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -483,10 +518,13 @@ function LeaseResultBody({
                     <p className="text-[14px] font-semibold leading-snug text-ink">{flag.title}</p>
                     <ClauseSeverity severity={flag.severity} />
                   </div>
-                  <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">{flag.explanation}</p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
+                    {flag.explanation}
+                  </p>
                   {flag.leaseText ? (
                     <div className="mt-2 rounded-lg bg-white px-3 py-2 text-[12px] leading-relaxed text-ink">
-                      <span className="font-semibold">Your lease says: </span>{flag.leaseText}
+                      <span className="font-semibold">Your lease says: </span>
+                      {flag.leaseText}
                     </div>
                   ) : null}
                   {flag.legalBasis ? (
@@ -508,7 +546,9 @@ function LeaseResultBody({
                   <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal" aria-hidden="true" />
                   <div>
                     <p className="text-[14px] font-semibold text-ink">{right.title}</p>
-                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{right.explanation}</p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                      {right.explanation}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -527,7 +567,9 @@ function LeaseResultBody({
                   <div className="min-w-0 pt-0.5">
                     <p className="text-[14px] font-semibold leading-snug text-ink">{step.title}</p>
                     {step.detail ? (
-                      <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{step.detail}</p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                        {step.detail}
+                      </p>
                     ) : null}
                     <p className="mt-1 text-[11px] font-medium text-teal">
                       {step.sourceKind === "LEASE"
@@ -549,16 +591,21 @@ function LeaseResultBody({
           </Panel>
         ) : null}
 
-        {(humanGuide.legalNotes.length > 0 || humanGuide.guidanceSources.length > 0) ? (
+        {humanGuide.legalNotes.length > 0 || humanGuide.guidanceSources.length > 0 ? (
           <details className="group rounded-2xl border border-line/70 bg-white p-4">
             <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
               More details
-              <ChevronDown className="h-4 w-4 text-ink-soft transition-transform group-open:rotate-180" aria-hidden="true" />
+              <ChevronDown
+                className="h-4 w-4 text-ink-soft transition-transform group-open:rotate-180"
+                aria-hidden="true"
+              />
             </summary>
             {humanGuide.legalNotes.length > 0 ? (
               <div className="mt-3 space-y-2">
                 {humanGuide.legalNotes.map((note) => (
-                  <p key={note} className="text-[12.5px] leading-relaxed text-ink-soft">{note}</p>
+                  <p key={note} className="text-[12.5px] leading-relaxed text-ink-soft">
+                    {note}
+                  </p>
                 ))}
               </div>
             ) : null}
@@ -620,7 +667,10 @@ function LeaseResultBody({
       {validationWarnings.length > 0 ? <LeaseWarningBlock warnings={validationWarnings} /> : null}
 
       <div className="grid grid-cols-2 gap-3">
-        <SummaryMetric label="Key terms" value={String(humanGuide.importantMoney.length + humanGuide.importantDates.length)} />
+        <SummaryMetric
+          label="Key terms"
+          value={String(humanGuide.importantMoney.length + humanGuide.importantDates.length)}
+        />
         <SummaryMetric label="Clauses to check" value={String(humanGuide.clausesToCheck.length)} />
       </div>
 
@@ -669,9 +719,7 @@ function TaxResultBody({
     return key !== "TAXPAYER_REFERENCE_NUMBER" && key !== "CASE_NUMBER";
   });
   const shouldShowCheck =
-    document.confidence === "MEDIUM" ||
-    document.confidence === "LOW" ||
-    mainWarnings.length > 0;
+    document.confidence === "MEDIUM" || document.confidence === "LOW" || mainWarnings.length > 0;
   const hasExactReminder = result.reminderCandidates.length > 0;
 
   const mainTitle = guide?.whatThisIs ?? summary.headline;
@@ -736,7 +784,9 @@ function TaxResultBody({
                   </div>
                   <div className="min-w-0 pt-0.5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-[14px] font-semibold leading-snug text-ink">{step.title}</p>
+                      <p className="text-[14px] font-semibold leading-snug text-ink">
+                        {step.title}
+                      </p>
                       {step.optional ? (
                         <span className="rounded-full bg-paper-2 px-2 py-0.5 text-[10.5px] font-medium text-ink-soft">
                           If needed
@@ -744,7 +794,9 @@ function TaxResultBody({
                       ) : null}
                     </div>
                     {step.detail ? (
-                      <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{step.detail}</p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                        {step.detail}
+                      </p>
                     ) : null}
                     {step.where ? (
                       <p className="mt-2 flex items-start gap-1.5 text-[12.5px] font-medium leading-relaxed text-teal">
@@ -766,12 +818,16 @@ function TaxResultBody({
                 <div key={item.id} className="rounded-xl bg-paper px-3 py-3">
                   <p className="text-[14px] font-semibold text-ink">{item.name}</p>
                   {item.whatItIs ? (
-                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{item.whatItIs}</p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                      {item.whatItIs}
+                    </p>
                   ) : null}
                   {item.whereToGet ? (
                     <div className="mt-2 border-t border-line/70 pt-2">
                       <p className="text-[12px] font-semibold text-teal">Where to get it</p>
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink">{item.whereToGet}</p>
+                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink">
+                        {item.whereToGet}
+                      </p>
                     </div>
                   ) : null}
                 </div>
@@ -798,11 +854,16 @@ function TaxResultBody({
             <div className="space-y-3">
               {riskFlags.map((flag) => (
                 <div key={flag.id} className="flex gap-2.5">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-stamp-amber" aria-hidden="true" />
+                  <AlertTriangle
+                    className="mt-0.5 h-4 w-4 shrink-0 text-stamp-amber"
+                    aria-hidden="true"
+                  />
                   <div>
                     <p className="text-[13.5px] font-medium text-ink">{flag.flag}</p>
                     {!sameMeaning(flag.flag, flag.explanation) ? (
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">{flag.explanation}</p>
+                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                        {flag.explanation}
+                      </p>
                     ) : null}
                     {flag.legalBasis ? (
                       <p className="mt-1 text-[11px] text-ink-soft">{flag.legalBasis}</p>
@@ -847,7 +908,10 @@ function TaxResultBody({
           <Panel title="Amounts">
             <div className="space-y-2">
               {amounts.map((amount) => (
-                <div key={amount.id} className="flex items-center justify-between gap-3 rounded-xl bg-paper px-3 py-2.5">
+                <div
+                  key={amount.id}
+                  className="flex items-center justify-between gap-3 rounded-xl bg-paper px-3 py-2.5"
+                >
                   <span className="text-[13px] text-ink-soft">{amount.label}</span>
                   <span className="text-[14px] font-semibold text-ink">
                     {formatResultAmount(amount.amountCents, amount.currency)}
@@ -862,9 +926,14 @@ function TaxResultBody({
           <Panel title="Dates mentioned in the document">
             <ul className="space-y-2">
               {keyDates.map((keyDate) => (
-                <li key={keyDate.id} className="flex justify-between gap-4 text-[13px] text-ink-soft">
+                <li
+                  key={keyDate.id}
+                  className="flex justify-between gap-4 text-[13px] text-ink-soft"
+                >
                   <span>{keyDate.label}</span>
-                  <span className="shrink-0 font-medium text-ink">{formatResultDate(keyDate.date)}</span>
+                  <span className="shrink-0 font-medium text-ink">
+                    {formatResultDate(keyDate.date)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -880,7 +949,9 @@ function TaxResultBody({
                   <div>
                     <p className="text-[13.5px] font-medium text-ink">{right.right}</p>
                     {right.howToExercise ? (
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">{right.howToExercise}</p>
+                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                        {right.howToExercise}
+                      </p>
                     ) : null}
                     {right.legalBasis ? (
                       <p className="mt-1 text-[11px] text-ink-soft">{right.legalBasis}</p>
@@ -895,12 +966,17 @@ function TaxResultBody({
         <details className="group rounded-2xl border border-line/70 bg-white p-4">
           <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
             More details
-            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+            <ChevronDown
+              className="h-4 w-4 transition-transform group-open:rotate-180"
+              aria-hidden="true"
+            />
           </summary>
           <div className="mt-3 space-y-4 text-[12.5px] leading-relaxed text-ink-soft">
             <div>
               <p className="font-semibold text-ink">Original document</p>
-              {document.documentTitle ? <p className="mt-1 text-ink">{document.documentTitle}</p> : null}
+              {document.documentTitle ? (
+                <p className="mt-1 text-ink">{document.documentTitle}</p>
+              ) : null}
               {document.issueDate ? (
                 <p className="mt-1 flex items-center gap-1.5">
                   <FileText className="h-3.5 w-3.5" aria-hidden="true" />
