@@ -30,9 +30,10 @@ export const Route = createFileRoute("/processing/$documentId")({
 });
 
 const STEPS: { label: string; statuses: DocumentProcessingStatus[] }[] = [
-  { label: "Identifying document type", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
-  { label: "Extracting key dates & amounts", statuses: ["EXTRACTING", "VALIDATING_RESULT"] },
-  { label: "Checking your rights", statuses: ["MATCHING_RULES"] },
+  { label: "Reading document", statuses: ["QUEUED"] },
+  { label: "Identifying important information", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
+  { label: "Analysing terms", statuses: ["EXTRACTING"] },
+  { label: "Checking important risks and actions", statuses: ["VALIDATING_RESULT", "MATCHING_RULES"] },
 ];
 
 /** Number of consecutive polling failures tolerated before surfacing an error. */
