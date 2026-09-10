@@ -330,8 +330,13 @@ export function LandingPage() {
         </p>
       </footer>
 
-      {/* MOBILE STICKY CTA */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] min-[720px]:hidden">
+      {/* MOBILE STICKY CTA — hidden while the final CTA is on screen */}
+      <div
+        className={`fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 min-[720px]:hidden ${
+          finalCtaVisible ? "translate-y-full" : "translate-y-0"
+        }`}
+        aria-hidden={finalCtaVisible}
+      >
         <Link
           to="/upload"
           search={{}}
