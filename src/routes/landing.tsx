@@ -84,7 +84,7 @@ function Landing() {
           aria-hidden
         />
 
-        <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-14 text-center">
+        <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center px-6 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-12 text-center">
           <BrandMark size={56} />
           <h1 className="mt-4 font-display text-[38px] font-semibold leading-none text-ink">
             Untangle
@@ -95,7 +95,7 @@ function Landing() {
             Clear answers.
           </p>
 
-          <div className="mt-auto w-full pt-[42vh]">
+          <div className="mt-auto w-full pt-[34vh]">
             <ul className="space-y-3 text-left">
               {[
                 "Understand your documents",
