@@ -84,14 +84,14 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Landing() {
+export function LandingPage({ signedInHome = "/" }: { signedInHome?: "/" }) {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
-  // Signed-in visitors go straight to their Home.
+  // Signed-in visitors go straight to their Home (no-op when already rendered at "/").
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/", replace: true });
-  }, [loading, session, navigate]);
+    if (!loading && session && signedInHome !== "/") navigate({ to: "/", replace: true });
+  }, [loading, session, navigate, signedInHome]);
 
   const toUpload = () => navigate({ to: "/upload", search: {} });
   const scrollToHow = () =>
