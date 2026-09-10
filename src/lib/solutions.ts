@@ -14,7 +14,7 @@ const LEASECHECK_AVAILABLE = import.meta.env["VITE_LEASECHECK_AVAILABLE"] === "t
 export type SolutionStatus = "AVAILABLE" | "COMING_SOON";
 
 /** A tab in the shared mobile results shell. */
-export type ResultSection = { id: string; label: string };
+export type ResultSection = { id: string; label: string; available?: boolean };
 
 export type Solution = {
   slug: string;
@@ -45,16 +45,16 @@ export type Solution = {
 
 const TAX_SECTIONS: ResultSection[] = [
   { id: "overview", label: "Overview" },
-  { id: "actions", label: "What to do" },
-  { id: "details", label: "Dates & amounts" },
-  { id: "ask", label: "Ask" },
+  { id: "actions", label: "Actions" },
+  { id: "dates", label: "Dates" },
+  { id: "ask", label: "Ask", available: false },
 ];
 
 const LEASE_SECTIONS: ResultSection[] = [
   { id: "overview", label: "Overview" },
   { id: "terms", label: "Key terms" },
   { id: "risks", label: "Risks" },
-  { id: "ask", label: "Ask" },
+  { id: "ask", label: "Ask", available: false },
 ];
 
 export const SOLUTIONS: Solution[] = [
