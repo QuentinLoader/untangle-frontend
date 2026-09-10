@@ -275,7 +275,7 @@ export function LandingPage() {
       </section>
 
       {/* TRUST */}
-      <section id="disclaimer" className="scroll-mt-16 bg-ink px-5 py-12 text-white">
+      <section id="disclaimer" className="scroll-mt-24 bg-ink px-5 py-12 text-white">
         <div className="mx-auto max-w-2xl">
           <h2 className="font-display text-[24px] font-semibold leading-tight md:text-[30px]">
             Clear information. Important decisions stay yours.
