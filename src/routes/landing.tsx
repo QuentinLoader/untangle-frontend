@@ -257,7 +257,7 @@ export function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-line px-5 py-8 pb-[110px] min-[720px]:pb-8">
+      <footer className="border-t border-line px-5 py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 text-[13px] text-ink-soft md:flex-row md:justify-between">
           <p>© {new Date().getFullYear()} Untangle</p>
           <div className="flex gap-4">
@@ -276,22 +276,6 @@ export function LandingPage() {
           Untangle — an AddVision product
         </p>
       </footer>
-
-      {/* MOBILE STICKY CTA — hidden while the final CTA is on screen */}
-      <div
-        className={`fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 min-[720px]:hidden ${
-          finalCtaVisible ? "translate-y-full" : "translate-y-0"
-        }`}
-        aria-hidden={finalCtaVisible}
-      >
-        <Link
-          to="/upload"
-          search={{}}
-          className="flex min-h-[48px] w-full items-center justify-center rounded-[14px] bg-teal px-4 text-center text-[15px] font-semibold text-white"
-        >
-          Upload a document — free
-        </Link>
-      </div>
     </div>
   );
 }
