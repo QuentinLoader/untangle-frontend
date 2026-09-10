@@ -689,6 +689,7 @@ function LeaseResultBody({
       </div>
 
       <NextSectionButton label="View key findings" onClick={() => onNavigate("terms")} />
+      <AskQuestionButton onClick={() => onNavigate("ask")} />
       <Disclaimer wording={result.disclaimer.wording} />
     </div>
   );
@@ -1086,6 +1087,7 @@ function TaxResultBody({
       </div>
 
       <NextSectionButton label="View key findings" onClick={() => onNavigate("actions")} />
+      <AskQuestionButton onClick={() => onNavigate("ask")} />
       <Disclaimer wording={result.disclaimer.wording} />
     </div>
   );
