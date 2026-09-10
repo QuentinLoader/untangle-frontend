@@ -207,7 +207,9 @@ function Landing() {
       {/* PROBLEM / VALUE */}
       <section className="bg-paper-2 px-5 py-12">
         <div className="mx-auto max-w-2xl text-center">
-          <SectionHeading>Important documents shouldn't be this difficult to understand</SectionHeading>
+          <SectionHeading>
+            Important documents shouldn't be this difficult to understand
+          </SectionHeading>
           <p className="mt-4 text-[15.5px] leading-relaxed text-ink-soft">
             A notice, contract or policy can contain pages of formal language while only a few
             details actually matter. Untangle helps surface those details and explains them in
@@ -302,7 +304,11 @@ function Landing() {
             <a href="#privacy" className="inline-flex min-h-[44px] items-center px-1">
               Privacy
             </a>
-            <a id="disclaimer" href="#disclaimer" className="inline-flex min-h-[44px] items-center px-1">
+            <a
+              id="disclaimer"
+              href="#disclaimer"
+              className="inline-flex min-h-[44px] items-center px-1"
+            >
               Disclaimer
             </a>
             <a href="#contact" className="inline-flex min-h-[44px] items-center px-1">
