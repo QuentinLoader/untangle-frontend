@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/auth/useAuth";
 import { Check } from "lucide-react";
 import { BrandMark } from "@/components/untangle/BrandMark";
 import welcomeImage from "@/assets/welcome-mountains.jpg";
@@ -62,6 +64,13 @@ const TEASERS = [
 
 function Landing() {
   const navigate = useNavigate();
+  const { session, loading } = useAuth();
+
+  // Signed-in users skip the welcome screen and go straight to their Home.
+  useEffect(() => {
+    if (!loading && session) navigate({ to: "/", replace: true });
+  }, [loading, session, navigate]);
+
   const toUpload = () => navigate({ to: "/upload", search: {} });
 
   return (
