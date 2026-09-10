@@ -79,7 +79,9 @@ export function Disclosure({
   return (
     <details
       className={`group ${
-        tone === "card" ? "rounded-2xl border border-line/70 bg-white p-4" : "rounded-xl bg-paper-2/60 px-3"
+        tone === "card"
+          ? "rounded-2xl border border-line/70 bg-white p-4"
+          : "rounded-xl bg-paper-2/60 px-3"
       }`}
     >
       <summary
@@ -100,7 +102,5 @@ export function Disclosure({
 
 /** Single, quiet disclaimer treatment — never repeated within one section. */
 export function ResultFooterDisclaimer({ wording }: { wording: string }) {
-  return (
-    <p className="px-1 pb-1 pt-3 text-[10.5px] leading-relaxed text-ink-soft">{wording}</p>
-  );
+  return <p className="px-1 pb-1 pt-3 text-[10.5px] leading-relaxed text-ink-soft">{wording}</p>;
 }

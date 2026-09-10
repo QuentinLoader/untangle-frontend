@@ -799,9 +799,7 @@ function TaxResultBody({
             {hasMoreThanFirstSentence(guide.whatSarsWants) ? (
               <div className="mt-2">
                 <Disclosure title="More detail">
-                  <p className="text-[13px] leading-relaxed text-ink-soft">
-                    {guide.whatSarsWants}
-                  </p>
+                  <p className="text-[13px] leading-relaxed text-ink-soft">{guide.whatSarsWants}</p>
                 </Disclosure>
               </div>
             ) : null}
@@ -906,9 +904,9 @@ function TaxResultBody({
                         {firstSentence(flag.explanation)}
                       </p>
                     ) : null}
-                    {(flag.legalBasis ||
-                      (!sameMeaning(flag.flag, flag.explanation) &&
-                        hasMoreThanFirstSentence(flag.explanation))) ? (
+                    {flag.legalBasis ||
+                    (!sameMeaning(flag.flag, flag.explanation) &&
+                      hasMoreThanFirstSentence(flag.explanation)) ? (
                       <div className="mt-2">
                         <Disclosure title="More detail">
                           <p className="text-[12.5px] leading-relaxed text-ink-soft">
