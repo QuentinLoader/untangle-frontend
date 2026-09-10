@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/auth/useAuth";
 import welcomeImage from "@/assets/welcome-mountains.jpg";
@@ -93,6 +93,18 @@ export function LandingPage() {
   useEffect(() => {
     if (!loading && session) navigate({ to: "/", replace: true });
   }, [loading, session, navigate]);
+
+  // Hide the sticky CTA while the final CTA is visible — no stacked duplicate buttons.
+  const [finalCtaVisible, setFinalCtaVisible] = useState(false);
+  useEffect(() => {
+    const el = document.getElementById("final-cta");
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => setFinalCtaVisible(entry.isIntersecting), {
+      rootMargin: "0px 0px -80px 0px",
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const toUpload = () => navigate({ to: "/upload", search: {} });
   const scrollToHow = () =>
