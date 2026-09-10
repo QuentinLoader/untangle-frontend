@@ -8,7 +8,7 @@
 import type { DocumentModule } from "./documents";
 
 const LEASECHECK_AVAILABLE =
-  import.meta.env.VITE_LEASECHECK_AVAILABLE === "true";
+  import.meta.env['VITE_LEASECHECK_AVAILABLE'] === "true";
 
 export type SolutionStatus = "AVAILABLE" | "COMING_SOON";
 

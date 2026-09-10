@@ -215,8 +215,12 @@ function sameMeaning(left: string, right: string): boolean {
   return normalize(left) === normalize(right);
 }
 
+function isLeaseResult(result: DocumentResult): result is LeaseDocumentResult {
+  return result.document.module === "LEASE";
+}
+
 function ResultBody({ result }: { result: DocumentResult }) {
-  if (result.document.module === "LEASE") {
+  if (isLeaseResult(result)) {
     return <LeaseResultBody result={result} />;
   }
 

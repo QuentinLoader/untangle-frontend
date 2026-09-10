@@ -63,7 +63,8 @@ function ReminderPage() {
   });
 
   const result = data?.data.result;
-  const candidates = result?.reminderCandidates ?? [];
+  const candidates =
+    result && "reminderCandidates" in result ? result.reminderCandidates : [];
 
   const mutation = useMutation({
     mutationFn: createReminder,
