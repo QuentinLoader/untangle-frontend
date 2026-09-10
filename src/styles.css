@@ -79,8 +79,8 @@
 }
 
 :root {
-  --paper: #eef1ed;
-  --paper-2: #e3e8e1;
+  --paper: #f5f7f5;
+  --paper-2: #ebefea;
   --ink: #1f2a24;
   --ink-soft: #5b6b66;
   --teal: #0f6e5c;
@@ -88,7 +88,7 @@
   --stamp-red: #c1432d;
   --stamp-amber: #c98a2e;
   --module-blue: #3b5ba9;
-  --line: #d8ddd6;
+  --line: #dde2dc;
   --tint-red: #fbeae5;
   --tint-sand: #f3ebdc;
   --tint-blue: #e6eaf6;
