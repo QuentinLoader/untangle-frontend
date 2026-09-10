@@ -585,7 +585,7 @@ export async function listDocuments(): Promise<ListDocumentsResponse> {
 const MODULE_LABELS: Record<DocumentModule, string> = {
   TAX: "TaxSnap",
   LEASE: "LeaseCheck",
-  DEAL: "DealCheck",
+  DEAL: "Other",
   WORK: "WorkCheck",
 };
 
