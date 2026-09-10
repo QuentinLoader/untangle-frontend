@@ -262,7 +262,7 @@ export function LandingPage() {
       </section>
 
       {/* TRUST */}
-      <section className="bg-ink px-5 py-12 text-white">
+      <section id="disclaimer" className="scroll-mt-16 bg-ink px-5 py-12 text-white">
         <div className="mx-auto max-w-2xl">
           <h2 className="font-display text-[24px] font-semibold leading-tight md:text-[30px]">
             Clear information. Important decisions stay yours.
@@ -285,7 +285,7 @@ export function LandingPage() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="px-5 py-12 text-center">
+      <section id="final-cta" className="px-5 py-12 text-center">
         <div className="mx-auto max-w-xl">
           <SectionHeading>Stop guessing what the document means.</SectionHeading>
           <p className="mt-3 text-[15.5px] leading-relaxed text-ink-soft">
@@ -305,11 +305,7 @@ export function LandingPage() {
             <a href="#privacy" className="inline-flex min-h-[44px] items-center px-1">
               Privacy
             </a>
-            <a
-              id="disclaimer"
-              href="#disclaimer"
-              className="inline-flex min-h-[44px] items-center px-1"
-            >
+            <a href="#disclaimer" className="inline-flex min-h-[44px] items-center px-1">
               Disclaimer
             </a>
             <a href="#contact" className="inline-flex min-h-[44px] items-center px-1">
