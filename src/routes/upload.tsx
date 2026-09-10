@@ -4,10 +4,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Camera,
+  Check,
   FileText,
+  FolderOpen,
   Lock,
-  ShieldCheck,
-  Timer,
   Upload as UploadIcon,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -61,9 +61,9 @@ export const Route = createFileRoute("/upload")({
 const ACCEPT = [...SUPPORTED_MIME_TYPES, ".heic", ".heif", ".tif", ".tiff"].join(",");
 
 const TRUST = [
-  { icon: Lock, text: "Secure processing" },
-  { icon: ShieldCheck, text: "Your document is private" },
-  { icon: Timer, text: "Files are handled according to Untangle's retention rules" },
+  "Your files are secure",
+  "We don't share your documents",
+  "Files are handled according to Untangle's retention rules",
 ];
 
 function Upload() {
