@@ -23,11 +23,6 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     if (loading || session || redirected.current) return;
     if (pathname.startsWith("/login")) return;
     redirected.current = true;
-    // The front door: signed-out visitors landing on "/" see the welcome screen first.
-    if (pathname === "/") {
-      navigate({ to: "/landing", replace: true });
-      return;
-    }
     navigate({ to: "/login", search: { redirect: pathname }, replace: true });
   }, [loading, session, navigate, pathname]);
 
