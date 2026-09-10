@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/auth/useAuth";
 import welcomeImage from "@/assets/welcome-mountains.jpg";
@@ -93,6 +93,19 @@ export function LandingPage() {
   useEffect(() => {
     if (!loading && session) navigate({ to: "/", replace: true });
   }, [loading, session, navigate]);
+
+  // Hide the sticky CTA while the final CTA is visible — no stacked duplicate buttons.
+  const [finalCtaVisible, setFinalCtaVisible] = useState(false);
+  useEffect(() => {
+    const el = document.getElementById("final-cta");
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => setFinalCtaVisible(entries[0]?.isIntersecting ?? false),
+      { rootMargin: "0px 0px -80px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const toUpload = () => navigate({ to: "/upload", search: {} });
   const scrollToHow = () =>
@@ -262,7 +275,7 @@ export function LandingPage() {
       </section>
 
       {/* TRUST */}
-      <section className="bg-ink px-5 py-12 text-white">
+      <section id="disclaimer" className="scroll-mt-24 bg-ink px-5 py-12 text-white">
         <div className="mx-auto max-w-2xl">
           <h2 className="font-display text-[24px] font-semibold leading-tight md:text-[30px]">
             Clear information. Important decisions stay yours.
@@ -285,7 +298,7 @@ export function LandingPage() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="px-5 py-12 text-center">
+      <section id="final-cta" className="px-5 py-12 text-center">
         <div className="mx-auto max-w-xl">
           <SectionHeading>Stop guessing what the document means.</SectionHeading>
           <p className="mt-3 text-[15.5px] leading-relaxed text-ink-soft">
@@ -305,11 +318,7 @@ export function LandingPage() {
             <a href="#privacy" className="inline-flex min-h-[44px] items-center px-1">
               Privacy
             </a>
-            <a
-              id="disclaimer"
-              href="#disclaimer"
-              className="inline-flex min-h-[44px] items-center px-1"
-            >
+            <a href="#disclaimer" className="inline-flex min-h-[44px] items-center px-1">
               Disclaimer
             </a>
             <a href="#contact" className="inline-flex min-h-[44px] items-center px-1">
@@ -322,8 +331,13 @@ export function LandingPage() {
         </p>
       </footer>
 
-      {/* MOBILE STICKY CTA */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] min-[720px]:hidden">
+      {/* MOBILE STICKY CTA — hidden while the final CTA is on screen */}
+      <div
+        className={`fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 min-[720px]:hidden ${
+          finalCtaVisible ? "translate-y-full" : "translate-y-0"
+        }`}
+        aria-hidden={finalCtaVisible}
+      >
         <Link
           to="/upload"
           search={{}}
