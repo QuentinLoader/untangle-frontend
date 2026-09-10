@@ -12,6 +12,7 @@ import {
   ChevronRight,
   FileText,
   MapPin,
+  MessageSquare,
   ShieldCheck,
 } from "lucide-react";
 import { AskSectionPlaceholder, ResultSectionNav } from "@/components/untangle/ResultSectionNav";

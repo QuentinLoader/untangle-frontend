@@ -94,8 +94,13 @@ function Index() {
 
         <section className="mt-9">
           <h1 className="font-display text-[26px] font-semibold leading-snug text-ink">
-            What would you like to understand today?
+            {greeting(new Date())}
+            {name ? `, ${name}` : ""} <span aria-hidden>👋</span>
           </h1>
+          <p className="mt-2 text-[15px] leading-snug text-ink-soft">
+            What would you like to understand today?
+          </p>
+
 
           <div className="mt-5 space-y-3">
             {SOLUTION_LIST.map((solution) => (
