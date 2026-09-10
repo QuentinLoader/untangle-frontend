@@ -81,6 +81,17 @@ function Index() {
           </Link>
         </header>
 
+        {entitlementsError ? (
+          <div
+            role="status"
+            className="mt-5 rounded-2xl border border-line/70 bg-white px-4 py-3 text-[13px] leading-relaxed text-ink-soft"
+          >
+            <span className="block font-semibold text-ink">We can’t reach the service right now</span>
+            You can still move around the app, but documents, reminders and new uploads won’t work
+            until the connection is back.
+          </div>
+        ) : null}
+
         <section className="mt-9">
           <h1 className="font-display text-[26px] font-semibold leading-snug text-ink">
             What would you like to understand today?
