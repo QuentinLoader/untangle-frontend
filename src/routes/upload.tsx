@@ -4,10 +4,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Camera,
+  Check,
   FileText,
+  FolderOpen,
   Lock,
-  ShieldCheck,
-  Timer,
   Upload as UploadIcon,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -61,9 +61,9 @@ export const Route = createFileRoute("/upload")({
 const ACCEPT = [...SUPPORTED_MIME_TYPES, ".heic", ".heif", ".tif", ".tiff"].join(",");
 
 const TRUST = [
-  { icon: Lock, text: "Secure processing" },
-  { icon: ShieldCheck, text: "Your document is private" },
-  { icon: Timer, text: "Files are handled according to Untangle's retention rules" },
+  "Your files are secure",
+  "We don't share your documents",
+  "Files are handled according to Untangle's retention rules",
 ];
 
 function Upload() {
@@ -299,22 +299,40 @@ function Upload() {
           </div>
         ) : (
           <div className="mt-6">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={busy}
-              className="flex min-h-[188px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-teal/40 bg-white px-6 py-8 text-center transition-colors active:bg-teal-dim/40 disabled:opacity-60"
-            >
-              <span className="grid h-14 w-14 place-items-center rounded-full bg-teal-dim text-teal">
-                <UploadIcon size={24} strokeWidth={1.9} aria-hidden />
-              </span>
-              <span className="mt-4 text-[16px] font-semibold text-ink">
-                Tap to upload your document
-              </span>
-              <span className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
-                PDF, JPG, PNG, HEIC or TIFF · up to 25 MB
-              </span>
-            </button>
+            <div className="rounded-3xl border-2 border-dashed border-teal/35 bg-white px-5 py-7">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={busy}
+                className="flex w-full flex-col items-center rounded-2xl px-2 py-2 text-center transition-colors active:bg-teal-dim/40 disabled:opacity-60"
+              >
+                <span className="grid h-14 w-14 place-items-center rounded-full bg-teal-dim text-teal">
+                  <UploadIcon size={24} strokeWidth={1.9} aria-hidden />
+                </span>
+                <span className="mt-4 text-[16px] font-semibold text-ink">
+                  Tap to upload your document
+                </span>
+                <span className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
+                  PDF, JPG, PNG, HEIC or TIFF · up to 25 MB
+                </span>
+              </button>
+
+              <div className="my-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-line" aria-hidden />
+                <span className="text-[12.5px] text-ink-soft">or</span>
+                <span className="h-px flex-1 bg-line" aria-hidden />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={busy}
+                className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border border-line bg-white text-[15px] font-semibold text-ink transition-colors active:bg-paper-2 disabled:opacity-60"
+              >
+                <FolderOpen size={18} aria-hidden />
+                Choose a file
+              </button>
+            </div>
 
             <button
               type="button"
@@ -340,17 +358,27 @@ function Upload() {
           </p>
         )}
 
-        <ul className="mt-8 space-y-2.5">
-          {TRUST.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.text} className="flex items-start gap-2.5 text-[12.5px] text-ink-soft">
-                <Icon size={15} className="mt-0.5 shrink-0 text-teal" aria-hidden />
-                <span>{item.text}</span>
-              </li>
-            );
-          })}
+        <ul className="mt-8 space-y-3">
+          {TRUST.map((item) => (
+            <li key={item} className="flex items-start gap-2.5 text-[13px] text-ink">
+              <span className="mt-0.5 grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-teal text-white">
+                <Check size={11} strokeWidth={3} aria-hidden />
+              </span>
+              <span>{item}</span>
+            </li>
+          ))}
         </ul>
+
+        <div className="mt-5 flex gap-3 rounded-2xl bg-teal-dim/70 px-4 py-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-teal">
+            <Lock size={16} aria-hidden />
+          </span>
+          <p className="text-[12.5px] leading-relaxed text-ink">
+            <span className="block font-semibold">Your privacy matters</span>
+            Documents are processed securely and are not kept longer than Untangle needs them.
+          </p>
+        </div>
+
 
         {planUsageLine && !entitlements?.isPlus ? (
           <p className="mt-5 text-[12.5px] text-ink-soft">{planUsageLine}</p>

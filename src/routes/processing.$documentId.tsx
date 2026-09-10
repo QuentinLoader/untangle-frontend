@@ -1,7 +1,7 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { FileQuestion, FileText, Globe, Search } from "lucide-react";
+import { FileQuestion, FileText, Globe, Lightbulb, Search } from "lucide-react";
 import {
   getDocumentStatus,
   friendlyDocumentError,
@@ -135,19 +135,12 @@ function Processing() {
             />
           ) : (
             <>
-              <div className="w-full max-w-[320px]">
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-paper-2">
-                  <div
-                    className="h-full rounded-full bg-teal transition-all duration-700"
-                    style={{
-                      width: backendFailed
-                        ? "100%"
-                        : `${Math.max(8, ((currentIndex + 1) / order.length) * 100)}%`,
-                    }}
-                    aria-hidden
-                  />
-                </div>
-              </div>
+              <ProgressRing
+                percent={
+                  backendFailed ? 100 : Math.max(8, ((currentIndex + 1) / order.length) * 100)
+                }
+              />
+
 
               <h2
                 className="mt-7 text-center font-display text-[22px] font-semibold leading-snug text-ink"
@@ -181,6 +174,19 @@ function Processing() {
                   );
                 })}
               </div>
+
+              {!backendFailed && !isLoading && (
+                <div className="mt-9 flex w-full max-w-[320px] gap-3 rounded-2xl bg-teal-dim/70 px-4 py-4">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-teal">
+                    <Lightbulb size={16} aria-hidden />
+                  </span>
+                  <p className="text-[12.5px] leading-relaxed text-ink">
+                    <span className="block font-semibold">Did you know?</span>
+                    Untangle checks your document against South African rules and published
+                    guidance, not just the words on the page.
+                  </p>
+                </div>
+              )}
 
               {showProcessingError && (
                 <p
@@ -315,6 +321,33 @@ function NeedsReviewState({
         </div>
       );
   }
+}
+
+/** Circular progress dial — calm, state-driven, no fake percentages between states. */
+function ProgressRing({ percent }: { percent: number }) {
+  const clamped = Math.max(0, Math.min(100, Math.round(percent)));
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  return (
+    <div className="relative grid h-[136px] w-[136px] place-items-center">
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90" aria-hidden>
+        <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--paper-2)" strokeWidth="9" />
+        <circle
+          cx="60"
+          cy="60"
+          r={radius}
+          fill="none"
+          stroke="var(--teal)"
+          strokeWidth="9"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - clamped / 100)}
+          style={{ transition: "stroke-dashoffset 700ms ease" }}
+        />
+      </svg>
+      <span className="absolute font-display text-[26px] font-semibold text-ink">{clamped}%</span>
+    </div>
+  );
 }
 
 function StepRow({ label, done, active }: { label: string; done: boolean; active?: boolean }) {

@@ -12,6 +12,7 @@ import {
   ChevronRight,
   FileText,
   MapPin,
+  MessageSquare,
   ShieldCheck,
 } from "lucide-react";
 import { AskSectionPlaceholder, ResultSectionNav } from "@/components/untangle/ResultSectionNav";
@@ -205,6 +206,19 @@ function NextSectionButton({ label, onClick }: { label: string; onClick: () => v
     >
       {label}
       <ChevronRight size={17} aria-hidden />
+    </button>
+  );
+}
+
+function AskQuestionButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-[15px] font-semibold text-ink transition-colors active:bg-paper-2"
+    >
+      <MessageSquare size={17} aria-hidden />
+      Ask a question
     </button>
   );
 }
@@ -675,6 +689,7 @@ function LeaseResultBody({
       </div>
 
       <NextSectionButton label="View key findings" onClick={() => onNavigate("terms")} />
+      <AskQuestionButton onClick={() => onNavigate("ask")} />
       <Disclaimer wording={result.disclaimer.wording} />
     </div>
   );
@@ -1072,6 +1087,7 @@ function TaxResultBody({
       </div>
 
       <NextSectionButton label="View key findings" onClick={() => onNavigate("actions")} />
+      <AskQuestionButton onClick={() => onNavigate("ask")} />
       <Disclaimer wording={result.disclaimer.wording} />
     </div>
   );

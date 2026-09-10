@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Clock } from "lucide-react";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
+import { BrandMark } from "@/components/untangle/BrandMark";
 import { ProductRow } from "@/components/untangle/ProductRow";
 import { useAuth } from "@/auth/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -65,13 +66,10 @@ function Index() {
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 shrink-0 rounded-full bg-teal" aria-hidden />
+              <BrandMark size={22} />
               <span className="font-display text-[19px] font-semibold text-ink">Untangle</span>
             </div>
-            <p className="mt-1 truncate text-[14px] text-ink-soft">
-              {greeting(new Date())}
-              {name ? `, ${name}` : ""}
-            </p>
+
           </div>
           <Link
             to="/upgrade"
@@ -94,8 +92,13 @@ function Index() {
 
         <section className="mt-9">
           <h1 className="font-display text-[26px] font-semibold leading-snug text-ink">
-            What would you like to understand today?
+            {greeting(new Date())}
+            {name ? `, ${name}` : ""} <span aria-hidden>👋</span>
           </h1>
+          <p className="mt-2 text-[15px] leading-snug text-ink-soft">
+            What would you like to understand today?
+          </p>
+
 
           <div className="mt-5 space-y-3">
             {SOLUTION_LIST.map((solution) => (
