@@ -12,10 +12,16 @@ import {
   ChevronRight,
   FileText,
   MapPin,
-  MessageSquare,
   ShieldCheck,
 } from "lucide-react";
 import { AskSectionPlaceholder, ResultSectionNav } from "@/components/untangle/ResultSectionNav";
+import {
+  AskComingSoonButton,
+  Disclosure,
+  ResultFooterDisclaimer,
+  ResultNavRow,
+  ResultPrimaryButton,
+} from "@/components/untangle/ResultBlocks";
 import {
   formatResultAmount,
   formatResultDate,
@@ -206,19 +212,6 @@ function NextSectionButton({ label, onClick }: { label: string; onClick: () => v
     >
       {label}
       <ChevronRight size={17} aria-hidden />
-    </button>
-  );
-}
-
-function AskQuestionButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-[15px] font-semibold text-ink transition-colors active:bg-paper-2"
-    >
-      <MessageSquare size={17} aria-hidden />
-      Ask a question
     </button>
   );
 }
@@ -689,7 +682,7 @@ function LeaseResultBody({
       </div>
 
       <NextSectionButton label="View key findings" onClick={() => onNavigate("terms")} />
-      <AskQuestionButton onClick={() => onNavigate("ask")} />
+      <AskComingSoonButton />
       <Disclaimer wording={result.disclaimer.wording} />
     </div>
   );
@@ -702,6 +695,18 @@ function SummaryMetric({ label, value }: { label: string; value: string }) {
       <p className="mt-0.5 text-[12.5px] text-ink-soft">{label}</p>
     </div>
   );
+}
+
+/** First sentence of a longer paragraph, used for the collapsed state. */
+function firstSentence(text: string): string {
+  const trimmed = text.trim();
+  const match = /^[\s\S]*?[.!?](\s|$)/.exec(trimmed);
+  const head = match ? match[0].trim() : trimmed;
+  return head.length > 0 ? head : trimmed;
+}
+
+function hasMoreThanFirstSentence(text: string): boolean {
+  return firstSentence(text).length < text.trim().length;
 }
 
 function TaxResultBody({
@@ -726,6 +731,7 @@ function TaxResultBody({
     validationWarnings,
   } = result;
   const guide = result.humanGuide;
+  const timeLimits = result.timeLimits ?? [];
   const materialWarnings = validationWarnings.filter((warning) =>
     MATERIAL_WARNING_FIELDS.has(warning.fieldKey.toUpperCase()),
   );
@@ -758,6 +764,8 @@ function TaxResultBody({
       summary.severity === "CRITICAL" ||
       document.taxonomyDocumentType === "sars_customs_suspension_notice");
 
+  const dateCount = keyDates.length + timeLimits.length + (hasExactReminder ? 1 : 0);
+
   const checkBlock = shouldShowCheck ? (
     <div className="rounded-2xl border border-stamp-amber/40 bg-tint-sand p-4" role="alert">
       <div className="flex gap-3">
@@ -785,7 +793,16 @@ function TaxResultBody({
 
         {guide?.whatSarsWants ? (
           <Panel title="What SARS wants">
-            <p className="text-[14px] leading-relaxed text-ink">{guide.whatSarsWants}</p>
+            <p className="text-[14px] leading-relaxed text-ink">
+              {firstSentence(guide.whatSarsWants)}
+            </p>
+            {hasMoreThanFirstSentence(guide.whatSarsWants) ? (
+              <div className="mt-2">
+                <Disclosure title="More detail">
+                  <p className="text-[13px] leading-relaxed text-ink-soft">{guide.whatSarsWants}</p>
+                </Disclosure>
+              </div>
+            ) : null}
           </Panel>
         ) : null}
 
@@ -793,33 +810,42 @@ function TaxResultBody({
           <Panel title="Do this next">
             <div className="space-y-3">
               {steps.map((step, index) => (
-                <div key={step.id} className="flex gap-3 rounded-xl bg-paper px-3 py-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal text-[12px] font-bold text-white">
-                    {index + 1}
-                  </div>
-                  <div className="min-w-0 pt-0.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-[14px] font-semibold leading-snug text-ink">
-                        {step.title}
-                      </p>
-                      {step.optional ? (
-                        <span className="rounded-full bg-paper-2 px-2 py-0.5 text-[10.5px] font-medium text-ink-soft">
-                          If needed
-                        </span>
+                <div key={step.id} className="rounded-xl bg-paper px-3 py-3">
+                  <div className="flex gap-3">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal text-[12px] font-bold text-white">
+                      {index + 1}
+                    </div>
+                    <div className="min-w-0 pt-0.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-[14px] font-semibold leading-snug text-ink">
+                          {step.title}
+                        </p>
+                        {step.optional ? (
+                          <span className="rounded-full bg-paper-2 px-2 py-0.5 text-[10.5px] font-medium text-ink-soft">
+                            If needed
+                          </span>
+                        ) : null}
+                      </div>
+                      {step.detail ? (
+                        <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                          {firstSentence(step.detail)}
+                        </p>
+                      ) : null}
+                      {step.where ? (
+                        <p className="mt-2 flex items-start gap-1.5 text-[12.5px] font-medium leading-relaxed text-teal">
+                          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          {step.where}
+                        </p>
                       ) : null}
                     </div>
-                    {step.detail ? (
-                      <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                        {step.detail}
-                      </p>
-                    ) : null}
-                    {step.where ? (
-                      <p className="mt-2 flex items-start gap-1.5 text-[12.5px] font-medium leading-relaxed text-teal">
-                        <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                        {step.where}
-                      </p>
-                    ) : null}
                   </div>
+                  {step.detail && hasMoreThanFirstSentence(step.detail) ? (
+                    <div className="mt-2 pl-10">
+                      <Disclosure title="Why this matters">
+                        <p className="text-[13px] leading-relaxed text-ink-soft">{step.detail}</p>
+                      </Disclosure>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -828,24 +854,21 @@ function TaxResultBody({
 
         {requiredItems.length > 0 ? (
           <Panel title="What you need">
-            <div className="space-y-3">
+            <div className="space-y-2">
               {requiredItems.map((item) => (
-                <div key={item.id} className="rounded-xl bg-paper px-3 py-3">
-                  <p className="text-[14px] font-semibold text-ink">{item.name}</p>
+                <Disclosure key={item.id} title={item.name}>
                   {item.whatItIs ? (
-                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                      {item.whatItIs}
-                    </p>
+                    <p className="text-[13px] leading-relaxed text-ink-soft">{item.whatItIs}</p>
                   ) : null}
                   {item.whereToGet ? (
-                    <div className="mt-2 border-t border-line/70 pt-2">
+                    <div className="mt-2">
                       <p className="text-[12px] font-semibold text-teal">Where to get it</p>
                       <p className="mt-1 text-[12.5px] leading-relaxed text-ink">
                         {item.whereToGet}
                       </p>
                     </div>
                   ) : null}
-                </div>
+                </Disclosure>
               ))}
             </div>
           </Panel>
@@ -865,49 +888,83 @@ function TaxResultBody({
         ) : null}
 
         {riskFlags.length > 0 ? (
-          <Panel title="If you ignore it">
-            <div className="space-y-3">
+          <section className="rounded-2xl border border-stamp-amber/40 bg-white p-4">
+            <h3 className="text-[13px] font-semibold text-stamp-amber">If you ignore it</h3>
+            <div className="mt-3 space-y-3">
               {riskFlags.map((flag) => (
                 <div key={flag.id} className="flex gap-2.5">
                   <AlertTriangle
                     className="mt-0.5 h-4 w-4 shrink-0 text-stamp-amber"
                     aria-hidden="true"
                   />
-                  <div>
-                    <p className="text-[13.5px] font-medium text-ink">{flag.flag}</p>
+                  <div className="min-w-0">
+                    <p className="text-[13.5px] font-semibold text-ink">{flag.flag}</p>
                     {!sameMeaning(flag.flag, flag.explanation) ? (
                       <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
-                        {flag.explanation}
+                        {firstSentence(flag.explanation)}
                       </p>
                     ) : null}
-                    {flag.legalBasis ? (
-                      <p className="mt-1 text-[11px] text-ink-soft">{flag.legalBasis}</p>
+                    {flag.legalBasis ||
+                    (!sameMeaning(flag.flag, flag.explanation) &&
+                      hasMoreThanFirstSentence(flag.explanation)) ? (
+                      <div className="mt-2">
+                        <Disclosure title="More detail">
+                          <p className="text-[12.5px] leading-relaxed text-ink-soft">
+                            {flag.explanation}
+                          </p>
+                          {flag.legalBasis ? (
+                            <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-soft">
+                              {flag.legalBasis}
+                            </p>
+                          ) : null}
+                        </Disclosure>
+                      </div>
                     ) : null}
                   </div>
                 </div>
               ))}
             </div>
-          </Panel>
+          </section>
         ) : null}
 
-        <NextSectionButton label="See dates & amounts" onClick={() => onNavigate("details")} />
+        <ResultPrimaryButton label="See important dates" onClick={() => onNavigate("dates")} />
+        <ResultFooterDisclaimer wording={result.disclaimer.wording} />
       </div>
     );
   }
 
-  if (section === "details") {
+  if (section === "dates") {
+    const deadlineCandidate = result.reminderCandidates[0];
     return (
       <div className="space-y-3">
-        <Panel title="When">
+        <Panel title="Deadlines">
           <div className="flex gap-3">
             <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-teal" aria-hidden="true" />
             <p className="text-[14px] leading-relaxed text-ink">
               {guide?.deadline ??
-                (result.reminderCandidates[0]
-                  ? `${result.reminderCandidates[0].label}: ${formatResultDate(result.reminderCandidates[0].dueDate)}.`
+                (deadlineCandidate
+                  ? `${deadlineCandidate.label}: ${formatResultDate(deadlineCandidate.dueDate)}.`
                   : "No exact action deadline was found in this document. Check the original document before delaying.")}
             </p>
           </div>
+
+          {timeLimits.length > 0 ? (
+            <div className="mt-3 space-y-2">
+              {timeLimits.map((limit) => (
+                <div key={limit.id} className="rounded-xl bg-paper px-3 py-2.5">
+                  <p className="text-[13.5px] font-semibold text-ink">{limit.label}</p>
+                  <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                    {limit.periodText}
+                  </p>
+                  <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink">
+                    <span className="font-semibold">Exact deadline: </span>
+                    Not calculated —{" "}
+                    {limit.caution ?? "confirm the date from which this period legally runs."}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           <Link
             to="/reminder"
@@ -918,6 +975,27 @@ function TaxResultBody({
             {hasExactReminder ? "Set a reminder" : "Add a reminder manually"}
           </Link>
         </Panel>
+
+        {keyDates.length > 0 ? (
+          <Panel title="Dates in the document">
+            <ul className="space-y-2">
+              {keyDates.map((keyDate) => (
+                <li
+                  key={keyDate.id}
+                  className="flex justify-between gap-4 text-[13px] text-ink-soft"
+                >
+                  <span>{keyDate.label}</span>
+                  <span className="shrink-0 font-medium text-ink">
+                    {formatResultDate(keyDate.date)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[11.5px] leading-relaxed text-ink-soft">
+              These are dates written in the document. They are not automatically deadlines.
+            </p>
+          </Panel>
+        ) : null}
 
         {amounts.length > 0 ? (
           <Panel title="Amounts">
@@ -937,56 +1015,29 @@ function TaxResultBody({
           </Panel>
         ) : null}
 
-        {keyDates.length > 0 ? (
-          <Panel title="Dates mentioned in the document">
-            <ul className="space-y-2">
-              {keyDates.map((keyDate) => (
-                <li
-                  key={keyDate.id}
-                  className="flex justify-between gap-4 text-[13px] text-ink-soft"
-                >
-                  <span>{keyDate.label}</span>
-                  <span className="shrink-0 font-medium text-ink">
-                    {formatResultDate(keyDate.date)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Panel>
-        ) : null}
-
         {yourRights.length > 0 ? (
           <Panel title="Rights & options">
-            <div className="space-y-3">
+            <div className="space-y-2">
               {yourRights.map((right) => (
-                <div key={right.id} className="flex gap-2.5">
-                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
-                  <div>
-                    <p className="text-[13.5px] font-medium text-ink">{right.right}</p>
-                    {right.howToExercise ? (
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
-                        {right.howToExercise}
-                      </p>
-                    ) : null}
-                    {right.legalBasis ? (
-                      <p className="mt-1 text-[11px] text-ink-soft">{right.legalBasis}</p>
-                    ) : null}
-                  </div>
-                </div>
+                <Disclosure key={right.id} title={right.right}>
+                  {right.howToExercise ? (
+                    <p className="text-[13px] leading-relaxed text-ink-soft">
+                      {right.howToExercise}
+                    </p>
+                  ) : null}
+                  {right.legalBasis ? (
+                    <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-soft">
+                      {right.legalBasis}
+                    </p>
+                  ) : null}
+                </Disclosure>
               ))}
             </div>
           </Panel>
         ) : null}
 
-        <details className="group rounded-2xl border border-line/70 bg-white p-4">
-          <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
-            More details
-            <ChevronDown
-              className="h-4 w-4 transition-transform group-open:rotate-180"
-              aria-hidden="true"
-            />
-          </summary>
-          <div className="mt-3 space-y-4 text-[12.5px] leading-relaxed text-ink-soft">
+        <Disclosure title="More details" tone="card">
+          <div className="space-y-4 text-[12.5px] leading-relaxed text-ink-soft">
             <div>
               <p className="font-semibold text-ink">Original document</p>
               {document.documentTitle ? (
@@ -1045,14 +1096,14 @@ function TaxResultBody({
               </div>
             ) : null}
           </div>
-        </details>
+        </Disclosure>
 
-        <Disclaimer wording={result.disclaimer.wording} />
+        <ResultFooterDisclaimer wording={result.disclaimer.wording} />
       </div>
     );
   }
 
-  // Overview
+  // Overview — the 10-second answer.
   return (
     <div className="space-y-3">
       <section className="rounded-2xl border border-line/70 bg-white p-5">
@@ -1060,7 +1111,7 @@ function TaxResultBody({
           <p className="text-[13px] font-medium text-teal">Analysis complete</p>
           <SeverityPill severity={summary.severity} />
         </div>
-        <h2 className="mt-2 font-display text-[23px] font-semibold leading-[1.2] text-ink">
+        <h2 className="mt-2 text-[22px] font-semibold leading-[1.25] tracking-[-0.01em] text-ink">
           {mainTitle}
         </h2>
         {document.documentTitle ? (
@@ -1069,26 +1120,50 @@ function TaxResultBody({
             <span className="truncate">{document.documentTitle}</span>
           </p>
         ) : null}
-        <p className="mt-3 whitespace-pre-line text-[14.5px] leading-[1.6] text-ink-soft">
-          {mainMeaning}
+        <p className="mt-3 text-[14.5px] leading-[1.55] text-ink-soft">
+          {firstSentence(mainMeaning)}
         </p>
         {guide?.context ? (
-          <div className="mt-3 rounded-xl bg-teal-dim px-3 py-2.5">
-            <p className="text-[12.5px] font-medium leading-relaxed text-ink">{guide.context}</p>
+          <p className="mt-3 rounded-xl bg-teal-dim px-3 py-2.5 text-[13px] font-medium leading-relaxed text-ink">
+            {firstSentence(guide.context)}
+          </p>
+        ) : null}
+        {hasMoreThanFirstSentence(mainMeaning) ||
+        (guide?.context && hasMoreThanFirstSentence(guide.context)) ? (
+          <div className="mt-3">
+            <Disclosure title="More about this document">
+              <p className="whitespace-pre-line text-[13px] leading-relaxed text-ink-soft">
+                {mainMeaning}
+              </p>
+              {guide?.context ? (
+                <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">{guide.context}</p>
+              ) : null}
+            </Disclosure>
           </div>
         ) : null}
       </section>
 
       {checkBlock}
 
-      <div className="grid grid-cols-2 gap-3">
-        <SummaryMetric label="Things to do" value={String(steps.length)} />
-        <SummaryMetric label="Dates & amounts" value={String(keyDates.length + amounts.length)} />
-      </div>
+      {steps.length > 0 ? (
+        <ResultNavRow
+          label={`${steps.length} ${steps.length === 1 ? "action" : "actions"} to take`}
+          onClick={() => onNavigate("actions")}
+        />
+      ) : null}
+      {dateCount > 0 ? (
+        <ResultNavRow
+          label={`${dateCount} important ${dateCount === 1 ? "date" : "dates"}`}
+          onClick={() => onNavigate("dates")}
+        />
+      ) : null}
 
-      <NextSectionButton label="View key findings" onClick={() => onNavigate("actions")} />
-      <AskQuestionButton onClick={() => onNavigate("ask")} />
-      <Disclaimer wording={result.disclaimer.wording} />
+      <ResultPrimaryButton
+        label="See what you need to do"
+        onClick={() => onNavigate(steps.length > 0 ? "actions" : "dates")}
+      />
+      <AskComingSoonButton />
+      <ResultFooterDisclaimer wording={result.disclaimer.wording} />
     </div>
   );
 }

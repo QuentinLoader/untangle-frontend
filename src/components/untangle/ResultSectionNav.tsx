@@ -3,7 +3,8 @@ import type { ResultSection } from "@/lib/solutions";
 /**
  * Shared results navigation. Product-specific section labels come from the
  * solution catalogue, so a new product supplies its own sections without a new
- * results framework.
+ * results framework. Sections marked `available: false` stay visible for
+ * product consistency but are never presented as working functions.
  */
 export function ResultSectionNav({
   sections,
@@ -22,18 +23,33 @@ export function ResultSectionNav({
     >
       {sections.map((section) => {
         const isActive = section.id === active;
+        const unavailable = section.available === false;
         return (
           <button
             key={section.id}
             type="button"
             role="tab"
             aria-selected={isActive}
-            onClick={() => onSelect(section.id)}
-            className={`min-h-[44px] flex-1 whitespace-nowrap rounded-full px-3 text-[13px] font-semibold transition-colors ${
-              isActive ? "bg-white text-ink shadow-sm" : "text-ink-soft active:bg-white/60"
+            aria-disabled={unavailable || undefined}
+            disabled={unavailable}
+            title={unavailable ? "Coming soon" : undefined}
+            onClick={() => {
+              if (!unavailable) onSelect(section.id);
+            }}
+            className={`relative min-h-[44px] flex-1 whitespace-nowrap rounded-full px-3 text-[13px] font-semibold transition-colors ${
+              unavailable
+                ? "cursor-not-allowed text-ink-soft/50"
+                : isActive
+                  ? "bg-white text-ink shadow-sm"
+                  : "text-ink-soft active:bg-white/60"
             }`}
           >
             {section.label}
+            {unavailable ? (
+              <span className="ml-1 align-super text-[8.5px] font-semibold uppercase tracking-wide">
+                soon
+              </span>
+            ) : null}
           </button>
         );
       })}
