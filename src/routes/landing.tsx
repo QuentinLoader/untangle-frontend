@@ -66,6 +66,68 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-paper text-ink">
+      {/* WELCOME */}
+      <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-white">
+        <img
+          src={welcomeImage}
+          alt="Misty mountain valley at dawn"
+          width={1024}
+          height={1536}
+          className="pointer-events-none absolute inset-x-0 top-[22%] h-[58%] w-full object-cover"
+        />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.85) 20%, rgba(255,255,255,0) 38%, rgba(255,255,255,0) 52%, rgba(255,255,255,0.9) 68%, #ffffff 78%)",
+          }}
+          aria-hidden
+        />
+
+        <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-14 text-center">
+          <BrandMark size={56} />
+          <h1 className="mt-4 font-display text-[38px] font-semibold leading-none text-ink">
+            Untangle
+          </h1>
+          <p className="mt-3 text-[17px] leading-snug text-ink-soft">
+            Real documents.
+            <br />
+            Clear answers.
+          </p>
+
+          <div className="mt-auto w-full pt-[42vh]">
+            <ul className="space-y-3 text-left">
+              {[
+                "Understand your documents",
+                "Know your rights",
+                "Make confident decisions",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-3">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-teal text-white">
+                    <Check size={14} strokeWidth={3} aria-hidden />
+                  </span>
+                  <span className="text-[15px] font-medium text-ink">{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              to="/signup"
+              className="mt-7 flex min-h-[54px] w-full items-center justify-center rounded-full bg-teal text-[16px] font-semibold text-white transition-transform active:scale-[0.99]"
+            >
+              Get Started
+            </Link>
+            <p className="mt-4 text-[13.5px] text-ink-soft">
+              Already have an account?{" "}
+              <Link to="/login" className="font-semibold text-teal">
+                Sign in
+              </Link>
+            </p>
+            <p className="mt-4 text-[11.5px] text-ink-soft">Simple. Secure. South African.</p>
+          </div>
+        </div>
+      </section>
+
       {/* NAV */}
       <header className="border-b border-line bg-paper">
         <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 py-4 md:grid-cols-3">
