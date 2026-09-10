@@ -1,7 +1,7 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { FileQuestion, FileText, Globe, Search } from "lucide-react";
+import { FileQuestion, FileText, Globe, Lightbulb, Search } from "lucide-react";
 import {
   getDocumentStatus,
   friendlyDocumentError,
@@ -321,6 +321,33 @@ function NeedsReviewState({
         </div>
       );
   }
+}
+
+/** Circular progress dial — calm, state-driven, no fake percentages between states. */
+function ProgressRing({ percent }: { percent: number }) {
+  const clamped = Math.max(0, Math.min(100, Math.round(percent)));
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  return (
+    <div className="relative grid h-[136px] w-[136px] place-items-center">
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90" aria-hidden>
+        <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--paper-2)" strokeWidth="9" />
+        <circle
+          cx="60"
+          cy="60"
+          r={radius}
+          fill="none"
+          stroke="var(--teal)"
+          strokeWidth="9"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - clamped / 100)}
+          style={{ transition: "stroke-dashoffset 700ms ease" }}
+        />
+      </svg>
+      <span className="absolute font-display text-[26px] font-semibold text-ink">{clamped}%</span>
+    </div>
+  );
 }
 
 function StepRow({ label, done, active }: { label: string; done: boolean; active?: boolean }) {
