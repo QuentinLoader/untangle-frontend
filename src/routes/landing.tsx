@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { BlockCard } from "@/components/untangle/BlockCard";
 import { StampBadge } from "@/components/untangle/StampBadge";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
+import { SOLUTION_LIST } from "@/lib/solutions";
 
 export const Route = createFileRoute("/landing")({
   head: () => ({
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/landing")({
       {
         name: "description",
         content:
-          "Upload any SARS letter, lease, purchase agreement or job offer and get a plain-English explanation, what to do next, and a reminder before the deadline.",
+          "Upload a South African tax letter, residential lease, insurance policy or employment document and get a plain-English explanation, what to do next, and a reminder before the deadline.",
       },
       {
         property: "og:title",
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/landing")({
       {
         property: "og:description",
         content:
-          "Plain-English explanations of South African letters, leases and contracts — no jargon, no panic.",
+          "Plain-English explanations of South African tax letters, leases, insurance policies and employment documents.",
       },
       { property: "og:url", content: "/landing" },
     ],
@@ -27,41 +28,6 @@ export const Route = createFileRoute("/landing")({
   }),
   component: Landing,
 });
-
-const MODULES = [
-  {
-    name: "TaxSnap",
-    icon: "📨",
-    iconBg: "var(--tint-red)",
-    tag: "SARS letters",
-    color: "var(--stamp-red)",
-    desc: "Assessments, penalties and letters of demand explained — what's owed, by when, and what happens if you wait.",
-  },
-  {
-    name: "LeaseCheck",
-    icon: "🏠",
-    iconBg: "var(--teal-dim)",
-    tag: "Rentals",
-    color: "var(--teal)",
-    desc: "Deposits, notice periods and escalation clauses in your lease, translated into what they mean for you.",
-  },
-  {
-    name: "DealCheck",
-    icon: "📝",
-    iconBg: "var(--tint-sand)",
-    tag: "Agreements",
-    color: "var(--stamp-amber)",
-    desc: "Purchase and sale agreements read line by line so you know what you're signing before you sign it.",
-  },
-  {
-    name: "WorkCheck",
-    icon: "💼",
-    iconBg: "var(--tint-blue)",
-    tag: "Job offers",
-    color: "var(--module-blue)",
-    desc: "Probation, restraint of trade and notice terms in an offer of employment, flagged in plain language.",
-  },
-];
 
 const STEPS = [
   { title: "Snap or upload", desc: "Photograph the letter or pick a PDF from your phone." },
@@ -87,7 +53,7 @@ const TEASERS = [
     tag: "WorkCheck",
     color: "var(--module-blue)",
     title: "Is a probation clause normal?",
-    desc: "What a fair probation period looks like in a South African offer of employment.",
+    desc: "What a fair probation period looks like in a South African employment contract.",
   },
 ];
 
@@ -105,8 +71,8 @@ function Landing() {
             <span className="font-display text-[20px] font-semibold">Untangle</span>
           </div>
           <nav className="hidden items-center justify-center gap-6 text-[14px] text-ink-soft md:flex">
-            {MODULES.map((m) => (
-              <span key={m.name}>{m.name}</span>
+            {SOLUTION_LIST.map((m) => (
+              <span key={m.slug}>{m.name}</span>
             ))}
           </nav>
           <div className="flex justify-end">
@@ -129,9 +95,9 @@ function Landing() {
             <span className="text-teal">Untangle it in 10 seconds.</span>
           </h1>
           <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-ink-soft">
-            Upload any SARS letter, lease, purchase agreement or job offer. Get a plain-English
-            explanation, what you need to do, and a reminder before the deadline — no jargon, no
-            panic.
+            Upload a South African tax letter, residential lease, insurance policy or employment
+            document. Get a plain-English explanation, what you need to do, and a reminder before
+            the deadline — no jargon, no panic.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <PrimaryButton onClick={toUpload} className="sm:w-auto sm:px-6">
@@ -142,7 +108,7 @@ function Landing() {
             </SecondaryButton>
           </div>
           <p className="mt-4 text-[12.5px] text-ink-soft">
-            🔒 Your documents stay private · Informational only, never legal or tax advice
+            Your documents stay private · Informational only, never legal or tax advice
           </p>
         </div>
 
@@ -188,25 +154,25 @@ function Landing() {
       {/* MODULES */}
       <section className="mx-auto max-w-6xl px-5 py-14">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {MODULES.map((m) => (
-            <div key={m.name} className="rounded-[18px] border border-line bg-white p-5">
-              <div
-                className="grid h-[44px] w-[44px] place-items-center rounded-[12px] text-xl"
-                style={{ backgroundColor: m.iconBg }}
-                aria-hidden
-              >
-                {m.icon}
+          {SOLUTION_LIST.map((m) => {
+            const Icon = m.icon;
+            return (
+              <div key={m.slug} className="rounded-[18px] border border-line bg-white p-5">
+                <div
+                  className="grid h-[44px] w-[44px] place-items-center rounded-[12px] text-teal"
+                  style={{ backgroundColor: m.tint }}
+                  aria-hidden
+                >
+                  <Icon size={20} strokeWidth={1.9} />
+                </div>
+                <h3 className="mt-4 font-display text-[19px] font-semibold">{m.name}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">{m.description}</p>
+                <span className="mt-4 inline-block text-[12.5px] font-medium text-ink-soft">
+                  {m.status === "AVAILABLE" ? m.shortDescription : "Coming soon"}
+                </span>
               </div>
-              <h3 className="mt-4 font-display text-[19px] font-semibold">{m.name}</h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">{m.desc}</p>
-              <span
-                className="mt-4 inline-block font-mono text-[10.5px] font-bold uppercase tracking-[0.08em]"
-                style={{ color: m.color }}
-              >
-                {m.tag}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -314,9 +280,8 @@ function Landing() {
           search={{}}
           className="block w-full rounded-[14px] bg-teal px-4 py-[14px] text-center text-[15px] font-semibold text-white"
         >
-          📷 Upload a document — free
+          Upload a document — free
         </Link>
-
       </div>
     </div>
   );

@@ -1,7 +1,15 @@
 import { useRef, useState } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Camera } from "lucide-react";
+import {
+  ArrowLeft,
+  Camera,
+  FileText,
+  Lock,
+  ShieldCheck,
+  Timer,
+  Upload as UploadIcon,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
@@ -34,15 +42,16 @@ export const Route = createFileRoute("/upload")({
   },
   head: () => ({
     meta: [
-      { title: "New document — Untangle" },
+      { title: "Upload a document — Untangle" },
       {
         name: "description",
-        content: "Snap or upload a SARS letter, lease, agreement or job offer to have it explained.",
+        content:
+          "Upload a South African tax letter, residential lease, insurance policy or employment document to have it explained.",
       },
-      { property: "og:title", content: "New document — Untangle" },
+      { property: "og:title", content: "Upload a document — Untangle" },
       {
         property: "og:description",
-        content: "Snap or upload your document and get it in plain English.",
+        content: "Upload your document and get it explained in plain English.",
       },
     ],
   }),
@@ -50,6 +59,12 @@ export const Route = createFileRoute("/upload")({
 });
 
 const ACCEPT = [...SUPPORTED_MIME_TYPES, ".heic", ".heif", ".tif", ".tiff"].join(",");
+
+const TRUST = [
+  { icon: Lock, text: "Secure processing" },
+  { icon: ShieldCheck, text: "Your document is private" },
+  { icon: Timer, text: "Files are handled according to Untangle's retention rules" },
+];
 
 function Upload() {
   const navigate = useNavigate();
@@ -86,7 +101,6 @@ function Upload() {
     setUploadStatus("idle");
     setUploadProgressMessage(null);
     s3UploadedRef.current = false;
-
 
     const mimeType = resolveMimeType(file);
     if (!isSupportedMimeType(mimeType)) {
@@ -136,7 +150,11 @@ function Upload() {
 
   const startUpload = async () => {
     if (!pending) return;
-    if (uploadStatus === "requesting-url" || uploadStatus === "uploading" || uploadStatus === "verifying")
+    if (
+      uploadStatus === "requesting-url" ||
+      uploadStatus === "uploading" ||
+      uploadStatus === "verifying"
+    )
       return;
 
     setError(null);
@@ -159,7 +177,7 @@ function Upload() {
       const completed = await completeUpload(pending.documentId);
       const doc = completed.data.document;
       setUploadStatus("queued");
-      // A new document exists on the backend: refresh Home and Vault listings.
+      // A new document exists on the backend: refresh Home and Documents listings.
       void queryClient.invalidateQueries({ queryKey: ["documents"] });
       setUploadProgressMessage(null);
       navigate({ to: "/processing/$documentId", params: { documentId: doc.id } });
@@ -195,28 +213,32 @@ function Upload() {
             ? "Queued for processing"
             : uploadStatus === "failed"
               ? "Try upload again"
-              : "Continue upload";
+              : "Continue";
 
+  const title = operationalSolution ? operationalSolution.uploadTitle : "Upload a document";
+  const hint = operationalSolution
+    ? operationalSolution.uploadHint
+    : "Untangle will work out which supported product the document belongs to.";
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper pb-[88px]">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5">
-        <header className="flex items-center gap-3 pt-7">
-          <Link
-            to="/"
-            className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper-2 active:bg-paper-2"
-            aria-label="Go back"
-          >
-            <span className="text-[19px]">←</span>
-          </Link>
-          <div>
-            <h1 className="font-display text-[17px] font-semibold text-ink">
-              {operationalSolution ? operationalSolution.name : "Analyse a document"}
-            </h1>
-            {operationalSolution ? (
-              <p className="mt-0.5 text-[11.5px] text-ink-soft">{operationalSolution.tagline}</p>
-            ) : null}
-          </div>
+    <div className="flex min-h-screen flex-col bg-paper pb-[104px]">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-6">
+        <Link
+          to="/"
+          aria-label="Go back"
+          className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-ink transition-colors active:bg-paper-2"
+        >
+          <ArrowLeft size={20} aria-hidden />
+        </Link>
+
+        <header className="mt-3">
+          {operationalSolution ? (
+            <p className="text-[13px] font-semibold text-teal">{operationalSolution.name}</p>
+          ) : null}
+          <h1 className="mt-1 font-display text-[24px] font-semibold leading-tight text-ink">
+            {title}
+          </h1>
+          <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-soft">{hint}</p>
         </header>
 
         <input
@@ -235,111 +257,106 @@ function Upload() {
           className="hidden"
         />
 
-        <div className="flex flex-1 flex-col items-center pt-12">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={busy}
-            className="grid h-[124px] w-[124px] place-items-center rounded-[22px] border-2 border-dashed border-teal bg-teal-dim text-teal transition-transform active:scale-[0.98] disabled:opacity-60"
-            aria-label="Choose a document to upload"
-          >
-            {pending ? (
-              <span className="text-3xl" aria-hidden>✓</span>
-            ) : (
-              <Camera size={34} strokeWidth={1.8} aria-hidden />
-            )}
-          </button>
-
-          <h2 className="mt-5 text-center font-display text-[20px] font-semibold leading-snug text-ink">
-            {uploadStatus === "queued"
-              ? "Upload verified"
-              : pending
-                ? "Document ready"
-                : "Take a photo or upload a file"}
-          </h2>
-
-          {pending ? (
-            <div className="mt-4 w-full max-w-[280px] rounded-[14px] border border-line bg-card p-[14px]">
-              <p className="truncate text-[14px] font-semibold text-ink">
-                {pending.originalFilename}
-              </p>
-              <p className="mt-1 font-mono text-[11px] uppercase tracking-wide text-ink-soft">
-                {formatFileSize(pending.sizeBytes)}
-              </p>
-              <p className="mt-3 font-mono text-[10.5px] font-bold uppercase tracking-wide text-teal">
-                {uploadStatus === "queued" ? "🔒 Upload verified" : "Ready to upload"}
-              </p>
-              {uploadStatus === "queued" && (
-                <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
-                  Your document is queued for processing.
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
-              {operationalSolution
-                ? `${operationalSolution.name} is selected. Untangle will confirm the document before analysis.`
-                : "Untangle will work out which supported solution the document belongs to."}
-            </p>
-          )}
-
-          {(busy || uploadProgressMessage) && (
-            <p
-              className="mt-4 font-mono text-[11px] uppercase tracking-wide text-ink-soft"
-              role="status"
-            >
-              {busy ? "Preparing document…" : uploadProgressMessage}
-            </p>
-          )}
-
-          {error && (
-            <p className="mt-4 max-w-[280px] text-center text-[13px] text-stamp-red" role="alert">
-              {error}
-            </p>
-          )}
-
-          {planUsageLine && !entitlements?.isPlus ? (
-            <p className="mt-4 font-mono text-[11px] uppercase tracking-wide text-ink-soft">
-              {planUsageLine}
-            </p>
-          ) : null}
-
-          <div className="mt-6 w-full max-w-[300px] space-y-3">
-            {analysesUsedUp && !pending ? (
-              <UpgradePrompt
-                title="Free analyses used"
-                message="You've used your free analyses for this month. Untangle Plus gives you more."
-              />
-            ) : pending ? (
-              <>
-                <PrimaryButton
-                  onClick={() => void startUpload()}
-                  disabled={uploadInFlight}
-                  className={uploadInFlight ? "opacity-60" : ""}
-                >
-                  {uploadLabel}
-                </PrimaryButton>
-                <SecondaryButton
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={busy || uploadInFlight}
-                >
-                  Choose a different file
-                </SecondaryButton>
-              </>
-            ) : (
-              <>
-                <PrimaryButton onClick={() => cameraInputRef.current?.click()} disabled={busy}>
-                  {busy ? "Preparing…" : "Take a photo"}
-                </PrimaryButton>
-                <SecondaryButton onClick={() => fileInputRef.current?.click()} disabled={busy}>
-                  Choose from files
-                </SecondaryButton>
-              </>
-            )}
+        {analysesUsedUp && !pending ? (
+          <div className="mt-6">
+            <UpgradePrompt
+              title="Free analyses used"
+              message="You've used your free analyses for this month. Untangle Plus gives you more."
+            />
           </div>
+        ) : pending ? (
+          <div className="mt-6">
+            <div className="flex items-center gap-3 rounded-2xl border border-line/70 bg-white px-4 py-4">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-teal-dim text-teal">
+                <FileText size={20} strokeWidth={1.9} aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[15px] font-semibold text-ink">
+                  {pending.originalFilename}
+                </span>
+                <span className="mt-0.5 block text-[12.5px] text-ink-soft">
+                  {formatFileSize(pending.sizeBytes)} ·{" "}
+                  {uploadStatus === "queued" ? "Upload verified" : "Ready to upload"}
+                </span>
+              </span>
+            </div>
 
-        </div>
+            <div className="mt-4 space-y-3">
+              <PrimaryButton
+                onClick={() => void startUpload()}
+                disabled={uploadInFlight}
+                className={uploadInFlight ? "opacity-60" : ""}
+              >
+                {uploadLabel}
+              </PrimaryButton>
+              <SecondaryButton
+                onClick={() => fileInputRef.current?.click()}
+                disabled={busy || uploadInFlight}
+              >
+                Choose a different file
+              </SecondaryButton>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={busy}
+              className="flex min-h-[188px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-teal/40 bg-white px-6 py-8 text-center transition-colors active:bg-teal-dim/40 disabled:opacity-60"
+            >
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-teal-dim text-teal">
+                <UploadIcon size={24} strokeWidth={1.9} aria-hidden />
+              </span>
+              <span className="mt-4 text-[16px] font-semibold text-ink">
+                Tap to upload your document
+              </span>
+              <span className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
+                PDF, JPG, PNG, HEIC or TIFF · up to 25 MB
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={busy}
+              className="mt-3 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border border-line bg-white text-[15px] font-semibold text-ink transition-colors active:bg-paper-2 disabled:opacity-60"
+            >
+              <Camera size={18} aria-hidden />
+              {busy ? "Preparing…" : "Take a photo instead"}
+            </button>
+          </div>
+        )}
+
+        {(busy || uploadProgressMessage) && (
+          <p className="mt-4 text-center text-[13px] text-ink-soft" role="status">
+            {busy ? "Preparing document…" : uploadProgressMessage}
+          </p>
+        )}
+
+        {error && (
+          <p className="mt-4 text-center text-[13px] text-stamp-red" role="alert">
+            {error}
+          </p>
+        )}
+
+        <ul className="mt-8 space-y-2.5">
+          {TRUST.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.text} className="flex items-start gap-2.5 text-[12.5px] text-ink-soft">
+                <Icon size={15} className="mt-0.5 shrink-0 text-teal" aria-hidden />
+                <span>{item.text}</span>
+              </li>
+            );
+          })}
+        </ul>
+
+        {planUsageLine && !entitlements?.isPlus ? (
+          <p className="mt-5 text-[12.5px] text-ink-soft">{planUsageLine}</p>
+        ) : null}
       </div>
-      <BottomTabBar active="Analyse" />
+      <BottomTabBar active="Home" />
     </div>
   );
 }

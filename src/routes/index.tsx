@@ -1,14 +1,13 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, FolderOpen, ScanLine } from "lucide-react";
+import { ChevronRight, Clock } from "lucide-react";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
-import { SolutionCard } from "@/components/untangle/SolutionCard";
+import { ProductRow } from "@/components/untangle/ProductRow";
 import { useAuth } from "@/auth/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
-import { SOLUTIONS } from "@/lib/solutions";
+import { SOLUTION_LIST } from "@/lib/solutions";
 import { listReminders, reminderDocumentTitle, reminderView } from "@/lib/reminders";
-import { usageLine } from "@/lib/entitlements";
 import { firstName, resolveDisplayName } from "@/lib/display-name";
 
 export const Route = createFileRoute("/")({
@@ -17,7 +16,8 @@ export const Route = createFileRoute("/")({
       { title: "Untangle — Understand what to do next" },
       {
         name: "description",
-        content: "Untangle explains important documents in plain English and tells you what to do next.",
+        content:
+          "Untangle explains South African tax letters, residential leases, insurance policies and employment documents in plain English.",
       },
       { property: "og:title", content: "Untangle — Understand what to do next" },
       {
@@ -36,7 +36,6 @@ function greeting(now: Date): string {
   return "Good evening";
 }
 
-
 function Index() {
   const navigate = useNavigate();
   const { profile, user } = useAuth();
@@ -49,146 +48,83 @@ function Index() {
     enabled: entitlements ? entitlements.remindersEnabled : false,
   });
 
-  const featuredSolution = SOLUTIONS.find((solution) => solution.status === "AVAILABLE") ?? SOLUTIONS[0]!;
-  const upcomingSolutions = SOLUTIONS.filter((solution) => solution.slug !== featuredSolution.slug);
-
+  // At most one item on Home; the full list lives on Reminders.
   const attention = (remindersQuery.data?.data.reminders ?? [])
     .map(reminderView)
     .filter((view) => view.state === "DUE" || view.state === "UPCOMING")
     .sort((a, b) => {
       if (a.state !== b.state) return a.state === "DUE" ? -1 : 1;
       return new Date(a.effectiveDate ?? 0).getTime() - new Date(b.effectiveDate ?? 0).getTime();
-    })
-    .slice(0, 3);
+    })[0];
 
   const name = firstName(resolveDisplayName(profile, user));
-  const usage = entitlements ? usageLine(entitlements) : null;
 
   return (
-    <div className="min-h-screen bg-paper pb-[110px]">
+    <div className="min-h-screen bg-paper pb-[104px]">
       <div className="mx-auto max-w-md px-5 pt-8">
-        <header>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-teal">Untangle</p>
-              <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight text-ink">
-                {greeting(new Date())}
-                {name ? `, ${name}` : ""}
-              </h1>
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-teal" aria-hidden />
+              <span className="font-display text-[19px] font-semibold text-ink">Untangle</span>
             </div>
-            <Link
-              to="/upgrade"
-              className="inline-flex min-h-[44px] items-center rounded-full border border-line bg-white px-4 text-[11.5px] font-bold text-ink shadow-sm transition-colors active:bg-paper-2"
-            >
-              {entitlements?.isPlus ? "Plus" : "Free plan"}
-            </Link>
-          </div>
-          <p className="mt-2 max-w-[340px] text-[14px] leading-relaxed text-ink-soft">
-            Understand the paperwork. Know what to do next.
-          </p>
-        </header>
-
-        <section className="mt-8">
-          <div>
-            <h2 className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-ink-soft">
-              Your solutions
-            </h2>
-            <p className="mt-1 text-[12.5px] text-ink-soft">
-              Choose what you need help understanding.
+            <p className="mt-1 truncate text-[14px] text-ink-soft">
+              {greeting(new Date())}
+              {name ? `, ${name}` : ""}
             </p>
           </div>
+          <Link
+            to="/upgrade"
+            className="inline-flex h-11 shrink-0 items-center rounded-full border border-line bg-white px-4 text-[12.5px] font-medium text-ink-soft transition-colors active:bg-paper-2"
+          >
+            {entitlements?.isPlus ? "Plus" : "Free"}
+          </Link>
+        </header>
 
-          <div className="mt-3">
-            <SolutionCard solution={featuredSolution} featured />
-          </div>
+        <section className="mt-9">
+          <h1 className="font-display text-[26px] font-semibold leading-snug text-ink">
+            What would you like to understand today?
+          </h1>
 
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            {upcomingSolutions.map((solution) => (
-              <SolutionCard key={solution.slug} solution={solution} />
+          <div className="mt-5 space-y-3">
+            {SOLUTION_LIST.map((solution) => (
+              <ProductRow key={solution.slug} solution={solution} />
             ))}
           </div>
         </section>
 
-        <section className="mt-6">
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/upload" })}
-            className="flex w-full items-center gap-3 rounded-[16px] bg-ink px-4 py-4 text-left text-paper shadow-sm transition-transform active:scale-[0.99]"
-          >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-white/10">
-              <ScanLine size={20} aria-hidden />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-bold">Analyse a document</span>
-              <span className="mt-0.5 block text-[12px] text-white/70">
-                Upload once. Untangle works out the supported solution.
-              </span>
-            </span>
-            <ArrowRight size={17} className="shrink-0" aria-hidden />
-          </button>
-        </section>
-
-        {attention.length > 0 ? (
+        {attention ? (
           <section className="mt-9">
-            <div className="flex items-baseline justify-between">
-              <h2 className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-ink-soft">
-                Needs your attention
-              </h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-[13px] font-semibold text-ink-soft">Needs your attention</h2>
               <Link
                 to="/reminders"
-                className="inline-flex min-h-[44px] items-center rounded-[10px] px-2 text-[12.5px] font-semibold text-teal active:bg-teal-dim"
+                className="inline-flex min-h-[44px] items-center rounded-lg px-2 text-[13px] font-semibold text-teal active:bg-teal-dim"
               >
-                All reminders →
+                Reminders
               </Link>
             </div>
-            <ul className="mt-3 space-y-2">
-              {attention.map((view) => (
-                <li key={view.reminder.reminderId}>
-                  <button
-                    type="button"
-                    onClick={() => navigate({ to: "/reminders" })}
-                    className={`flex w-full items-center gap-3 rounded-[14px] border px-[14px] py-3 text-left ${
-                      view.state === "DUE" ? "border-teal bg-teal-dim/40" : "border-line bg-white"
-                    }`}
-                  >
-                    <span className="text-[16px]" aria-hidden>⏰</span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[14px] font-bold text-ink">{view.reminder.label}</span>
-                      <span className="block truncate text-[12px] text-ink-soft">{reminderDocumentTitle(view.reminder)}</span>
-                    </span>
-                    <span className="shrink-0 font-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-teal">
-                      {view.statusLabel}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/reminders" })}
+              className={`mt-2 flex w-full items-center gap-3 rounded-2xl border px-4 py-4 text-left transition-colors ${
+                attention.state === "DUE"
+                  ? "border-teal/50 bg-teal-dim/50"
+                  : "border-line/70 bg-white active:bg-paper-2"
+              }`}
+            >
+              <Clock size={18} className="shrink-0 text-teal" aria-hidden />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[15px] font-semibold text-ink">
+                  {attention.reminder.label}
+                </span>
+                <span className="block truncate text-[12.5px] text-ink-soft">
+                  {reminderDocumentTitle(attention.reminder)} · {attention.statusLabel}
+                </span>
+              </span>
+              <ChevronRight size={18} className="shrink-0 text-ink-soft" aria-hidden />
+            </button>
           </section>
-        ) : null}
-
-        <section className="mt-7">
-          <Link to="/vault" className="flex items-center gap-3 rounded-[14px] border border-line bg-white px-3.5 py-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-teal-dim text-teal">
-              <FolderOpen size={18} aria-hidden />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[13.5px] font-bold text-ink">Vault</span>
-              <span className="block text-[11.5px] text-ink-soft">All uploaded documents in one place.</span>
-            </span>
-            <ArrowRight size={16} className="shrink-0 text-teal" aria-hidden />
-          </Link>
-        </section>
-
-        {usage && !entitlements?.isPlus ? (
-          <Link
-            to="/upgrade"
-            className="mt-5 flex min-h-[52px] items-center justify-between gap-3 rounded-[14px] border border-line bg-white px-4 transition-colors active:bg-paper-2"
-          >
-            <span className="text-[12.5px] text-ink-soft">{usage}</span>
-            <span className="shrink-0 text-[12.5px] font-semibold text-teal">
-              Plan & billing →
-            </span>
-          </Link>
         ) : null}
       </div>
 
