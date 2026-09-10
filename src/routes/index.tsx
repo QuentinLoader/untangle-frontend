@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Clock } from "lucide-react";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
+import { BrandMark } from "@/components/untangle/BrandMark";
 import { ProductRow } from "@/components/untangle/ProductRow";
 import { useAuth } from "@/auth/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
