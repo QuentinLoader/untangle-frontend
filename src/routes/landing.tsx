@@ -92,18 +92,6 @@ export function LandingPage() {
     if (!loading && session) navigate({ to: "/", replace: true });
   }, [loading, session, navigate]);
 
-  // Hide the sticky CTA while the final CTA is visible — no stacked duplicate buttons.
-  const [finalCtaVisible, setFinalCtaVisible] = useState(false);
-  useEffect(() => {
-    const el = document.getElementById("final-cta");
-    if (!el || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(
-      (entries) => setFinalCtaVisible(entries[0]?.isIntersecting ?? false),
-      { rootMargin: "0px 0px -80px 0px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const toUpload = () => navigate({ to: "/upload", search: {} });
   const scrollToHow = () =>
