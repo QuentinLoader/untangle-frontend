@@ -1,4 +1,3 @@
-import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Clock } from "lucide-react";
@@ -10,6 +9,7 @@ import { useEntitlements } from "@/hooks/useEntitlements";
 import { SOLUTION_LIST } from "@/lib/solutions";
 import { listReminders, reminderDocumentTitle, reminderView } from "@/lib/reminders";
 import { firstName, resolveDisplayName } from "@/lib/display-name";
+import { LandingPage } from "./landing";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,8 +27,22 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: withAuth(Index),
+  component: HomeGate,
 });
+
+/** The front door: signed-out visitors get the landing page; signed-in users get Home. */
+function HomeGate() {
+  const { session, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-paper">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-teal" />
+      </div>
+    );
+  }
+  if (!session) return <LandingPage />;
+  return <Index />;
+}
 
 function greeting(now: Date): string {
   const hour = now.getHours();

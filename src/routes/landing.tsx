@@ -30,7 +30,7 @@ export const Route = createFileRoute("/landing")({
     ],
     links: [{ rel: "canonical", href: "/landing" }],
   }),
-  component: Landing,
+  component: LandingPage,
 });
 
 const STEPS = [
@@ -84,11 +84,12 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Landing() {
+export function LandingPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
-  // Signed-in visitors go straight to their Home.
+  // Signed-in visitors go straight to their Home. (At "/" the gate shows Home
+  // instead, so this only fires on /landing.)
   useEffect(() => {
     if (!loading && session) navigate({ to: "/", replace: true });
   }, [loading, session, navigate]);
