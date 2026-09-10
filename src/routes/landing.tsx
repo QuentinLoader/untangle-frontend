@@ -1,4 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Check } from "lucide-react";
+import { BrandMark } from "@/components/untangle/BrandMark";
+import welcomeImage from "@/assets/welcome-mountains.jpg";
 import { BlockCard } from "@/components/untangle/BlockCard";
 import { StampBadge } from "@/components/untangle/StampBadge";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
