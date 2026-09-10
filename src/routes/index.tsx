@@ -65,13 +65,10 @@ function Index() {
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 shrink-0 rounded-full bg-teal" aria-hidden />
+              <BrandMark size={22} />
               <span className="font-display text-[19px] font-semibold text-ink">Untangle</span>
             </div>
-            <p className="mt-1 truncate text-[14px] text-ink-soft">
-              {greeting(new Date())}
-              {name ? `, ${name}` : ""}
-            </p>
+
           </div>
           <Link
             to="/upgrade"
