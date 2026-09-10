@@ -110,13 +110,13 @@ function Landing() {
             <Link
               to="/login"
               search={{ redirect: undefined }}
-              className="flex min-h-[44px] items-center rounded-[12px] px-3 text-[14px] font-semibold text-ink"
+              className="flex min-h-[44px] shrink-0 items-center whitespace-nowrap rounded-[12px] px-3 text-[14px] font-semibold text-ink"
             >
               Sign in
             </Link>
             <PrimaryButton
               onClick={toUpload}
-              className="w-auto min-h-[44px] px-4 py-[10px] text-[14px]"
+              className="min-h-[44px] w-auto whitespace-nowrap px-4 py-[10px] text-[14px]"
             >
               Try it free
             </PrimaryButton>
