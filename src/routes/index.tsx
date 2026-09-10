@@ -39,7 +39,7 @@ function greeting(now: Date): string {
 function Index() {
   const navigate = useNavigate();
   const { profile, user } = useAuth();
-  const { entitlements } = useEntitlements();
+  const { entitlements, error: entitlementsError } = useEntitlements();
 
   const remindersQuery = useQuery({
     queryKey: ["reminders"],
