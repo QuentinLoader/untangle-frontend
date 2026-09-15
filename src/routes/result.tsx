@@ -403,29 +403,37 @@ function LeaseWarningBlock({
 
 function LeaseResultBody({
   result,
+  documentId,
   section,
   onNavigate,
   productName,
 }: {
   result: LeaseDocumentResult;
+  documentId: string;
   section: string;
   onNavigate: (id: string) => void;
   productName: string;
 }) {
   const { summary, document, humanGuide, yourRights } = result;
   const validationWarnings = result.validationWarnings ?? [];
+  const keyTerms = humanGuide.keyTerms ?? [];
+  const askCapability = result.ask?.supported === true ? result.ask : null;
   const hasResponsibilities =
     humanGuide.tenantResponsibilities.length > 0 || humanGuide.landlordResponsibilities.length > 0;
 
   if (section === "ask") {
-    return <AskSectionPlaceholder productName={productName} />;
+    return askCapability ? (
+      <LeaseAskSection documentId={documentId} capability={askCapability} />
+    ) : (
+      <AskSectionPlaceholder productName={productName} />
+    );
   }
 
   if (section === "terms") {
     return (
       <div className="space-y-3">
         {humanGuide.importantMoney.length > 0 ? (
-          <Panel title="Rent, deposit and other money">
+          <Panel title="Money and costs">
             <div className="space-y-2">
               {humanGuide.importantMoney.map((item) => (
                 <div
