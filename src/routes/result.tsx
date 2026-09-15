@@ -713,13 +713,23 @@ function LeaseResultBody({
       <div className="grid grid-cols-2 gap-3">
         <SummaryMetric
           label="Key terms"
-          value={String(humanGuide.importantMoney.length + humanGuide.importantDates.length)}
+          value={String(
+            humanGuide.importantMoney.length + humanGuide.importantDates.length + keyTerms.length,
+          )}
         />
         <SummaryMetric label="Clauses to check" value={String(humanGuide.clausesToCheck.length)} />
       </div>
 
       <NextSectionButton label="View key findings" onClick={() => onNavigate("terms")} />
-      <AskComingSoonButton />
+      {askCapability ? (
+        <ResultNavRow
+          label="Ask about this lease"
+          hint="Grounded in this document and approved legal rules"
+          onClick={() => onNavigate("ask")}
+        />
+      ) : (
+        <AskComingSoonButton />
+      )}
       <Disclaimer wording={result.disclaimer.wording} />
     </div>
   );
