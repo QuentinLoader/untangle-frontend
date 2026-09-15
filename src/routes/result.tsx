@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { AskSectionPlaceholder, ResultSectionNav } from "@/components/untangle/ResultSectionNav";
+import { LeaseAskSection } from "@/components/untangle/LeaseAskSection";
 import {
   AskComingSoonButton,
   Disclosure,
