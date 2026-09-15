@@ -455,7 +455,7 @@ function LeaseResultBody({
         ) : null}
 
         {humanGuide.importantDates.length > 0 ? (
-          <Panel title="Lease period, escalation and notice">
+          <Panel title="Important dates and periods">
             <div className="space-y-2">
               {humanGuide.importantDates.map((item) => (
                 <div
@@ -472,11 +472,29 @@ function LeaseResultBody({
           </Panel>
         ) : null}
 
+        {keyTerms.length > 0 ? (
+          <Panel title="Other key terms">
+            <div className="space-y-2">
+              {keyTerms.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-start justify-between gap-4 rounded-xl bg-paper px-3 py-2.5"
+                >
+                  <span className="text-[13px] text-ink-soft">{item.label}</span>
+                  <span className="text-right text-[14px] font-semibold text-ink">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        ) : null}
+
         {hasResponsibilities ? (
-          <Panel title="Maintenance, utilities and responsibilities">
+          <Panel title="Responsibilities">
             {humanGuide.tenantResponsibilities.length > 0 ? (
               <div>
-                <p className="text-[13px] font-semibold text-ink">Tenant</p>
+                <p className="text-[13px] font-semibold text-ink">Tenant / lessee</p>
                 <ul className="mt-2 space-y-2">
                   {humanGuide.tenantResponsibilities.map((item) => (
                     <li key={item} className="flex gap-2 text-[13px] leading-relaxed text-ink-soft">
