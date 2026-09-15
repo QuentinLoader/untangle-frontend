@@ -573,7 +573,7 @@ function LeaseResultBody({
                   ) : null}
                   {flag.legalBasis ? (
                     <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">
-                      General legal context: {flag.legalBasis}
+                      Legal context: {flag.legalBasis}
                     </p>
                   ) : null}
                 </div>
