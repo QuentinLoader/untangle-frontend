@@ -53,7 +53,8 @@ const TAX_SECTIONS: ResultSection[] = [
 const LEASE_SECTIONS: ResultSection[] = [
   { id: "overview", label: "Overview" },
   { id: "terms", label: "Key terms" },
-  { id: "risks", label: "Risks" },
+  { id: "check", label: "Check" },
+  // Availability is resolved per-result from the LeaseCheck result's ask capability.
   { id: "ask", label: "Ask", available: false },
 ];
 
@@ -91,29 +92,40 @@ export const SOLUTIONS: Solution[] = [
     slug: "leasecheck",
     order: 2,
     name: "LeaseCheck",
-    shortDescription: "Residential lease agreements",
+    shortDescription: "Residential, commercial, vehicle and equipment leases",
     description:
-      "See the important terms, costs and responsibilities before signing — or understand your options when there is a dispute.",
+      "Upload a lease agreement or lease-related notice. LeaseCheck explains the important terms, costs, responsibilities, clauses to check and approved legal guidance in plain English.",
     status: LEASECHECK_AVAILABLE ? "AVAILABLE" : "COMING_SOON",
     operational: LEASECHECK_AVAILABLE,
     icon: Home,
     tint: "var(--teal-dim)",
     moduleKey: LEASECHECK_AVAILABLE ? "LEASE" : null,
-    uploadTitle: "Upload your residential lease",
-    uploadHint: "A lease agreement, amendment or lease-related notice.",
+    uploadTitle: "Upload your lease document",
+    uploadHint:
+      "A residential, commercial, vehicle or equipment lease, amendment, renewal or lease-related notice.",
     helps: [
-      "Understand deposits, rent, escalation clauses and notice periods.",
-      "See who is responsible for maintenance and repairs.",
-      "Highlight terms that may need closer attention before signing.",
-      "Explain practical recourse when a residential lease dispute arises.",
+      "Understand the important money, dates and other key terms.",
+      "See the responsibilities recorded for the tenant/lessee and landlord/lessor.",
+      "Highlight clauses and extracted details that need closer attention.",
+      "Explain approved legal protections and practical next steps where they safely apply.",
+      "Ask follow-up questions grounded in the uploaded lease and approved legal rules.",
     ],
     documentExamples: [
-      "Residential lease agreements",
-      "Lease amendments",
-      "Residential lease-related notices",
+      "Residential lease agreements and notices",
+      "Commercial property leases and amendments",
+      "Vehicle lease or rental agreements",
+      "Equipment lease or rental agreements",
+      "Lease renewals, amendments, cancellation and termination notices",
     ],
-    groundedIn: ["Rental Housing Act", "Consumer Protection Act where applicable"],
+    groundedIn: [
+      "Rental Housing Act where applicable",
+      "Consumer Protection Act where applicable",
+      "National Credit Act where applicable",
+      "PIE where applicable",
+    ],
     resultSections: LEASE_SECTIONS,
+    scopeNote:
+      "LeaseCheck applies different guidance depending on the type of lease and the facts in the document. It does not assume that a law applies merely because a document is called a lease.",
   },
   {
     slug: "policycheck",
