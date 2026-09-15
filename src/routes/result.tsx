@@ -540,12 +540,15 @@ function LeaseResultBody({
           <p className="text-[14px] leading-relaxed text-ink">{humanGuide.whatYouAreAgreeingTo}</p>
         </Panel>
 
-        <NextSectionButton label="See risks and next steps" onClick={() => onNavigate("risks")} />
+        <NextSectionButton
+          label="See what to check and next steps"
+          onClick={() => onNavigate("check")}
+        />
       </div>
     );
   }
 
-  if (section === "risks") {
+  if (section === "check") {
     return (
       <div className="space-y-3">
         {validationWarnings.length > 0 ? <LeaseWarningBlock warnings={validationWarnings} /> : null}
