@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { AskSectionPlaceholder, ResultSectionNav } from "@/components/untangle/ResultSectionNav";
+import { LeaseAskSection } from "@/components/untangle/LeaseAskSection";
 import {
   AskComingSoonButton,
   Disclosure,
@@ -105,8 +106,15 @@ function Result() {
   });
 
   const result = data?.data.result;
-  const sections = resultSectionsForModule(result?.document.module ?? null);
-  const [active, setActive] = useState<string>(sections[0]?.id ?? "overview");
+  const baseSections = resultSectionsForModule(result?.document.module ?? null);
+  // LeaseCheck Ask availability comes from the result's own capability metadata.
+  const leaseAsk = result && isLeaseResult(result) ? result.ask : undefined;
+  const sections = baseSections.map((section) =>
+    section.id === "ask" && leaseAsk?.supported === true
+      ? { ...section, available: true }
+      : section,
+  );
+  const [active, setActive] = useState<string>(baseSections[0]?.id ?? "overview");
   const productName = solutionForModule(result?.document.module ?? null)?.name ?? "Untangle";
 
   return (
@@ -149,6 +157,7 @@ function Result() {
         ) : isLeaseResult(result) ? (
           <LeaseResultBody
             result={result}
+            documentId={documentId}
             section={active}
             onNavigate={setActive}
             productName={productName}
@@ -395,29 +404,37 @@ function LeaseWarningBlock({
 
 function LeaseResultBody({
   result,
+  documentId,
   section,
   onNavigate,
   productName,
 }: {
   result: LeaseDocumentResult;
+  documentId: string;
   section: string;
   onNavigate: (id: string) => void;
   productName: string;
 }) {
   const { summary, document, humanGuide, yourRights } = result;
   const validationWarnings = result.validationWarnings ?? [];
+  const keyTerms = humanGuide.keyTerms ?? [];
+  const askCapability = result.ask?.supported === true ? result.ask : null;
   const hasResponsibilities =
     humanGuide.tenantResponsibilities.length > 0 || humanGuide.landlordResponsibilities.length > 0;
 
   if (section === "ask") {
-    return <AskSectionPlaceholder productName={productName} />;
+    return askCapability ? (
+      <LeaseAskSection documentId={documentId} capability={askCapability} />
+    ) : (
+      <AskSectionPlaceholder productName={productName} />
+    );
   }
 
   if (section === "terms") {
     return (
       <div className="space-y-3">
         {humanGuide.importantMoney.length > 0 ? (
-          <Panel title="Rent, deposit and other money">
+          <Panel title="Money and costs">
             <div className="space-y-2">
               {humanGuide.importantMoney.map((item) => (
                 <div
@@ -439,7 +456,7 @@ function LeaseResultBody({
         ) : null}
 
         {humanGuide.importantDates.length > 0 ? (
-          <Panel title="Lease period, escalation and notice">
+          <Panel title="Important dates and periods">
             <div className="space-y-2">
               {humanGuide.importantDates.map((item) => (
                 <div
@@ -456,11 +473,29 @@ function LeaseResultBody({
           </Panel>
         ) : null}
 
+        {keyTerms.length > 0 ? (
+          <Panel title="Other key terms">
+            <div className="space-y-2">
+              {keyTerms.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-start justify-between gap-4 rounded-xl bg-paper px-3 py-2.5"
+                >
+                  <span className="text-[13px] text-ink-soft">{item.label}</span>
+                  <span className="text-right text-[14px] font-semibold text-ink">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        ) : null}
+
         {hasResponsibilities ? (
-          <Panel title="Maintenance, utilities and responsibilities">
+          <Panel title="Responsibilities">
             {humanGuide.tenantResponsibilities.length > 0 ? (
               <div>
-                <p className="text-[13px] font-semibold text-ink">Tenant</p>
+                <p className="text-[13px] font-semibold text-ink">Tenant / lessee</p>
                 <ul className="mt-2 space-y-2">
                   {humanGuide.tenantResponsibilities.map((item) => (
                     <li key={item} className="flex gap-2 text-[13px] leading-relaxed text-ink-soft">
@@ -506,12 +541,15 @@ function LeaseResultBody({
           <p className="text-[14px] leading-relaxed text-ink">{humanGuide.whatYouAreAgreeingTo}</p>
         </Panel>
 
-        <NextSectionButton label="See risks and next steps" onClick={() => onNavigate("risks")} />
+        <NextSectionButton
+          label="See what to check and next steps"
+          onClick={() => onNavigate("check")}
+        />
       </div>
     );
   }
 
-  if (section === "risks") {
+  if (section === "check") {
     return (
       <div className="space-y-3">
         {validationWarnings.length > 0 ? <LeaseWarningBlock warnings={validationWarnings} /> : null}
@@ -536,7 +574,7 @@ function LeaseResultBody({
                   ) : null}
                   {flag.legalBasis ? (
                     <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">
-                      General legal context: {flag.legalBasis}
+                      Legal context: {flag.legalBasis}
                     </p>
                   ) : null}
                 </div>
@@ -676,13 +714,23 @@ function LeaseResultBody({
       <div className="grid grid-cols-2 gap-3">
         <SummaryMetric
           label="Key terms"
-          value={String(humanGuide.importantMoney.length + humanGuide.importantDates.length)}
+          value={String(
+            humanGuide.importantMoney.length + humanGuide.importantDates.length + keyTerms.length,
+          )}
         />
         <SummaryMetric label="Clauses to check" value={String(humanGuide.clausesToCheck.length)} />
       </div>
 
       <NextSectionButton label="View key findings" onClick={() => onNavigate("terms")} />
-      <AskComingSoonButton />
+      {askCapability ? (
+        <ResultNavRow
+          label="Ask about this lease"
+          hint="Grounded in this document and approved legal rules"
+          onClick={() => onNavigate("ask")}
+        />
+      ) : (
+        <AskComingSoonButton />
+      )}
       <Disclaimer wording={result.disclaimer.wording} />
     </div>
   );

@@ -438,8 +438,39 @@ export type TaxDocumentResult = {
   completedAt: string;
 };
 
+/** Verified legal provenance supplied by the backend legal engine. Never generated here. */
+export type ResultLegalBasis = {
+  ruleId: string;
+  sourceId: string;
+  title: string;
+  provision: string;
+  authorityLevel: string;
+  effectiveFrom: string | null;
+  effectiveTo: string | null;
+  canonicalUrl: string;
+  verifiedAt: string;
+};
+
+export type LeaseKeyValueItem = {
+  id: string;
+  label: string;
+  value: string;
+  sourceKind: "LEASE";
+};
+
+/** Capability metadata advertised by a LeaseCheck V3 result. */
+export type LeaseAskCapability = {
+  version: "lease-ask-capability-v1" | string;
+  supported: boolean;
+  endpointTemplate: string;
+  method: "POST" | string;
+  groundingPolicy: "DOCUMENT_AND_APPROVED_RULES_ONLY" | string;
+  maxQuestionLength: number;
+  exampleQuestions: string[];
+};
+
 export type LeaseDocumentResult = {
-  version: "leasecheck-result-v1" | string;
+  version: "leasecheck-result-v3" | "leasecheck-result-v1" | string;
   document: {
     module: "LEASE";
     moduleDisplayName: "LeaseCheck" | string;
@@ -447,6 +478,10 @@ export type LeaseDocumentResult = {
     taxonomyDocumentType: string;
     documentTitle: string | null;
     confidence: "HIGH" | "MEDIUM" | "LOW" | null;
+    /** Internal classification values — never displayed raw. */
+    family?: string;
+    role?: string;
+    classificationConfidence?: "HIGH" | "MEDIUM" | "LOW";
   };
   summary: {
     headline: string;
@@ -462,18 +497,10 @@ export type LeaseDocumentResult = {
   humanGuide: {
     whatThisIs: string;
     whatYouAreAgreeingTo: string;
-    importantMoney: Array<{
-      id: string;
-      label: string;
-      value: string;
-      sourceKind: "LEASE";
-    }>;
-    importantDates: Array<{
-      id: string;
-      label: string;
-      value: string;
-      sourceKind: "LEASE";
-    }>;
+    importantMoney: LeaseKeyValueItem[];
+    importantDates: LeaseKeyValueItem[];
+    /** V3: non-money, non-date key terms (lease term, notice period, permitted use…). */
+    keyTerms?: LeaseKeyValueItem[];
     tenantResponsibilities: string[];
     landlordResponsibilities: string[];
     clausesToCheck: Array<{
@@ -484,6 +511,8 @@ export type LeaseDocumentResult = {
       leaseText: string | null;
       legalBasis: string | null;
       sourceIds: string[];
+      legalBases?: ResultLegalBasis[];
+      legalRuleIds?: string[];
     }>;
     nextSteps: Array<{
       id: string;
@@ -505,9 +534,109 @@ export type LeaseDocumentResult = {
     title: string;
     explanation: string;
     sourceIds: string[];
+    legalBasis?: string | null;
+    legalBases?: ResultLegalBasis[];
   }>;
+  /** Backend legal-engine data. The frontend never interprets or derives from this. */
+  legalInterpretation?: unknown;
+  legalOutput?: {
+    version: "lease-legal-output-v1" | string;
+    policy: "APPROVED_RULES_ONLY" | string;
+    publishedRuleIds: string[];
+  };
+  ask?: LeaseAskCapability;
   disclaimer: { wording: string };
 };
+
+export type LeaseAskAnswerKind =
+  | "DOCUMENT"
+  | "APPROVED_LAW"
+  | "DOCUMENT_AND_APPROVED_LAW"
+  | "NOT_FOUND"
+  | "PROFESSIONAL_HELP";
+
+export type LeaseAskAnswer = {
+  version: "lease-ask-v1" | string;
+  groundingPolicy: "DOCUMENT_AND_APPROVED_RULES_ONLY" | string;
+  documentId: string;
+  question: string;
+  answer: string;
+  answerKind: LeaseAskAnswerKind;
+  confidence: "HIGH" | "MEDIUM" | "LOW";
+  documentEvidence: Array<{ page: number | null; quote: string }>;
+  legalSources: Array<{
+    ruleId: string;
+    sourceId: string;
+    title: string;
+    provision: string;
+    canonicalUrl: string;
+    checkedOn: string;
+  }>;
+  caveats: string[];
+  followUpQuestions: string[];
+};
+
+export type AskLeaseQuestionResponse = {
+  success: true;
+  data: { answer: LeaseAskAnswer };
+};
+
+/**
+ * POST /api/v1/documents/:id/ask — LeaseCheck follow-up question.
+ * Uses the shared authenticated apiRequest helper; no separate auth mechanism.
+ */
+export async function askLeaseQuestion(
+  documentId: string,
+  question: string,
+): Promise<AskLeaseQuestionResponse> {
+  return apiRequest<AskLeaseQuestionResponse>(`/api/v1/documents/${documentId}/ask`, {
+    method: "POST",
+    body: JSON.stringify({ question }),
+  });
+}
+
+const ASK_CODE_MESSAGES: Record<string, string> = {
+  LEASECHECK_NOT_ENABLED: "LeaseCheck follow-up questions are not available yet.",
+  LEASE_ASK_NOT_CONFIGURED: "Follow-up questions are temporarily unavailable.",
+  LEASE_ASK_INVALID_REQUEST: "Enter a question about this lease.",
+  LEASE_ASK_QUESTION_REQUIRED: "Enter a question about this lease.",
+  LEASE_ASK_QUESTION_TOO_LONG: "Your question is too long. Shorten it and try again.",
+  LEASE_ASK_UNSUPPORTED_DOCUMENT: "Follow-up questions are available for LeaseCheck documents only.",
+  RESULT_NOT_READY: "Your LeaseCheck result must finish processing before you can ask a question.",
+  LEASE_RESULT_UNAVAILABLE: "We could not load enough information from this LeaseCheck result.",
+  DOCUMENT_STORAGE_UNAVAILABLE:
+    "We could not access the original document needed to answer this question.",
+  LEASE_ASK_FILE_TYPE_UNSUPPORTED:
+    "This document format cannot currently be used for follow-up questions.",
+  LEASE_ASK_DOCUMENT_TOO_LARGE: "This document is too large for follow-up questions right now.",
+};
+
+/** Never surfaces raw API errors, JSON, provider names or tokens. */
+export function friendlyAskError(error: unknown): string {
+  if (error instanceof ApiError && error.code && ASK_CODE_MESSAGES[error.code]) {
+    return ASK_CODE_MESSAGES[error.code]!;
+  }
+  return "We could not answer that question right now. Please try again.";
+}
+
+const ASK_SOURCE_LABELS: Record<LeaseAskAnswerKind, string> = {
+  DOCUMENT: "From your lease",
+  APPROVED_LAW: "Approved legal guidance",
+  DOCUMENT_AND_APPROVED_LAW: "Your lease + approved legal guidance",
+  NOT_FOUND: "Not enough information",
+  PROFESSIONAL_HELP: "Professional help may be useful",
+};
+
+export function askAnswerKindLabel(kind: LeaseAskAnswerKind | string): string {
+  return ASK_SOURCE_LABELS[kind as LeaseAskAnswerKind] ?? "Answer";
+}
+
+export function askConfidenceLabel(confidence: "HIGH" | "MEDIUM" | "LOW" | string): string {
+  if (confidence === "HIGH") return "High confidence";
+  if (confidence === "MEDIUM") return "Medium confidence";
+  if (confidence === "LOW") return "Low confidence";
+  return "";
+}
 
 export type DocumentResult = TaxDocumentResult | LeaseDocumentResult;
 
