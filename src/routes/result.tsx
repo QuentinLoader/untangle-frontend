@@ -105,8 +105,15 @@ function Result() {
   });
 
   const result = data?.data.result;
-  const sections = resultSectionsForModule(result?.document.module ?? null);
-  const [active, setActive] = useState<string>(sections[0]?.id ?? "overview");
+  const baseSections = resultSectionsForModule(result?.document.module ?? null);
+  // LeaseCheck Ask availability comes from the result's own capability metadata.
+  const leaseAsk = result && isLeaseResult(result) ? result.ask : undefined;
+  const sections = baseSections.map((section) =>
+    section.id === "ask" && leaseAsk?.supported === true
+      ? { ...section, available: true }
+      : section,
+  );
+  const [active, setActive] = useState<string>(baseSections[0]?.id ?? "overview");
   const productName = solutionForModule(result?.document.module ?? null)?.name ?? "Untangle";
 
   return (
@@ -149,6 +156,7 @@ function Result() {
         ) : isLeaseResult(result) ? (
           <LeaseResultBody
             result={result}
+            documentId={documentId}
             section={active}
             onNavigate={setActive}
             productName={productName}
