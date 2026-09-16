@@ -33,6 +33,7 @@ function cleanMarkdown(value: string): string {
 function sentences(value: string): string[] {
   const cleaned = cleanMarkdown(value)
     .replace(/(\d)\.(\d)/g, "$1<decimal>$2")
+    .replace(/\b(i|e)\.(g|e)\./gi, "$1<decimal>$2<decimal>")
     .replace(/\s+/g, " ")
     .trim();
   if (!cleaned) return [];
