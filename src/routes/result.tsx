@@ -367,6 +367,64 @@ function leaseWarningCopy(
   }
 }
 
+function leaseWarningLabels(
+  warnings: NonNullable<LeaseDocumentResult["validationWarnings"]>,
+): string[] {
+  return [...new Set(warnings.map((warning) => leaseWarningFieldLabel(warning.fieldKey)))];
+}
+
+const LEASE_TERM_WARNING_WORDS: Record<string, string[]> = {
+  LEASE_START_DATE: ["lease start", "start date", "commencement", "effective date"],
+  START_DATE: ["lease start", "start date", "commencement", "effective date"],
+  OCCUPATION_DATE: ["occupation date", "occupation"],
+  LEASE_END_DATE: ["lease end", "end date", "expiry", "termination date"],
+  END_DATE: ["lease end", "end date", "expiry", "termination date"],
+  NOTICE_PERIOD: ["notice period", "notice"],
+  RENT_AMOUNT: ["rent", "rental", "payment"],
+  DEPOSIT_AMOUNT: ["deposit"],
+};
+
+function leaseTermNeedsCheck(
+  label: string,
+  warnings: NonNullable<LeaseDocumentResult["validationWarnings"]>,
+): boolean {
+  const normalizedLabel = label.toLowerCase();
+  return warnings.some((warning) => {
+    const keys = warning.fieldKey.split("/").map((part) => part.trim().toUpperCase());
+    return keys.some((key) =>
+      (LEASE_TERM_WARNING_WORDS[key] ?? [leaseWarningFieldLabel(key)]).some((word) =>
+        normalizedLabel.includes(word),
+      ),
+    );
+  });
+}
+
+function LeaseTermRow({
+  label,
+  value,
+  needsCheck,
+}: {
+  label: string;
+  value: string;
+  needsCheck: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 rounded-xl bg-paper px-3 py-2.5">
+      <div className="min-w-0">
+        <span className="text-[13px] text-ink-soft">{label}</span>
+        {needsCheck ? (
+          <span className="ml-2 inline-block rounded-full bg-tint-sand px-2 py-0.5 align-middle text-[10px] font-semibold text-stamp-amber">
+            Check this
+          </span>
+        ) : null}
+      </div>
+      <span className="max-w-[11rem] text-right text-[14px] font-semibold leading-snug text-ink">
+        {value}
+      </span>
+    </div>
+  );
+}
+
 /** Prominent safety block. Never hidden behind a tab the customer may not open. */
 function LeaseWarningBlock({
   warnings,
@@ -378,21 +436,21 @@ function LeaseWarningBlock({
       <div className="flex gap-3">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-stamp-amber" aria-hidden="true" />
         <div className="min-w-0">
-          <p className="text-[14px] font-semibold text-ink">Check against the original</p>
+          <p className="text-[14px] font-semibold text-ink">Check these against the original</p>
           <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
-            Some important lease terms need you to compare them with the original before relying on
-            them. LeaseCheck has not changed the extracted facts.
+            We found these details, but they were not clear enough for LeaseCheck to confirm with
+            confidence. Please compare them with the original document before relying on them.
           </p>
           <ul className="mt-2.5 space-y-1.5">
-            {warnings.map((warning, index) => (
+            {leaseWarningLabels(warnings).map((label) => (
               <li
-                key={`${warning.code}-${warning.fieldKey}-${index}`}
+                key={label}
                 className="flex gap-2 text-[12.5px] leading-relaxed text-ink"
               >
                 <span className="text-stamp-amber" aria-hidden="true">
                   •
                 </span>
-                <span>{leaseWarningCopy(warning)}</span>
+                <span className="capitalize">{label}</span>
               </li>
             ))}
           </ul>
@@ -437,21 +495,14 @@ function LeaseResultBody({
           <Panel title="Money and costs">
             <div className="space-y-2">
               {humanGuide.importantMoney.map((item) => (
-                <div
+                <LeaseTermRow
                   key={item.id}
-                  className="flex items-start justify-between gap-4 rounded-xl bg-paper px-3 py-2.5"
-                >
-                  <span className="text-[13px] text-ink-soft">{item.label}</span>
-                  <span className="text-right text-[14px] font-semibold text-ink">
-                    {item.value}
-                  </span>
-                </div>
+                  label={item.label}
+                  value={item.value}
+                  needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
+                />
               ))}
             </div>
-            <p className="mt-3 text-[11px] leading-relaxed text-ink-soft">
-              These figures come from the lease wording; LeaseCheck does not fill in missing
-              amounts.
-            </p>
           </Panel>
         ) : null}
 
@@ -459,15 +510,12 @@ function LeaseResultBody({
           <Panel title="Important dates and periods">
             <div className="space-y-2">
               {humanGuide.importantDates.map((item) => (
-                <div
+                <LeaseTermRow
                   key={item.id}
-                  className="flex items-start justify-between gap-4 rounded-xl bg-paper px-3 py-2.5"
-                >
-                  <span className="text-[13px] text-ink-soft">{item.label}</span>
-                  <span className="text-right text-[14px] font-semibold text-ink">
-                    {item.value}
-                  </span>
-                </div>
+                  label={item.label}
+                  value={item.value}
+                  needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
+                />
               ))}
             </div>
           </Panel>
@@ -477,15 +525,12 @@ function LeaseResultBody({
           <Panel title="Other key terms">
             <div className="space-y-2">
               {keyTerms.map((item) => (
-                <div
+                <LeaseTermRow
                   key={item.id}
-                  className="flex items-start justify-between gap-4 rounded-xl bg-paper px-3 py-2.5"
-                >
-                  <span className="text-[13px] text-ink-soft">{item.label}</span>
-                  <span className="text-right text-[14px] font-semibold text-ink">
-                    {item.value}
-                  </span>
-                </div>
+                  label={item.label}
+                  value={item.value}
+                  needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
+                />
               ))}
             </div>
           </Panel>
@@ -559,23 +604,24 @@ function LeaseResultBody({
             <div className="space-y-3">
               {humanGuide.clausesToCheck.map((flag) => (
                 <div key={flag.id} className="rounded-xl bg-paper px-3 py-3">
+                  <p className="text-[11px] font-semibold text-teal">What to check</p>
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-[14px] font-semibold leading-snug text-ink">{flag.title}</p>
                     <ClauseSeverity severity={flag.severity} />
                   </div>
-                  <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
-                    {flag.explanation}
-                  </p>
-                  {flag.leaseText ? (
-                    <div className="mt-2 rounded-lg bg-white px-3 py-2 text-[12px] leading-relaxed text-ink">
-                      <span className="font-semibold">Your lease says: </span>
-                      {flag.leaseText}
-                    </div>
-                  ) : null}
-                  {flag.legalBasis ? (
-                    <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">
-                      Legal context: {flag.legalBasis}
+                  <div className="mt-3">
+                    <p className="text-[11px] font-semibold text-ink-soft">Why it matters</p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                      {firstSentence(flag.explanation)}
                     </p>
+                  </div>
+                  {flag.leaseText ? (
+                    <div className="mt-3 rounded-lg border-l-2 border-teal bg-white px-3 py-2.5">
+                      <p className="text-[11px] font-semibold text-ink-soft">What your lease says</p>
+                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink">
+                        {flag.leaseText}
+                      </p>
+                    </div>
                   ) : null}
                 </div>
               ))}
@@ -592,7 +638,7 @@ function LeaseResultBody({
                   <div>
                     <p className="text-[14px] font-semibold text-ink">{right.title}</p>
                     <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                      {right.explanation}
+                      {firstSentence(right.explanation)}
                     </p>
                   </div>
                 </div>
@@ -616,13 +662,6 @@ function LeaseResultBody({
                         {step.detail}
                       </p>
                     ) : null}
-                    <p className="mt-1 text-[11px] font-medium text-teal">
-                      {step.sourceKind === "LEASE"
-                        ? "Your lease says"
-                        : step.sourceKind === "LAW_GENERAL"
-                          ? "General legal guidance"
-                          : "Untangle explanation"}
-                    </p>
                   </div>
                 </div>
               ))}
@@ -636,17 +675,102 @@ function LeaseResultBody({
           </Panel>
         ) : null}
 
-        {humanGuide.legalNotes.length > 0 || humanGuide.guidanceSources.length > 0 ? (
+        {humanGuide.legalNotes.length > 0 ||
+        humanGuide.guidanceSources.length > 0 ||
+        humanGuide.clausesToCheck.some(
+          (flag) =>
+            flag.legalBasis ||
+            (flag.explanation && hasMoreThanFirstSentence(flag.explanation)) ||
+            (flag.legalBases?.length ?? 0) > 0,
+        ) ||
+        yourRights.some(
+          (right) =>
+            right.legalBasis ||
+            hasMoreThanFirstSentence(right.explanation) ||
+            (right.legalBases?.length ?? 0) > 0,
+        ) ? (
           <details className="group rounded-2xl border border-line/70 bg-white p-4">
             <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
-              More details
+              Legal details
               <ChevronDown
                 className="h-4 w-4 text-ink-soft transition-transform group-open:rotate-180"
                 aria-hidden="true"
               />
             </summary>
+            {humanGuide.clausesToCheck.some(
+              (flag) =>
+                flag.legalBasis ||
+                (flag.explanation && hasMoreThanFirstSentence(flag.explanation)) ||
+                (flag.legalBases?.length ?? 0) > 0,
+            ) ? (
+              <div className="mt-3 space-y-3">
+                {humanGuide.clausesToCheck.map((flag) => {
+                  const bases = flag.legalBases ?? [];
+                  const hasDetail =
+                    flag.legalBasis || hasMoreThanFirstSentence(flag.explanation) || bases.length > 0;
+                  return hasDetail ? (
+                    <div key={flag.id}>
+                      <p className="text-[12.5px] font-semibold text-ink">{flag.title}</p>
+                      {hasMoreThanFirstSentence(flag.explanation) ? (
+                        <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                          {flag.explanation}
+                        </p>
+                      ) : null}
+                      {flag.legalBasis ? (
+                        <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
+                          {flag.legalBasis}
+                        </p>
+                      ) : null}
+                      {bases.map((basis) => (
+                        <p
+                          key={`${basis.sourceId}-${basis.provision}`}
+                          className="mt-1 text-[12px] leading-relaxed text-ink-soft"
+                        >
+                          {basis.title}{basis.provision ? ` — ${basis.provision}` : ""}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            ) : null}
+            {yourRights.some(
+              (right) =>
+                right.legalBasis ||
+                hasMoreThanFirstSentence(right.explanation) ||
+                (right.legalBases?.length ?? 0) > 0,
+            ) ? (
+              <div className="mt-4 border-t border-line pt-3">
+                <p className="text-[12.5px] font-semibold text-ink">Protection details</p>
+                <div className="mt-2 space-y-3">
+                  {yourRights.map((right) => (
+                    <div key={right.id}>
+                      <p className="text-[12.5px] font-semibold text-ink">{right.title}</p>
+                      {hasMoreThanFirstSentence(right.explanation) ? (
+                        <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                          {right.explanation}
+                        </p>
+                      ) : null}
+                      {right.legalBasis ? (
+                        <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
+                          {right.legalBasis}
+                        </p>
+                      ) : null}
+                      {(right.legalBases ?? []).map((basis) => (
+                        <p
+                          key={`${basis.sourceId}-${basis.provision}`}
+                          className="mt-1 text-[12px] leading-relaxed text-ink-soft"
+                        >
+                          {basis.title}{basis.provision ? ` — ${basis.provision}` : ""}
+                        </p>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {humanGuide.legalNotes.length > 0 ? (
-              <div className="mt-3 space-y-2">
+              <div className="mt-4 space-y-2 border-t border-line pt-3">
                 {humanGuide.legalNotes.map((note) => (
                   <p key={note} className="text-[12.5px] leading-relaxed text-ink-soft">
                     {note}
@@ -698,8 +822,23 @@ function LeaseResultBody({
           </p>
         ) : null}
         <p className="mt-3 whitespace-pre-line text-[14.5px] leading-[1.6] text-ink-soft">
-          {summary.plainEnglish}
+          {firstSentence(summary.plainEnglish)}
         </p>
+        {[...humanGuide.importantDates, ...humanGuide.importantMoney, ...keyTerms]
+          .filter((item) => /term|rent|rental|payment|deposit/i.test(item.label))
+          .slice(0, 3).length > 0 ? (
+          <div className="mt-4 space-y-2 border-t border-line pt-3">
+            {[...humanGuide.importantDates, ...humanGuide.importantMoney, ...keyTerms]
+              .filter((item) => /term|rent|rental|payment|deposit/i.test(item.label))
+              .slice(0, 3)
+              .map((item) => (
+                <div key={item.id} className="flex items-start justify-between gap-3 text-[13px]">
+                  <span className="text-ink-soft">{item.label}</span>
+                  <span className="max-w-[11rem] text-right font-semibold text-ink">{item.value}</span>
+                </div>
+              ))}
+          </div>
+        ) : null}
         {validationWarnings.length === 0 &&
         (document.confidence === "MEDIUM" || document.confidence === "LOW") ? (
           <div className="mt-3 rounded-xl bg-tint-sand px-3 py-2.5 text-[12.5px] leading-relaxed text-ink">

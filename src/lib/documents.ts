@@ -621,8 +621,8 @@ export function friendlyAskError(error: unknown): string {
 
 const ASK_SOURCE_LABELS: Record<LeaseAskAnswerKind, string> = {
   DOCUMENT: "From your lease",
-  APPROVED_LAW: "Approved legal guidance",
-  DOCUMENT_AND_APPROVED_LAW: "Your lease + approved legal guidance",
+  APPROVED_LAW: "Answer",
+  DOCUMENT_AND_APPROVED_LAW: "Answer",
   NOT_FOUND: "Not enough information",
   PROFESSIONAL_HELP: "Professional help may be useful",
 };
