@@ -39,8 +39,14 @@ function sentences(value: string): string[] {
   return (
     cleaned
       .match(/[^.!?]+(?:[.!?]+|$)/g)
-      ?.map((item) => item.replaceAll("<decimal>", ".").trim())
-      .filter(Boolean) ?? []
+      ?.map((item) =>
+        item
+          .replaceAll("<decimal>", ".")
+          .trim()
+          .replace(/^\d+[.)]\s*/, "")
+          .trim(),
+      )
+      .filter((item) => item.length > 1) ?? []
   );
 }
 
