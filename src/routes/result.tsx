@@ -680,8 +680,10 @@ function LeaseResultBody({
     BREACH_WORDS.test(`${flag.title} ${flag.explanation}`),
   );
   const thingsToCheck = [
-    ...leaseWarningLabels(validationWarnings).map((label) => `Confirm the ${label}`),
-    ...humanGuide.clausesToCheck.map((flag) => `Check the ${flag.title.toLowerCase()}`),
+    ...leaseWarningLabels(validationWarnings).map((label) => checkItemText(`Confirm the ${label}`)),
+    ...humanGuide.clausesToCheck.map((flag) =>
+      checkItemText(/^(check|confirm|review)\b/i.test(flag.title) ? flag.title : `Check the ${flag.title.toLowerCase()}`),
+    ),
   ].slice(0, 5);
   const nextSteps = humanGuide.nextSteps.slice(0, 4);
 
