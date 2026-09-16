@@ -32,6 +32,8 @@ export type Solution = {
   /** Subtle surface tint used behind the icon. */
   tint: string;
   moduleKey: DocumentModule | null;
+  /** Optional label for the primary action on the product detail screen. */
+  ctaLabel?: string;
   /** Product-specific upload copy. */
   uploadTitle: string;
   uploadHint: string;
@@ -92,7 +94,7 @@ export const SOLUTIONS: Solution[] = [
     slug: "leasecheck",
     order: 2,
     name: "LeaseCheck",
-    shortDescription: "Residential, commercial, vehicle and equipment leases",
+    shortDescription: "Understand property, vehicle and equipment leases",
     description:
       "Upload a lease agreement or lease-related notice. LeaseCheck explains the important terms, costs, responsibilities, clauses to check and approved legal guidance in plain English.",
     status: LEASECHECK_AVAILABLE ? "AVAILABLE" : "COMING_SOON",
@@ -100,6 +102,7 @@ export const SOLUTIONS: Solution[] = [
     icon: Home,
     tint: "var(--teal-dim)",
     moduleKey: LEASECHECK_AVAILABLE ? "LEASE" : null,
+    ctaLabel: "Upload your lease",
     uploadTitle: "Upload your lease document",
     uploadHint:
       "A residential, commercial, vehicle or equipment lease, amendment, renewal or lease-related notice.",
@@ -111,11 +114,14 @@ export const SOLUTIONS: Solution[] = [
       "Ask follow-up questions grounded in the uploaded lease and approved legal rules.",
     ],
     documentExamples: [
-      "Residential lease agreements and notices",
-      "Commercial property leases and amendments",
+      "Residential property leases",
+      "Commercial property leases",
       "Vehicle lease or rental agreements",
-      "Equipment lease or rental agreements",
-      "Lease renewals, amendments, cancellation and termination notices",
+      "Equipment lease or hire agreements",
+      "Amendments, addenda and renewals",
+      "Breach or default notices",
+      "Termination or cancellation notices",
+      "Return or repossession notices",
     ],
     groundedIn: [
       "Rental Housing Act where applicable",
