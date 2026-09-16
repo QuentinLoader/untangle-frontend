@@ -141,7 +141,6 @@ function Processing() {
                 }
               />
 
-
               <h2
                 className="mt-7 text-center font-display text-[22px] font-semibold leading-snug text-ink"
                 aria-live="polite"
@@ -173,7 +172,6 @@ function Processing() {
                   );
                 })}
               </div>
-
 
               {!backendFailed && !isLoading && (
                 <p className="mt-7 max-w-[300px] text-center text-[12px] leading-relaxed text-ink-soft">
