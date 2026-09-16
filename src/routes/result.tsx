@@ -225,10 +225,6 @@ function NextSectionButton({ label, onClick }: { label: string; onClick: () => v
   );
 }
 
-function Disclaimer({ wording }: { wording: string }) {
-  return <p className="px-1 pt-2 text-[10.5px] leading-relaxed text-ink-soft">{wording}</p>;
-}
-
 function friendlyTaxArea(result: TaxDocumentResult): string {
   const { taxType, taxonomyDocumentType, taxpayerType } = result.document;
 
@@ -370,12 +366,19 @@ const LEASE_TERM_WARNING_WORDS: Record<string, string[]> = {
 function practicalLeaseCopy(value: string): string {
   return value
     .replace(/statutory cancellation right/gi, "cancellation rights under the law")
-    .replace(/approved legal rule/gi, "checked legal guidance")
-    .replace(/approved rule/gi, "checked legal guidance")
+    .replace(/\ban\s+approved\s+(legal\s+)?rule\b/gi, "a legal rule we checked")
+    .replace(/approved legal rule/gi, "legal guidance we checked")
+    .replace(/approved rule/gi, "legal guidance we checked")
     .replace(/legal proposition/gi, "legal point")
     .replace(/applicability has not been established/gi, "it is not clear whether this applies")
     .replace(/statutory position/gi, "legal position")
     .replace(/legal heads-up/gi, "important point");
+}
+
+/** Sentence case for a generated check item, without double "check the" prefixes. */
+function checkItemText(text: string): string {
+  const clean = text.trim().replace(/\s+/g, " ");
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
 }
 
 function leaseTermNeedsCheck(
@@ -676,8 +679,14 @@ function LeaseResultBody({
     BREACH_WORDS.test(`${flag.title} ${flag.explanation}`),
   );
   const thingsToCheck = [
-    ...leaseWarningLabels(validationWarnings).map((label) => `Confirm the ${label}`),
-    ...humanGuide.clausesToCheck.map((flag) => `Check the ${flag.title.toLowerCase()}`),
+    ...leaseWarningLabels(validationWarnings).map((label) => checkItemText(`Confirm the ${label}`)),
+    ...humanGuide.clausesToCheck.map((flag) =>
+      checkItemText(
+        /^(check|confirm|review)\b/i.test(flag.title)
+          ? flag.title
+          : `Check the ${flag.title.toLowerCase()}`,
+      ),
+    ),
   ].slice(0, 5);
   const nextSteps = humanGuide.nextSteps.slice(0, 4);
 
@@ -807,10 +816,7 @@ function LeaseResultBody({
         >
           <ul className="space-y-2">
             {thingsToCheck.map((item) => (
-              <li
-                key={item}
-                className="flex gap-2 text-[13.5px] capitalize leading-relaxed text-ink-soft"
-              >
+              <li key={item} className="flex gap-2 text-[13.5px] leading-relaxed text-ink-soft">
                 <span className="text-stamp-amber" aria-hidden="true">
                   •
                 </span>
@@ -984,15 +990,6 @@ function LeaseLegalDetails({ result }: { result: LeaseDocumentResult }) {
         </div>
       ) : null}
     </details>
-  );
-}
-
-function SummaryMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-line/70 bg-white px-4 py-3">
-      <p className="font-display text-[22px] font-semibold text-ink">{value}</p>
-      <p className="mt-0.5 text-[12.5px] text-ink-soft">{label}</p>
-    </div>
   );
 }
 
