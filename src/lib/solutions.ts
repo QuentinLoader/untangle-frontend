@@ -53,9 +53,8 @@ const TAX_SECTIONS: ResultSection[] = [
 ];
 
 const LEASE_SECTIONS: ResultSection[] = [
-  { id: "overview", label: "Overview" },
-  { id: "terms", label: "Key terms" },
-  { id: "check", label: "Check" },
+  { id: "summary", label: "Summary" },
+  { id: "details", label: "Full details" },
   // Availability is resolved per-result from the LeaseCheck result's ask capability.
   { id: "ask", label: "Ask", available: false },
 ];
