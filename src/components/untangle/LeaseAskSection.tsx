@@ -25,6 +25,7 @@ function cleanMarkdown(value: string): string {
     .replace(/`([^`]+)`/g, "$1")
     .replace(/\[([^\]]+)]\([^)]*\)/g, "$1")
     .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/[*`#]+/g, "")
     .trim();
 }
 
@@ -178,7 +179,8 @@ function LeaseAskAnswerCard({
 }) {
   const confidence = askConfidenceLabel(answer.confidence);
   const content = answerSections(answer.answer);
-  const legalDetails = content.details.length > 0 || answer.caveats.length > 0 || answer.legalSources.length > 0;
+  const legalDetails =
+    content.details.length > 0 || answer.caveats.length > 0 || answer.legalSources.length > 0;
 
   return (
     <div className="space-y-3">
@@ -224,6 +226,38 @@ function LeaseAskAnswerCard({
         </section>
       ) : null}
 
+      {answer.caveats.length > 0 ? (
+        <section className="rounded-2xl border border-line/70 bg-white p-4">
+          <h3 className="text-[13px] font-semibold text-ink">Keep in mind</h3>
+          <ul className="mt-2 space-y-1.5">
+            {answer.caveats.map((caveat) => (
+              <li key={caveat} className="flex gap-2 text-[12.5px] leading-relaxed text-ink-soft">
+                <span aria-hidden>•</span>
+                <span>{sentences(caveat)[0] ?? cleanMarkdown(caveat)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {answer.followUpQuestions.length > 0 ? (
+        <section className="rounded-2xl border border-line/70 bg-white p-4">
+          <h3 className="text-[13px] font-semibold text-ink-soft">You could also ask</h3>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {answer.followUpQuestions.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => onFollowUp(item)}
+                className="min-h-[44px] rounded-full border border-line bg-paper px-3.5 text-left text-[12.5px] leading-snug text-ink transition-colors active:bg-paper-2"
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {legalDetails ? (
         <Disclosure title="Legal details" tone="card">
           {content.details.length > 0 ? (
@@ -233,7 +267,7 @@ function LeaseAskAnswerCard({
           ) : null}
           {answer.caveats.length > 0 ? (
             <div className={content.details.length > 0 ? "mt-4 border-t border-line pt-3" : ""}>
-              <h4 className="text-[12.5px] font-semibold text-ink">Keep in mind</h4>
+              <h4 className="text-[12.5px] font-semibold text-ink">Full cautions</h4>
               <ul className="mt-2 space-y-1.5">
                 {answer.caveats.map((caveat) => (
                   <li key={caveat} className="flex gap-2 text-[12.5px] leading-relaxed text-ink-soft">
@@ -266,24 +300,6 @@ function LeaseAskAnswerCard({
             </div>
           ) : null}
         </Disclosure>
-      ) : null}
-
-      {answer.followUpQuestions.length > 0 ? (
-        <section className="rounded-2xl border border-line/70 bg-white p-4">
-          <h3 className="text-[13px] font-semibold text-ink-soft">You could also ask</h3>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {answer.followUpQuestions.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => onFollowUp(item)}
-                className="min-h-[44px] rounded-full border border-line bg-paper px-3.5 text-left text-[12.5px] leading-snug text-ink transition-colors active:bg-paper-2"
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        </section>
       ) : null}
     </div>
   );

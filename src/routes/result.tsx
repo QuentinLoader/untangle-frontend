@@ -322,6 +322,7 @@ const LEASE_WARNING_LABELS: Record<string, string> = {
   PROPERTY_ADDRESS: "property address",
   RENT_AMOUNT: "rent amount",
   DEPOSIT_AMOUNT: "deposit amount",
+  EFFECTIVE_DATE: "effective date",
   LEASE_START_DATE: "lease start date",
   LEASE_END_DATE: "lease end date",
   START_DATE: "start date",
@@ -348,25 +349,6 @@ function leaseWarningFieldLabel(fieldKey: string): string {
     .join(" and ");
 }
 
-function leaseWarningCopy(
-  warning: NonNullable<LeaseDocumentResult["validationWarnings"]>[number],
-): string {
-  const label = leaseWarningFieldLabel(warning.fieldKey);
-
-  switch (warning.code) {
-    case "LOW_CONFIDENCE_IMPORTANT_TERM":
-      return `LeaseCheck could not confidently confirm the ${label}.`;
-    case "IMPORTANT_TERM_MISSING_SOURCE_ANCHOR":
-      return `LeaseCheck found the ${label}, but could not retain the exact source wording for it.`;
-    case "IMPOSSIBLE_DATE_ORDER":
-      return `The ${label} appear to be in an impossible order. LeaseCheck has kept the extracted dates unchanged.`;
-    default:
-      return (
-        warning.message || `Check the ${label} against the original lease before relying on it.`
-      );
-  }
-}
-
 function leaseWarningLabels(
   warnings: NonNullable<LeaseDocumentResult["validationWarnings"]>,
 ): string[] {
@@ -382,7 +364,19 @@ const LEASE_TERM_WARNING_WORDS: Record<string, string[]> = {
   NOTICE_PERIOD: ["notice period", "notice"],
   RENT_AMOUNT: ["rent", "rental", "payment"],
   DEPOSIT_AMOUNT: ["deposit"],
+  EFFECTIVE_DATE: ["effective date", "effective"],
 };
+
+function practicalLeaseCopy(value: string): string {
+  return value
+    .replace(/statutory cancellation right/gi, "cancellation rights under the law")
+    .replace(/approved legal rule/gi, "checked legal guidance")
+    .replace(/approved rule/gi, "checked legal guidance")
+    .replace(/legal proposition/gi, "legal point")
+    .replace(/applicability has not been established/gi, "it is not clear whether this applies")
+    .replace(/statutory position/gi, "legal position")
+    .replace(/legal heads-up/gi, "important point");
+}
 
 function leaseTermNeedsCheck(
   label: string,
@@ -612,7 +606,7 @@ function LeaseResultBody({
                   <div className="mt-3">
                     <p className="text-[11px] font-semibold text-ink-soft">Why it matters</p>
                     <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                      {firstSentence(flag.explanation)}
+                      {practicalLeaseCopy(firstSentence(flag.explanation))}
                     </p>
                   </div>
                   {flag.leaseText ? (
@@ -638,7 +632,7 @@ function LeaseResultBody({
                   <div>
                     <p className="text-[14px] font-semibold text-ink">{right.title}</p>
                     <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                      {firstSentence(right.explanation)}
+                      {practicalLeaseCopy(firstSentence(right.explanation))}
                     </p>
                   </div>
                 </div>
@@ -659,7 +653,7 @@ function LeaseResultBody({
                     <p className="text-[14px] font-semibold leading-snug text-ink">{step.title}</p>
                     {step.detail ? (
                       <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                        {step.detail}
+                        {practicalLeaseCopy(firstSentence(step.detail))}
                       </p>
                     ) : null}
                   </div>
@@ -675,21 +669,7 @@ function LeaseResultBody({
           </Panel>
         ) : null}
 
-        {humanGuide.legalNotes.length > 0 ||
-        humanGuide.guidanceSources.length > 0 ||
-        humanGuide.clausesToCheck.some(
-          (flag) =>
-            flag.legalBasis ||
-            (flag.explanation && hasMoreThanFirstSentence(flag.explanation)) ||
-            (flag.legalBases?.length ?? 0) > 0,
-        ) ||
-        yourRights.some(
-          (right) =>
-            right.legalBasis ||
-            hasMoreThanFirstSentence(right.explanation) ||
-            (right.legalBases?.length ?? 0) > 0,
-        ) ? (
-          <details className="group rounded-2xl border border-line/70 bg-white p-4">
+        <details className="group rounded-2xl border border-line/70 bg-white p-4">
             <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
               Legal details
               <ChevronDown
@@ -778,6 +758,11 @@ function LeaseResultBody({
                 ))}
               </div>
             ) : null}
+            <div className="mt-4 border-t border-line pt-3">
+              <p className="text-[12.5px] leading-relaxed text-ink-soft">
+                {result.disclaimer.wording}
+              </p>
+            </div>
             {humanGuide.guidanceSources.length > 0 ? (
               <div className="mt-4 border-t border-line pt-3">
                 <p className="text-[12.5px] font-semibold text-ink">Sources checked</p>
@@ -797,9 +782,6 @@ function LeaseResultBody({
               </div>
             ) : null}
           </details>
-        ) : null}
-
-        <Disclaimer wording={result.disclaimer.wording} />
       </div>
     );
   }
@@ -864,13 +846,12 @@ function LeaseResultBody({
       {askCapability ? (
         <ResultNavRow
           label="Ask about this lease"
-          hint="Grounded in this document and approved legal rules"
+          hint="Based on your lease and checked legal information"
           onClick={() => onNavigate("ask")}
         />
       ) : (
         <AskComingSoonButton />
       )}
-      <Disclaimer wording={result.disclaimer.wording} />
     </div>
   );
 }
