@@ -225,10 +225,6 @@ function NextSectionButton({ label, onClick }: { label: string; onClick: () => v
   );
 }
 
-function Disclaimer({ wording }: { wording: string }) {
-  return <p className="px-1 pt-2 text-[10.5px] leading-relaxed text-ink-soft">{wording}</p>;
-}
-
 function friendlyTaxArea(result: TaxDocumentResult): string {
   const { taxType, taxonomyDocumentType, taxpayerType } = result.document;
 
@@ -984,15 +980,6 @@ function LeaseLegalDetails({ result }: { result: LeaseDocumentResult }) {
         </div>
       ) : null}
     </details>
-  );
-}
-
-function SummaryMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-line/70 bg-white px-4 py-3">
-      <p className="font-display text-[22px] font-semibold text-ink">{value}</p>
-      <p className="mt-0.5 text-[12.5px] text-ink-soft">{label}</p>
-    </div>
   );
 }
 
