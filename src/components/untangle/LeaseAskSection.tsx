@@ -19,23 +19,27 @@ type AnswerSections = {
 function cleanMarkdown(value: string): string {
   return value
     .replace(/^\s{0,3}#{1,6}\s+/gm, "")
-    .replace(/^\s*(?:[-*+]\s+|\d+[.)]\s+)/gm, "")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/__([^_]+)__/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
     .replace(/\[([^\]]+)]\([^)]*\)/g, "$1")
     .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/^\s*(?:[-*+]\s+|\d+[.)]\s+)/gm, "")
+    .replace(/:\s+\d+[.)]\s+/g, ": ")
     .replace(/[*`#]+/g, "")
     .trim();
 }
 
 function sentences(value: string): string[] {
-  const cleaned = cleanMarkdown(value).replace(/\s+/g, " ").trim();
+  const cleaned = cleanMarkdown(value)
+    .replace(/(\d)\.(\d)/g, "$1<decimal>$2")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!cleaned) return [];
   return (
     cleaned
       .match(/[^.!?]+(?:[.!?]+|$)/g)
-      ?.map((item) => item.trim())
+      ?.map((item) => item.replaceAll("<decimal>", ".").trim())
       .filter(Boolean) ?? []
   );
 }
