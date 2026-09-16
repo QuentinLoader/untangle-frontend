@@ -358,26 +358,6 @@ function Upload() {
           </p>
         )}
 
-        <ul className="mt-8 space-y-3">
-          {TRUST.map((item) => (
-            <li key={item} className="flex items-start gap-2.5 text-[13px] text-ink">
-              <span className="mt-0.5 grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-teal text-white">
-                <Check size={11} strokeWidth={3} aria-hidden />
-              </span>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-
-        <div className="mt-5 flex gap-3 rounded-2xl bg-teal-dim/70 px-4 py-4">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-teal">
-            <Lock size={16} aria-hidden />
-          </span>
-          <p className="text-[12.5px] leading-relaxed text-ink">
-            <span className="block font-semibold">Your privacy matters</span>
-            Documents are processed securely and are not kept longer than Untangle needs them.
-          </p>
-        </div>
 
 
         {planUsageLine && !entitlements?.isPlus ? (
