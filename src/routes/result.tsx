@@ -366,13 +366,21 @@ const LEASE_TERM_WARNING_WORDS: Record<string, string[]> = {
 function practicalLeaseCopy(value: string): string {
   return value
     .replace(/statutory cancellation right/gi, "cancellation rights under the law")
-    .replace(/approved legal rule/gi, "checked legal guidance")
-    .replace(/approved rule/gi, "checked legal guidance")
+    .replace(/\ban\s+approved\s+(legal\s+)?rule\b/gi, "a legal rule we checked")
+    .replace(/approved legal rule/gi, "legal guidance we checked")
+    .replace(/approved rule/gi, "legal guidance we checked")
     .replace(/legal proposition/gi, "legal point")
     .replace(/applicability has not been established/gi, "it is not clear whether this applies")
     .replace(/statutory position/gi, "legal position")
     .replace(/legal heads-up/gi, "important point");
 }
+
+/** Sentence case for a generated check item, without double "check the" prefixes. */
+function checkItemText(text: string): string {
+  const clean = text.trim().replace(/\s+/g, " ");
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+}
+
 
 function leaseTermNeedsCheck(
   label: string,
