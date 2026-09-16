@@ -142,7 +142,13 @@ function SignupPage() {
               onChange={(e) => setAccepted(e.target.checked)}
               className="mt-0.5 h-4 w-4 accent-[var(--teal)]"
             />
-            <span>I accept the Terms of Use and Privacy Policy.</span>
+            <span>
+              I accept the{" "}
+              <Link to="/terms" className="font-medium text-teal underline underline-offset-2">
+                Terms and Privacy
+              </Link>
+              .
+            </span>
           </label>
           {errors['terms'] ? (
             <p className="mt-1.5 text-[12px] text-stamp-red">{errors['terms']}</p>

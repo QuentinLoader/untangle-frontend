@@ -1,5 +1,5 @@
 import { withAuth } from "@/auth/ProtectedRoute";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { FileQuestion, FileText, Globe, Search } from "lucide-react";
 import {
@@ -175,6 +175,15 @@ function Processing() {
                 })}
               </div>
 
+
+              {!backendFailed && !isLoading && (
+                <p className="mt-7 max-w-[300px] text-center text-[12px] leading-relaxed text-ink-soft">
+                  Your document is processed securely and only you can see it.{" "}
+                  <Link to="/terms" className="font-medium text-teal underline underline-offset-2">
+                    Terms &amp; privacy
+                  </Link>
+                </p>
+              )}
 
               {showProcessingError && (
                 <p
