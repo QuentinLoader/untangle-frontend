@@ -437,10 +437,7 @@ function LeaseWarningBlock({
           </p>
           <ul className="mt-2.5 space-y-1.5">
             {leaseWarningLabels(warnings).map((label) => (
-              <li
-                key={label}
-                className="flex gap-2 text-[12.5px] leading-relaxed text-ink"
-              >
+              <li key={label} className="flex gap-2 text-[12.5px] leading-relaxed text-ink">
                 <span className="text-stamp-amber" aria-hidden="true">
                   •
                 </span>
@@ -611,7 +608,9 @@ function LeaseResultBody({
                   </div>
                   {flag.leaseText ? (
                     <div className="mt-3 rounded-lg border-l-2 border-teal bg-white px-3 py-2.5">
-                      <p className="text-[11px] font-semibold text-ink-soft">What your lease says</p>
+                      <p className="text-[11px] font-semibold text-ink-soft">
+                        What your lease says
+                      </p>
                       <p className="mt-1 text-[12.5px] leading-relaxed text-ink">
                         {flag.leaseText}
                       </p>
@@ -670,118 +669,120 @@ function LeaseResultBody({
         ) : null}
 
         <details className="group rounded-2xl border border-line/70 bg-white p-4">
-            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
-              Legal details
-              <ChevronDown
-                className="h-4 w-4 text-ink-soft transition-transform group-open:rotate-180"
-                aria-hidden="true"
-              />
-            </summary>
-            {humanGuide.clausesToCheck.some(
-              (flag) =>
-                flag.legalBasis ||
-                (flag.explanation && hasMoreThanFirstSentence(flag.explanation)) ||
-                (flag.legalBases?.length ?? 0) > 0,
-            ) ? (
-              <div className="mt-3 space-y-3">
-                {humanGuide.clausesToCheck.map((flag) => {
-                  const bases = flag.legalBases ?? [];
-                  const hasDetail =
-                    flag.legalBasis || hasMoreThanFirstSentence(flag.explanation) || bases.length > 0;
-                  return hasDetail ? (
-                    <div key={flag.id}>
-                      <p className="text-[12.5px] font-semibold text-ink">{flag.title}</p>
-                      {hasMoreThanFirstSentence(flag.explanation) ? (
-                        <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
-                          {flag.explanation}
-                        </p>
-                      ) : null}
-                      {flag.legalBasis ? (
-                        <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
-                          {flag.legalBasis}
-                        </p>
-                      ) : null}
-                      {bases.map((basis) => (
-                        <p
-                          key={`${basis.sourceId}-${basis.provision}`}
-                          className="mt-1 text-[12px] leading-relaxed text-ink-soft"
-                        >
-                          {basis.title}{basis.provision ? ` — ${basis.provision}` : ""}
-                        </p>
-                      ))}
-                    </div>
-                  ) : null;
-                })}
-              </div>
-            ) : null}
-            {yourRights.some(
-              (right) =>
-                right.legalBasis ||
-                hasMoreThanFirstSentence(right.explanation) ||
-                (right.legalBases?.length ?? 0) > 0,
-            ) ? (
-              <div className="mt-4 border-t border-line pt-3">
-                <p className="text-[12.5px] font-semibold text-ink">Protection details</p>
-                <div className="mt-2 space-y-3">
-                  {yourRights.map((right) => (
-                    <div key={right.id}>
-                      <p className="text-[12.5px] font-semibold text-ink">{right.title}</p>
-                      {hasMoreThanFirstSentence(right.explanation) ? (
-                        <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
-                          {right.explanation}
-                        </p>
-                      ) : null}
-                      {right.legalBasis ? (
-                        <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
-                          {right.legalBasis}
-                        </p>
-                      ) : null}
-                      {(right.legalBases ?? []).map((basis) => (
-                        <p
-                          key={`${basis.sourceId}-${basis.provision}`}
-                          className="mt-1 text-[12px] leading-relaxed text-ink-soft"
-                        >
-                          {basis.title}{basis.provision ? ` — ${basis.provision}` : ""}
-                        </p>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            {humanGuide.legalNotes.length > 0 ? (
-              <div className="mt-4 space-y-2 border-t border-line pt-3">
-                {humanGuide.legalNotes.map((note) => (
-                  <p key={note} className="text-[12.5px] leading-relaxed text-ink-soft">
-                    {note}
-                  </p>
+          <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
+            Legal details
+            <ChevronDown
+              className="h-4 w-4 text-ink-soft transition-transform group-open:rotate-180"
+              aria-hidden="true"
+            />
+          </summary>
+          {humanGuide.clausesToCheck.some(
+            (flag) =>
+              flag.legalBasis ||
+              (flag.explanation && hasMoreThanFirstSentence(flag.explanation)) ||
+              (flag.legalBases?.length ?? 0) > 0,
+          ) ? (
+            <div className="mt-3 space-y-3">
+              {humanGuide.clausesToCheck.map((flag) => {
+                const bases = flag.legalBases ?? [];
+                const hasDetail =
+                  flag.legalBasis || hasMoreThanFirstSentence(flag.explanation) || bases.length > 0;
+                return hasDetail ? (
+                  <div key={flag.id}>
+                    <p className="text-[12.5px] font-semibold text-ink">{flag.title}</p>
+                    {hasMoreThanFirstSentence(flag.explanation) ? (
+                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                        {flag.explanation}
+                      </p>
+                    ) : null}
+                    {flag.legalBasis ? (
+                      <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
+                        {flag.legalBasis}
+                      </p>
+                    ) : null}
+                    {bases.map((basis) => (
+                      <p
+                        key={`${basis.sourceId}-${basis.provision}`}
+                        className="mt-1 text-[12px] leading-relaxed text-ink-soft"
+                      >
+                        {basis.title}
+                        {basis.provision ? ` — ${basis.provision}` : ""}
+                      </p>
+                    ))}
+                  </div>
+                ) : null;
+              })}
+            </div>
+          ) : null}
+          {yourRights.some(
+            (right) =>
+              right.legalBasis ||
+              hasMoreThanFirstSentence(right.explanation) ||
+              (right.legalBases?.length ?? 0) > 0,
+          ) ? (
+            <div className="mt-4 border-t border-line pt-3">
+              <p className="text-[12.5px] font-semibold text-ink">Protection details</p>
+              <div className="mt-2 space-y-3">
+                {yourRights.map((right) => (
+                  <div key={right.id}>
+                    <p className="text-[12.5px] font-semibold text-ink">{right.title}</p>
+                    {hasMoreThanFirstSentence(right.explanation) ? (
+                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                        {right.explanation}
+                      </p>
+                    ) : null}
+                    {right.legalBasis ? (
+                      <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
+                        {right.legalBasis}
+                      </p>
+                    ) : null}
+                    {(right.legalBases ?? []).map((basis) => (
+                      <p
+                        key={`${basis.sourceId}-${basis.provision}`}
+                        className="mt-1 text-[12px] leading-relaxed text-ink-soft"
+                      >
+                        {basis.title}
+                        {basis.provision ? ` — ${basis.provision}` : ""}
+                      </p>
+                    ))}
+                  </div>
                 ))}
               </div>
-            ) : null}
-            <div className="mt-4 border-t border-line pt-3">
-              <p className="text-[12.5px] leading-relaxed text-ink-soft">
-                {result.disclaimer.wording}
-              </p>
             </div>
-            {humanGuide.guidanceSources.length > 0 ? (
-              <div className="mt-4 border-t border-line pt-3">
-                <p className="text-[12.5px] font-semibold text-ink">Sources checked</p>
-                <div className="mt-2 space-y-2">
-                  {humanGuide.guidanceSources.map((source) => (
-                    <a
-                      key={source.id}
-                      href={source.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block text-[12.5px] font-medium leading-relaxed text-teal underline-offset-2 hover:underline"
-                    >
-                      {source.title}
-                    </a>
-                  ))}
-                </div>
+          ) : null}
+          {humanGuide.legalNotes.length > 0 ? (
+            <div className="mt-4 space-y-2 border-t border-line pt-3">
+              {humanGuide.legalNotes.map((note) => (
+                <p key={note} className="text-[12.5px] leading-relaxed text-ink-soft">
+                  {note}
+                </p>
+              ))}
+            </div>
+          ) : null}
+          <div className="mt-4 border-t border-line pt-3">
+            <p className="text-[12.5px] leading-relaxed text-ink-soft">
+              {result.disclaimer.wording}
+            </p>
+          </div>
+          {humanGuide.guidanceSources.length > 0 ? (
+            <div className="mt-4 border-t border-line pt-3">
+              <p className="text-[12.5px] font-semibold text-ink">Sources checked</p>
+              <div className="mt-2 space-y-2">
+                {humanGuide.guidanceSources.map((source) => (
+                  <a
+                    key={source.id}
+                    href={source.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block text-[12.5px] font-medium leading-relaxed text-teal underline-offset-2 hover:underline"
+                  >
+                    {source.title}
+                  </a>
+                ))}
               </div>
-            ) : null}
-          </details>
+            </div>
+          ) : null}
+        </details>
       </div>
     );
   }
@@ -816,7 +817,9 @@ function LeaseResultBody({
               .map((item) => (
                 <div key={item.id} className="flex items-start justify-between gap-3 text-[13px]">
                   <span className="text-ink-soft">{item.label}</span>
-                  <span className="max-w-[11rem] text-right font-semibold text-ink">{item.value}</span>
+                  <span className="max-w-[11rem] text-right font-semibold text-ink">
+                    {item.value}
+                  </span>
                 </div>
               ))}
           </div>

@@ -32,7 +32,12 @@ function cleanMarkdown(value: string): string {
 function sentences(value: string): string[] {
   const cleaned = cleanMarkdown(value).replace(/\s+/g, " ").trim();
   if (!cleaned) return [];
-  return cleaned.match(/[^.!?]+(?:[.!?]+|$)/g)?.map((item) => item.trim()).filter(Boolean) ?? [];
+  return (
+    cleaned
+      .match(/[^.!?]+(?:[.!?]+|$)/g)
+      ?.map((item) => item.trim())
+      .filter(Boolean) ?? []
+  );
 }
 
 function answerSections(value: string): AnswerSections {
@@ -270,7 +275,10 @@ function LeaseAskAnswerCard({
               <h4 className="text-[12.5px] font-semibold text-ink">Full cautions</h4>
               <ul className="mt-2 space-y-1.5">
                 {answer.caveats.map((caveat) => (
-                  <li key={caveat} className="flex gap-2 text-[12.5px] leading-relaxed text-ink-soft">
+                  <li
+                    key={caveat}
+                    className="flex gap-2 text-[12.5px] leading-relaxed text-ink-soft"
+                  >
                     <span aria-hidden>•</span>
                     <span>{cleanMarkdown(caveat)}</span>
                   </li>

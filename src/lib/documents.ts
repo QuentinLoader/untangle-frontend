@@ -93,12 +93,7 @@ export async function createDocumentRecord(
 }
 
 export type DirectUploadStatus =
-  | "idle"
-  | "requesting-url"
-  | "uploading"
-  | "verifying"
-  | "queued"
-  | "failed";
+  "idle" | "requesting-url" | "uploading" | "verifying" | "queued" | "failed";
 
 export type CreateUploadUrlResponse = {
   success: true;
@@ -303,14 +298,29 @@ export function isTerminalProcessingStatus(status: DocumentProcessingStatus): bo
 
 const PROCESSING_COPY: Record<DocumentProcessingStatus, { title: string; body: string }> = {
   QUEUED: { title: "Your document is queued", body: "Untangle is preparing it for analysis." },
-  DETECTING_MODULE: { title: "Identifying document type", body: "Working out what this document is." },
+  DETECTING_MODULE: {
+    title: "Identifying document type",
+    body: "Working out what this document is.",
+  },
   CLASSIFYING: { title: "Classifying your document", body: "Sorting it into the right category." },
   EXTRACTING: { title: "Extracting key details", body: "Pulling out dates, amounts and names." },
-  VALIDATING_RESULT: { title: "Checking the details", body: "Making sure what we found is correct." },
-  MATCHING_RULES: { title: "Checking your rights", body: "Matching the document against known rules." },
+  VALIDATING_RESULT: {
+    title: "Checking the details",
+    body: "Making sure what we found is correct.",
+  },
+  MATCHING_RULES: {
+    title: "Checking your rights",
+    body: "Matching the document against known rules.",
+  },
   COMPLETED: { title: "Your document is ready", body: "Untangle has finished reading it." },
-  NEEDS_REVIEW: { title: "This one needs a closer look", body: "Some details could not be confirmed automatically." },
-  FAILED: { title: "We could not read this document", body: "Something went wrong while processing it." },
+  NEEDS_REVIEW: {
+    title: "This one needs a closer look",
+    body: "Some details could not be confirmed automatically.",
+  },
+  FAILED: {
+    title: "We could not read this document",
+    body: "Something went wrong while processing it.",
+  },
   CANCELLED: { title: "Processing was cancelled", body: "This document was not processed." },
 };
 
@@ -549,11 +559,7 @@ export type LeaseDocumentResult = {
 };
 
 export type LeaseAskAnswerKind =
-  | "DOCUMENT"
-  | "APPROVED_LAW"
-  | "DOCUMENT_AND_APPROVED_LAW"
-  | "NOT_FOUND"
-  | "PROFESSIONAL_HELP";
+  "DOCUMENT" | "APPROVED_LAW" | "DOCUMENT_AND_APPROVED_LAW" | "NOT_FOUND" | "PROFESSIONAL_HELP";
 
 export type LeaseAskAnswer = {
   version: "lease-ask-v1" | string;
@@ -601,7 +607,8 @@ const ASK_CODE_MESSAGES: Record<string, string> = {
   LEASE_ASK_INVALID_REQUEST: "Enter a question about this lease.",
   LEASE_ASK_QUESTION_REQUIRED: "Enter a question about this lease.",
   LEASE_ASK_QUESTION_TOO_LONG: "Your question is too long. Shorten it and try again.",
-  LEASE_ASK_UNSUPPORTED_DOCUMENT: "Follow-up questions are available for LeaseCheck documents only.",
+  LEASE_ASK_UNSUPPORTED_DOCUMENT:
+    "Follow-up questions are available for LeaseCheck documents only.",
   RESULT_NOT_READY: "Your LeaseCheck result must finish processing before you can ask a question.",
   LEASE_RESULT_UNAVAILABLE: "We could not load enough information from this LeaseCheck result.",
   DOCUMENT_STORAGE_UNAVAILABLE:
