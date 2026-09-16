@@ -381,7 +381,6 @@ function checkItemText(text: string): string {
   return clean.charAt(0).toUpperCase() + clean.slice(1);
 }
 
-
 function leaseTermNeedsCheck(
   label: string,
   warnings: NonNullable<LeaseDocumentResult["validationWarnings"]>,
@@ -682,7 +681,11 @@ function LeaseResultBody({
   const thingsToCheck = [
     ...leaseWarningLabels(validationWarnings).map((label) => checkItemText(`Confirm the ${label}`)),
     ...humanGuide.clausesToCheck.map((flag) =>
-      checkItemText(/^(check|confirm|review)\b/i.test(flag.title) ? flag.title : `Check the ${flag.title.toLowerCase()}`),
+      checkItemText(
+        /^(check|confirm|review)\b/i.test(flag.title)
+          ? flag.title
+          : `Check the ${flag.title.toLowerCase()}`,
+      ),
     ),
   ].slice(0, 5);
   const nextSteps = humanGuide.nextSteps.slice(0, 4);
@@ -813,10 +816,7 @@ function LeaseResultBody({
         >
           <ul className="space-y-2">
             {thingsToCheck.map((item) => (
-              <li
-                key={item}
-                className="flex gap-2 text-[13.5px] capitalize leading-relaxed text-ink-soft"
-              >
+              <li key={item} className="flex gap-2 text-[13.5px] leading-relaxed text-ink-soft">
                 <span className="text-stamp-amber" aria-hidden="true">
                   •
                 </span>
