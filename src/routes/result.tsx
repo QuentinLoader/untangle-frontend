@@ -419,36 +419,105 @@ function LeaseTermRow({
   );
 }
 
-/** Prominent safety block. Never hidden behind a tab the customer may not open. */
-function LeaseWarningBlock({
-  warnings,
+/** Collapsible group used throughout Full details. */
+function DetailsGroup({
+  title,
+  children,
+  defaultOpen = false,
 }: {
-  warnings: NonNullable<LeaseDocumentResult["validationWarnings"]>;
+  title: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-stamp-amber/40 bg-tint-sand p-4" role="alert">
-      <div className="flex gap-3">
-        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-stamp-amber" aria-hidden="true" />
-        <div className="min-w-0">
-          <p className="text-[14px] font-semibold text-ink">Check these against the original</p>
-          <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
-            We found these details, but they were not clear enough for LeaseCheck to confirm with
-            confidence. Please compare them with the original document before relying on them.
-          </p>
-          <ul className="mt-2.5 space-y-1.5">
-            {leaseWarningLabels(warnings).map((label) => (
-              <li key={label} className="flex gap-2 text-[12.5px] leading-relaxed text-ink">
-                <span className="text-stamp-amber" aria-hidden="true">
-                  •
-                </span>
-                <span className="capitalize">{label}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+    <details className="group rounded-2xl border border-line/70 bg-white p-4" open={defaultOpen}>
+      <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
+        {title}
+        <ChevronDown
+          className="h-4 w-4 text-ink-soft transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+      <div className="mt-3">{children}</div>
+    </details>
+  );
+}
+
+function SummaryCard({
+  title,
+  children,
+  icon,
+}: {
+  title: string;
+  children: ReactNode;
+  icon?: ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-line/70 bg-white p-4">
+      <div className="flex items-center gap-2">
+        {icon}
+        <h3 className="text-[14px] font-semibold text-ink">{title}</h3>
       </div>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+function FactRow({
+  label,
+  value,
+  needsCheck = false,
+}: {
+  label: string;
+  value: string;
+  needsCheck?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 py-1.5">
+      <div className="min-w-0">
+        <span className="text-[13px] text-ink-soft">{label}</span>
+        {needsCheck ? (
+          <span className="ml-2 inline-block rounded-full bg-tint-sand px-2 py-0.5 align-middle text-[10px] font-semibold text-stamp-amber">
+            Check this
+          </span>
+        ) : null}
+      </div>
+      <span className="max-w-[11rem] text-right text-[14.5px] font-semibold leading-snug text-ink">
+        {value}
+      </span>
     </div>
   );
+}
+
+function Bullets({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-2">
+      {items.map((item) => (
+        <li key={item} className="flex gap-2 text-[13.5px] leading-relaxed text-ink-soft">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function LeaseQuote({ text }: { text: string }) {
+  return (
+    <div className="mt-2 rounded-lg border-l-2 border-teal bg-paper px-3 py-2.5">
+      <p className="text-[11px] font-semibold text-ink-soft">What your lease says</p>
+      <p className="mt-1 text-[12.5px] leading-relaxed text-ink">{text}</p>
+    </div>
+  );
+}
+
+const ENDING_WORDS = /cancel|terminat|notice|renew|end of lease|expiry/i;
+const BREACH_WORDS = /breach|default|remed|repossess|arrears|eviction/i;
+
+/** Short bullet form of a longer contractual sentence. */
+function shortBullet(value: string): string {
+  const head = firstSentence(practicalLeaseCopy(value)).replace(/\s+/g, " ").trim();
+  return head.length > 140 ? `${head.slice(0, 137).trimEnd()}…` : head;
 }
 
 function LeaseResultBody({
@@ -479,11 +548,11 @@ function LeaseResultBody({
     );
   }
 
-  if (section === "terms") {
+  if (section === "details") {
     return (
       <div className="space-y-3">
         {humanGuide.importantMoney.length > 0 ? (
-          <Panel title="Money and costs">
+          <DetailsGroup title="Money and costs">
             <div className="space-y-2">
               {humanGuide.importantMoney.map((item) => (
                 <LeaseTermRow
@@ -494,11 +563,11 @@ function LeaseResultBody({
                 />
               ))}
             </div>
-          </Panel>
+          </DetailsGroup>
         ) : null}
 
         {humanGuide.importantDates.length > 0 ? (
-          <Panel title="Important dates and periods">
+          <DetailsGroup title="Dates and periods">
             <div className="space-y-2">
               {humanGuide.importantDates.map((item) => (
                 <LeaseTermRow
@@ -509,40 +578,17 @@ function LeaseResultBody({
                 />
               ))}
             </div>
-          </Panel>
-        ) : null}
-
-        {keyTerms.length > 0 ? (
-          <Panel title="Other key terms">
-            <div className="space-y-2">
-              {keyTerms.map((item) => (
-                <LeaseTermRow
-                  key={item.id}
-                  label={item.label}
-                  value={item.value}
-                  needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
-                />
-              ))}
-            </div>
-          </Panel>
+          </DetailsGroup>
         ) : null}
 
         {hasResponsibilities ? (
-          <Panel title="Responsibilities">
+          <DetailsGroup title="Responsibilities">
             {humanGuide.tenantResponsibilities.length > 0 ? (
               <div>
                 <p className="text-[13px] font-semibold text-ink">Tenant / lessee</p>
-                <ul className="mt-2 space-y-2">
-                  {humanGuide.tenantResponsibilities.map((item) => (
-                    <li key={item} className="flex gap-2 text-[13px] leading-relaxed text-ink-soft">
-                      <CheckCircle2
-                        className="mt-0.5 h-4 w-4 shrink-0 text-teal"
-                        aria-hidden="true"
-                      />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="mt-2">
+                  <Bullets items={humanGuide.tenantResponsibilities} />
+                </div>
               </div>
             ) : null}
             {humanGuide.landlordResponsibilities.length > 0 ? (
@@ -553,241 +599,88 @@ function LeaseResultBody({
                     : ""
                 }
               >
-                <p className="text-[13px] font-semibold text-ink">Landlord</p>
-                <ul className="mt-2 space-y-2">
-                  {humanGuide.landlordResponsibilities.map((item) => (
-                    <li key={item} className="flex gap-2 text-[13px] leading-relaxed text-ink-soft">
-                      <CheckCircle2
-                        className="mt-0.5 h-4 w-4 shrink-0 text-teal"
-                        aria-hidden="true"
-                      />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-[13px] font-semibold text-ink">Landlord / lessor</p>
+                <div className="mt-2">
+                  <Bullets items={humanGuide.landlordResponsibilities} />
+                </div>
               </div>
             ) : null}
             <p className="mt-3 text-[11px] leading-relaxed text-ink-soft">
               LeaseCheck only assigns a responsibility when the accepted lease wording does.
             </p>
-          </Panel>
+          </DetailsGroup>
         ) : null}
 
-        <Panel title="What you are agreeing to">
-          <p className="text-[14px] leading-relaxed text-ink">{humanGuide.whatYouAreAgreeingTo}</p>
-        </Panel>
-
-        <NextSectionButton
-          label="See what to check and next steps"
-          onClick={() => onNavigate("check")}
-        />
-      </div>
-    );
-  }
-
-  if (section === "check") {
-    return (
-      <div className="space-y-3">
-        {validationWarnings.length > 0 ? <LeaseWarningBlock warnings={validationWarnings} /> : null}
+        {keyTerms.length > 0 ? (
+          <DetailsGroup title="Other terms">
+            <div className="space-y-2">
+              {keyTerms.map((item) => (
+                <LeaseTermRow
+                  key={item.id}
+                  label={item.label}
+                  value={item.value}
+                  needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
+                />
+              ))}
+            </div>
+          </DetailsGroup>
+        ) : null}
 
         {humanGuide.clausesToCheck.length > 0 ? (
-          <Panel title="Clauses to pay attention to">
+          <DetailsGroup title="Clauses to check">
             <div className="space-y-3">
               {humanGuide.clausesToCheck.map((flag) => (
                 <div key={flag.id} className="rounded-xl bg-paper px-3 py-3">
-                  <p className="text-[11px] font-semibold text-teal">What to check</p>
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-[14px] font-semibold leading-snug text-ink">{flag.title}</p>
                     <ClauseSeverity severity={flag.severity} />
                   </div>
-                  <div className="mt-3">
-                    <p className="text-[11px] font-semibold text-ink-soft">Why it matters</p>
-                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                      {practicalLeaseCopy(firstSentence(flag.explanation))}
-                    </p>
-                  </div>
-                  {flag.leaseText ? (
-                    <div className="mt-3 rounded-lg border-l-2 border-teal bg-white px-3 py-2.5">
-                      <p className="text-[11px] font-semibold text-ink-soft">
-                        What your lease says
-                      </p>
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink">
-                        {flag.leaseText}
-                      </p>
-                    </div>
-                  ) : null}
+                  <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
+                    {practicalLeaseCopy(flag.explanation)}
+                  </p>
+                  {flag.leaseText ? <LeaseQuote text={flag.leaseText} /> : null}
                 </div>
               ))}
             </div>
-          </Panel>
+          </DetailsGroup>
         ) : null}
 
-        {yourRights.length > 0 ? (
-          <Panel title="Protections that may matter">
-            <div className="space-y-3">
-              {yourRights.map((right) => (
-                <div key={right.id} className="flex gap-3">
-                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal" aria-hidden="true" />
-                  <div>
-                    <p className="text-[14px] font-semibold text-ink">{right.title}</p>
-                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                      {practicalLeaseCopy(firstSentence(right.explanation))}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        ) : null}
-
-        {humanGuide.nextSteps.length > 0 ? (
-          <Panel title="Recommended next steps">
-            <div className="space-y-3">
-              {humanGuide.nextSteps.map((step, index) => (
-                <div key={step.id} className="flex gap-3 rounded-xl bg-paper px-3 py-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal text-[12px] font-bold text-white">
-                    {index + 1}
-                  </div>
-                  <div className="min-w-0 pt-0.5">
-                    <p className="text-[14px] font-semibold leading-snug text-ink">{step.title}</p>
-                    {step.detail ? (
-                      <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                        {practicalLeaseCopy(firstSentence(step.detail))}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        ) : null}
+        <DetailsGroup title="Original wording">
+          <p className="text-[14px] leading-relaxed text-ink">{humanGuide.whatYouAreAgreeingTo}</p>
+        </DetailsGroup>
 
         {humanGuide.whereToGetHelp ? (
-          <Panel title="Where to get help">
+          <DetailsGroup title="Where to get help">
             <p className="text-[14px] leading-relaxed text-ink">{humanGuide.whereToGetHelp}</p>
-          </Panel>
+          </DetailsGroup>
         ) : null}
 
-        <details className="group rounded-2xl border border-line/70 bg-white p-4">
-          <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
-            Legal details
-            <ChevronDown
-              className="h-4 w-4 text-ink-soft transition-transform group-open:rotate-180"
-              aria-hidden="true"
-            />
-          </summary>
-          {humanGuide.clausesToCheck.some(
-            (flag) =>
-              flag.legalBasis ||
-              (flag.explanation && hasMoreThanFirstSentence(flag.explanation)) ||
-              (flag.legalBases?.length ?? 0) > 0,
-          ) ? (
-            <div className="mt-3 space-y-3">
-              {humanGuide.clausesToCheck.map((flag) => {
-                const bases = flag.legalBases ?? [];
-                const hasDetail =
-                  flag.legalBasis || hasMoreThanFirstSentence(flag.explanation) || bases.length > 0;
-                return hasDetail ? (
-                  <div key={flag.id}>
-                    <p className="text-[12.5px] font-semibold text-ink">{flag.title}</p>
-                    {hasMoreThanFirstSentence(flag.explanation) ? (
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
-                        {flag.explanation}
-                      </p>
-                    ) : null}
-                    {flag.legalBasis ? (
-                      <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
-                        {flag.legalBasis}
-                      </p>
-                    ) : null}
-                    {bases.map((basis) => (
-                      <p
-                        key={`${basis.sourceId}-${basis.provision}`}
-                        className="mt-1 text-[12px] leading-relaxed text-ink-soft"
-                      >
-                        {basis.title}
-                        {basis.provision ? ` — ${basis.provision}` : ""}
-                      </p>
-                    ))}
-                  </div>
-                ) : null;
-              })}
-            </div>
-          ) : null}
-          {yourRights.some(
-            (right) =>
-              right.legalBasis ||
-              hasMoreThanFirstSentence(right.explanation) ||
-              (right.legalBases?.length ?? 0) > 0,
-          ) ? (
-            <div className="mt-4 border-t border-line pt-3">
-              <p className="text-[12.5px] font-semibold text-ink">Protection details</p>
-              <div className="mt-2 space-y-3">
-                {yourRights.map((right) => (
-                  <div key={right.id}>
-                    <p className="text-[12.5px] font-semibold text-ink">{right.title}</p>
-                    {hasMoreThanFirstSentence(right.explanation) ? (
-                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
-                        {right.explanation}
-                      </p>
-                    ) : null}
-                    {right.legalBasis ? (
-                      <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
-                        {right.legalBasis}
-                      </p>
-                    ) : null}
-                    {(right.legalBases ?? []).map((basis) => (
-                      <p
-                        key={`${basis.sourceId}-${basis.provision}`}
-                        className="mt-1 text-[12px] leading-relaxed text-ink-soft"
-                      >
-                        {basis.title}
-                        {basis.provision ? ` — ${basis.provision}` : ""}
-                      </p>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          {humanGuide.legalNotes.length > 0 ? (
-            <div className="mt-4 space-y-2 border-t border-line pt-3">
-              {humanGuide.legalNotes.map((note) => (
-                <p key={note} className="text-[12.5px] leading-relaxed text-ink-soft">
-                  {note}
-                </p>
-              ))}
-            </div>
-          ) : null}
-          <div className="mt-4 border-t border-line pt-3">
-            <p className="text-[12.5px] leading-relaxed text-ink-soft">
-              {result.disclaimer.wording}
-            </p>
-          </div>
-          {humanGuide.guidanceSources.length > 0 ? (
-            <div className="mt-4 border-t border-line pt-3">
-              <p className="text-[12.5px] font-semibold text-ink">Sources checked</p>
-              <div className="mt-2 space-y-2">
-                {humanGuide.guidanceSources.map((source) => (
-                  <a
-                    key={source.id}
-                    href={source.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block text-[12.5px] font-medium leading-relaxed text-teal underline-offset-2 hover:underline"
-                  >
-                    {source.title}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </details>
+        <LeaseLegalDetails result={result} />
       </div>
     );
   }
 
-  // Overview
+  // Summary — one coherent, practical answer.
+  const dateItems = [
+    ...humanGuide.importantDates,
+    ...keyTerms.filter((item) => /notice|term|period|duration|renew/i.test(item.label)),
+  ];
+  const datesNeedCheck = dateItems.some((item) =>
+    leaseTermNeedsCheck(item.label, validationWarnings),
+  );
+  const noticeItem = dateItems.find((item) => /notice/i.test(item.label));
+  const endingClauses = humanGuide.clausesToCheck.filter((flag) =>
+    ENDING_WORDS.test(`${flag.title} ${flag.explanation}`),
+  );
+  const breachClauses = humanGuide.clausesToCheck.filter((flag) =>
+    BREACH_WORDS.test(`${flag.title} ${flag.explanation}`),
+  );
+  const thingsToCheck = [
+    ...leaseWarningLabels(validationWarnings).map((label) => `Confirm the ${label}`),
+    ...humanGuide.clausesToCheck.map((flag) => `Check the ${flag.title.toLowerCase()}`),
+  ].slice(0, 5);
+  const nextSteps = humanGuide.nextSteps.slice(0, 4);
+
   return (
     <div className="space-y-3">
       <section className="rounded-2xl border border-line/70 bg-white p-5">
@@ -796,8 +689,11 @@ function LeaseResultBody({
           <SeverityPill severity={summary.severity} />
         </div>
         <h2 className="mt-2 font-display text-[23px] font-semibold leading-[1.2] text-ink">
-          {humanGuide.whatThisIs || summary.headline}
+          Your lease in plain English
         </h2>
+        <p className="mt-2 text-[14px] font-medium leading-snug text-ink-soft">
+          {humanGuide.whatThisIs || summary.headline}
+        </p>
         {document.documentTitle ? (
           <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-ink-soft">
             <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -807,55 +703,287 @@ function LeaseResultBody({
         <p className="mt-3 whitespace-pre-line text-[14.5px] leading-[1.6] text-ink-soft">
           {firstSentence(summary.plainEnglish)}
         </p>
-        {[...humanGuide.importantDates, ...humanGuide.importantMoney, ...keyTerms]
-          .filter((item) => /term|rent|rental|payment|deposit/i.test(item.label))
-          .slice(0, 3).length > 0 ? (
-          <div className="mt-4 space-y-2 border-t border-line pt-3">
-            {[...humanGuide.importantDates, ...humanGuide.importantMoney, ...keyTerms]
-              .filter((item) => /term|rent|rental|payment|deposit/i.test(item.label))
-              .slice(0, 3)
-              .map((item) => (
-                <div key={item.id} className="flex items-start justify-between gap-3 text-[13px]">
-                  <span className="text-ink-soft">{item.label}</span>
-                  <span className="max-w-[11rem] text-right font-semibold text-ink">
-                    {item.value}
-                  </span>
-                </div>
-              ))}
-          </div>
-        ) : null}
-        {validationWarnings.length === 0 &&
-        (document.confidence === "MEDIUM" || document.confidence === "LOW") ? (
-          <div className="mt-3 rounded-xl bg-tint-sand px-3 py-2.5 text-[12.5px] leading-relaxed text-ink">
-            Compare important money, dates and notice wording with the original lease before relying
-            on it.
-          </div>
-        ) : null}
       </section>
 
-      {validationWarnings.length > 0 ? <LeaseWarningBlock warnings={validationWarnings} /> : null}
+      {humanGuide.importantMoney.length > 0 ? (
+        <SummaryCard title="What you need to pay">
+          <div className="divide-y divide-line/60">
+            {humanGuide.importantMoney.map((item) => (
+              <FactRow
+                key={item.id}
+                label={item.label}
+                value={item.value}
+                needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
+              />
+            ))}
+          </div>
+        </SummaryCard>
+      ) : null}
 
-      <div className="grid grid-cols-2 gap-3">
-        <SummaryMetric
-          label="Key terms"
-          value={String(
-            humanGuide.importantMoney.length + humanGuide.importantDates.length + keyTerms.length,
+      {dateItems.length > 0 ? (
+        <SummaryCard title="Key dates" icon={<CalendarDays className="h-4 w-4 text-teal" />}>
+          <div className="divide-y divide-line/60">
+            {dateItems.map((item) => (
+              <FactRow
+                key={item.id}
+                label={item.label}
+                value={item.value}
+                needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
+              />
+            ))}
+          </div>
+          {datesNeedCheck || validationWarnings.length > 0 ? (
+            <p className="mt-3 text-[12.5px] leading-relaxed text-stamp-amber">
+              Some details should be checked against the original document.
+            </p>
+          ) : null}
+        </SummaryCard>
+      ) : null}
+
+      {hasResponsibilities ? (
+        <SummaryCard title="Who must do what">
+          {humanGuide.tenantResponsibilities.length > 0 ? (
+            <div>
+              <p className="text-[13px] font-semibold text-ink">Your responsibilities</p>
+              <div className="mt-2">
+                <Bullets items={humanGuide.tenantResponsibilities.slice(0, 4).map(shortBullet)} />
+              </div>
+            </div>
+          ) : null}
+          {humanGuide.landlordResponsibilities.length > 0 ? (
+            <div
+              className={
+                humanGuide.tenantResponsibilities.length > 0 ? "mt-4 border-t border-line pt-4" : ""
+              }
+            >
+              <p className="text-[13px] font-semibold text-ink">Landlord responsibilities</p>
+              <div className="mt-2">
+                <Bullets items={humanGuide.landlordResponsibilities.slice(0, 4).map(shortBullet)} />
+              </div>
+            </div>
+          ) : null}
+        </SummaryCard>
+      ) : null}
+
+      {noticeItem || endingClauses.length > 0 ? (
+        <SummaryCard title="If you want to end the lease">
+          {noticeItem ? (
+            <p className="text-[13.5px] leading-relaxed text-ink">
+              The lease states a notice period of{" "}
+              <span className="font-semibold">{noticeItem.value}</span>.
+            </p>
+          ) : null}
+          {endingClauses.slice(0, 2).map((flag) => (
+            <div key={flag.id} className={noticeItem ? "mt-3" : ""}>
+              <p className="text-[13.5px] leading-relaxed text-ink-soft">
+                {practicalLeaseCopy(firstSentence(flag.explanation))}
+              </p>
+              {flag.leaseText ? <LeaseQuote text={flag.leaseText} /> : null}
+            </div>
+          ))}
+        </SummaryCard>
+      ) : null}
+
+      {breachClauses.length > 0 ? (
+        <SummaryCard title="If something goes wrong">
+          <div className="space-y-3">
+            {breachClauses.slice(0, 2).map((flag) => (
+              <div key={flag.id}>
+                <p className="text-[13.5px] font-semibold text-ink">{flag.title}</p>
+                <p className="mt-1 text-[13.5px] leading-relaxed text-ink-soft">
+                  {practicalLeaseCopy(firstSentence(flag.explanation))}
+                </p>
+                {flag.leaseText ? <LeaseQuote text={flag.leaseText} /> : null}
+              </div>
+            ))}
+          </div>
+        </SummaryCard>
+      ) : null}
+
+      {thingsToCheck.length > 0 ? (
+        <SummaryCard
+          title="Things to check"
+          icon={<AlertTriangle className="h-4 w-4 text-stamp-amber" />}
+        >
+          <ul className="space-y-2">
+            {thingsToCheck.map((item) => (
+              <li
+                key={item}
+                className="flex gap-2 text-[13.5px] capitalize leading-relaxed text-ink-soft"
+              >
+                <span className="text-stamp-amber" aria-hidden="true">
+                  •
+                </span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => onNavigate("details")}
+            className="mt-3 min-h-[44px] text-[13px] font-semibold text-teal"
+          >
+            See the full wording in Full details
+          </button>
+        </SummaryCard>
+      ) : null}
+
+      {nextSteps.length > 0 ? (
+        <SummaryCard title="What to do next">
+          <div className="space-y-3">
+            {nextSteps.map((step, index) => (
+              <div key={step.id} className="flex gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal text-[12px] font-bold text-white">
+                  {index + 1}
+                </div>
+                <div className="min-w-0 pt-0.5">
+                  <p className="text-[14px] font-semibold leading-snug text-ink">{step.title}</p>
+                  {step.detail ? (
+                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                      {practicalLeaseCopy(firstSentence(step.detail))}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        </SummaryCard>
+      ) : null}
+
+      <section className="rounded-2xl border border-line/70 bg-white p-4">
+        <p className="text-[14px] font-semibold text-ink">Have a question about this lease?</p>
+        <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+          For example: How can I cancel this lease? Who pays for maintenance? What happens if rent
+          is paid late? What happens to the deposit?
+        </p>
+        <div className="mt-3">
+          {askCapability ? (
+            <NextSectionButton label="Ask LeaseCheck" onClick={() => onNavigate("ask")} />
+          ) : (
+            <AskComingSoonButton />
           )}
-        />
-        <SummaryMetric label="Clauses to check" value={String(humanGuide.clausesToCheck.length)} />
-      </div>
+        </div>
+      </section>
 
-      <NextSectionButton label="View key findings" onClick={() => onNavigate("terms")} />
-      {askCapability ? (
-        <ResultNavRow
-          label="Ask about this lease"
-          hint="Based on your lease and checked legal information"
-          onClick={() => onNavigate("ask")}
-        />
-      ) : (
-        <AskComingSoonButton />
-      )}
+      <ResultNavRow
+        label="Full details"
+        hint="Every extracted term, the original wording and legal detail"
+        onClick={() => onNavigate("details")}
+      />
+
+      {yourRights.length > 0 || humanGuide.legalNotes.length > 0 ? (
+        <p className="px-1 text-[11.5px] leading-relaxed text-ink-soft">
+          There are additional legal protections that may apply. See Legal details under Full
+          details.
+        </p>
+      ) : null}
     </div>
+  );
+}
+
+/** All legal material, collapsed by default and always last. */
+function LeaseLegalDetails({ result }: { result: LeaseDocumentResult }) {
+  const { humanGuide, yourRights } = result;
+  return (
+    <details className="group rounded-2xl border border-line/70 bg-white p-4">
+      <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold text-ink">
+        Legal details
+        <ChevronDown
+          className="h-4 w-4 text-ink-soft transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+      {humanGuide.clausesToCheck.some(
+        (flag) => flag.legalBasis || (flag.legalBases?.length ?? 0) > 0,
+      ) ? (
+        <div className="mt-3 space-y-3">
+          {humanGuide.clausesToCheck.map((flag) => {
+            const bases = flag.legalBases ?? [];
+            return flag.legalBasis || bases.length > 0 ? (
+              <div key={flag.id}>
+                <p className="text-[12.5px] font-semibold text-ink">{flag.title}</p>
+                {flag.legalBasis ? (
+                  <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
+                    {flag.legalBasis}
+                  </p>
+                ) : null}
+                {bases.map((basis) => (
+                  <p
+                    key={`${basis.sourceId}-${basis.provision}`}
+                    className="mt-1 text-[12px] leading-relaxed text-ink-soft"
+                  >
+                    {basis.title}
+                    {basis.provision ? ` — ${basis.provision}` : ""}
+                  </p>
+                ))}
+              </div>
+            ) : null;
+          })}
+        </div>
+      ) : null}
+      {yourRights.length > 0 ? (
+        <div className="mt-4 border-t border-line pt-3">
+          <p className="text-[12.5px] font-semibold text-ink">Protections that may apply</p>
+          <div className="mt-2 space-y-3">
+            {yourRights.map((right) => (
+              <div key={right.id} className="flex gap-3">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+                <div>
+                  <p className="text-[12.5px] font-semibold text-ink">{right.title}</p>
+                  <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                    {right.explanation}
+                  </p>
+                  {right.legalBasis ? (
+                    <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
+                      {right.legalBasis}
+                    </p>
+                  ) : null}
+                  {(right.legalBases ?? []).map((basis) => (
+                    <p
+                      key={`${basis.sourceId}-${basis.provision}`}
+                      className="mt-1 text-[12px] leading-relaxed text-ink-soft"
+                    >
+                      {basis.title}
+                      {basis.provision ? ` — ${basis.provision}` : ""}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {humanGuide.legalNotes.length > 0 ? (
+        <div className="mt-4 space-y-2 border-t border-line pt-3">
+          {humanGuide.legalNotes.map((note) => (
+            <p key={note} className="text-[12.5px] leading-relaxed text-ink-soft">
+              {note}
+            </p>
+          ))}
+        </div>
+      ) : null}
+      <div className="mt-4 border-t border-line pt-3">
+        <p className="text-[12.5px] leading-relaxed text-ink-soft">{result.disclaimer.wording}</p>
+      </div>
+      {humanGuide.guidanceSources.length > 0 ? (
+        <div className="mt-4 border-t border-line pt-3">
+          <p className="text-[12.5px] font-semibold text-ink">Sources checked</p>
+          <div className="mt-2 space-y-2">
+            {humanGuide.guidanceSources.map((source) => (
+              <a
+                key={source.id}
+                href={source.url}
+                target="_blank"
+                rel="noreferrer"
+                className="block text-[12.5px] font-medium leading-relaxed text-teal underline-offset-2 hover:underline"
+              >
+                {source.title}
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </details>
   );
 }
 
