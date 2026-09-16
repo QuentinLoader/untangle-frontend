@@ -1,7 +1,7 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { FileQuestion, FileText, Globe, Lightbulb, Search } from "lucide-react";
+import { FileQuestion, FileText, Globe, Search } from "lucide-react";
 import {
   getDocumentStatus,
   friendlyDocumentError,
