@@ -3,13 +3,71 @@ import { useMutation } from "@tanstack/react-query";
 import { MessageSquare } from "lucide-react";
 import { Disclosure } from "@/components/untangle/ResultBlocks";
 import {
-  askAnswerKindLabel,
   askConfidenceLabel,
   askLeaseQuestion,
   friendlyAskError,
   type LeaseAskAnswer,
   type LeaseAskCapability,
 } from "@/lib/documents";
+
+type AnswerSections = {
+  shortAnswer: string[];
+  meaning: string[];
+  details: string[];
+};
+
+function cleanMarkdown(value: string): string {
+  return value
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[([^\]]+)]\([^)]*\)/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/^\s*(?:[-*+]\s+|\d+[.)]\s+)/gm, "")
+    .replace(/:\s+\d+[.)]\s+/g, ": ")
+    .replace(/[*`#]+/g, "")
+    .trim();
+}
+
+function sentences(value: string): string[] {
+  const cleaned = cleanMarkdown(value)
+    .replace(/(\d)\.(\d)/g, "$1<decimal>$2")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) return [];
+  return (
+    cleaned
+      .match(/[^.!?]+(?:[.!?]+|$)/g)
+      ?.map((item) => item.replaceAll("<decimal>", ".").trim())
+      .filter(Boolean) ?? []
+  );
+}
+
+function answerSections(value: string): AnswerSections {
+  const blocks = value
+    .split(/\n{2,}|\r?\n(?=\s*(?:#{1,6}\s+|\*\*[^*]+\*\*\s*$))/)
+    .map(cleanMarkdown)
+    .filter(Boolean);
+  const all = sentences(blocks.join(" "));
+  const shortAnswer = all.slice(0, Math.min(3, all.length));
+  const remaining = all.slice(shortAnswer.length);
+  return {
+    shortAnswer,
+    meaning: remaining.slice(0, 2),
+    details: remaining.slice(2),
+  };
+}
+
+function TextLines({ lines }: { lines: string[] }) {
+  return (
+    <div className="space-y-1.5">
+      {lines.map((line, index) => (
+        <p key={`${index}-${line.slice(0, 24)}`}>{line}</p>
+      ))}
+    </div>
+  );
+}
 
 /**
  * LeaseCheck-only follow-up questions. Grounded answers come from the backend;
@@ -58,8 +116,8 @@ export function LeaseAskSection({
       <section className="rounded-2xl border border-line/70 bg-white p-4">
         <h2 className="font-display text-[19px] font-semibold text-ink">Ask about this lease</h2>
         <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
-          Ask a question about the uploaded lease. Answers are grounded in this document and
-          approved legal rules used for this result.
+          Ask a practical question about this lease. LeaseCheck will use the document and the
+          information checked for this result.
         </p>
 
         <label className="sr-only" htmlFor="lease-ask-question">
@@ -129,67 +187,62 @@ function LeaseAskAnswerCard({
   onFollowUp: (value: string) => void;
 }) {
   const confidence = askConfidenceLabel(answer.confidence);
+  const content = answerSections(answer.answer);
+  const legalDetails =
+    content.details.length > 0 || answer.caveats.length > 0 || answer.legalSources.length > 0;
 
   return (
     <div className="space-y-3">
       <section className="rounded-2xl border border-line/70 bg-white p-4">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-[12px] font-semibold text-teal">
-            {askAnswerKindLabel(answer.answerKind)}
-          </p>
+          <p className="text-[12px] font-semibold text-teal">Answer</p>
           {confidence ? (
             <span className="shrink-0 text-[11px] text-ink-soft">{confidence}</span>
           ) : null}
         </div>
-        <p className="mt-2 whitespace-pre-line text-[14.5px] leading-[1.6] text-ink">
-          {answer.answer}
-        </p>
+        <div className="mt-2 text-[14.5px] leading-[1.6] text-ink">
+          <TextLines lines={content.shortAnswer} />
+        </div>
       </section>
 
       {answer.documentEvidence.length > 0 ? (
-        <Disclosure title="Where this came from" tone="card">
+        <section className="rounded-2xl border border-line/70 bg-white p-4">
+          <h3 className="text-[13px] font-semibold text-ink">What your lease says</h3>
           <div className="space-y-2">
             {answer.documentEvidence.map((item, index) => (
-              <div key={`${index}-${item.quote.slice(0, 24)}`} className="rounded-xl bg-paper p-3">
+              <blockquote
+                key={`${index}-${item.quote.slice(0, 24)}`}
+                className="mt-2 rounded-xl border-l-2 border-teal bg-paper p-3"
+              >
                 {item.page !== null ? (
                   <p className="text-[11px] font-semibold text-ink-soft">Page {item.page}</p>
                 ) : null}
-                <p className="mt-1 text-[12.5px] leading-relaxed text-ink">{item.quote}</p>
-              </div>
+                <p className="mt-1 text-[12.5px] leading-relaxed text-ink">
+                  {cleanMarkdown(item.quote)}
+                </p>
+              </blockquote>
             ))}
           </div>
-        </Disclosure>
+        </section>
       ) : null}
 
-      {answer.legalSources.length > 0 ? (
-        <Disclosure title="Legal sources" tone="card">
-          <div className="space-y-2.5">
-            {answer.legalSources.map((source) => (
-              <div key={`${source.ruleId}-${source.sourceId}`}>
-                <p className="text-[13px] font-semibold text-ink">{source.title}</p>
-                <p className="text-[12px] text-ink-soft">{source.provision}</p>
-                <a
-                  href={source.canonicalUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-0.5 inline-block text-[12.5px] font-medium text-teal underline-offset-2 hover:underline"
-                >
-                  View source
-                </a>
-              </div>
-            ))}
+      {content.meaning.length > 0 ? (
+        <section className="rounded-2xl border border-line/70 bg-white p-4">
+          <h3 className="text-[13px] font-semibold text-ink">What this means for you</h3>
+          <div className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">
+            <TextLines lines={content.meaning} />
           </div>
-        </Disclosure>
+        </section>
       ) : null}
 
       {answer.caveats.length > 0 ? (
         <section className="rounded-2xl border border-line/70 bg-white p-4">
-          <h3 className="text-[13px] font-semibold text-ink-soft">Keep in mind</h3>
+          <h3 className="text-[13px] font-semibold text-ink">Keep in mind</h3>
           <ul className="mt-2 space-y-1.5">
             {answer.caveats.map((caveat) => (
               <li key={caveat} className="flex gap-2 text-[12.5px] leading-relaxed text-ink-soft">
                 <span aria-hidden>•</span>
-                <span>{caveat}</span>
+                <span>{sentences(caveat)[0] ?? cleanMarkdown(caveat)}</span>
               </li>
             ))}
           </ul>
@@ -212,6 +265,53 @@ function LeaseAskAnswerCard({
             ))}
           </div>
         </section>
+      ) : null}
+
+      {legalDetails ? (
+        <Disclosure title="Legal details" tone="card">
+          {content.details.length > 0 ? (
+            <div className="text-[12.5px] leading-relaxed text-ink-soft">
+              <TextLines lines={content.details} />
+            </div>
+          ) : null}
+          {answer.caveats.length > 0 ? (
+            <div className={content.details.length > 0 ? "mt-4 border-t border-line pt-3" : ""}>
+              <h4 className="text-[12.5px] font-semibold text-ink">Full cautions</h4>
+              <ul className="mt-2 space-y-1.5">
+                {answer.caveats.map((caveat) => (
+                  <li
+                    key={caveat}
+                    className="flex gap-2 text-[12.5px] leading-relaxed text-ink-soft"
+                  >
+                    <span aria-hidden>•</span>
+                    <span>{cleanMarkdown(caveat)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {answer.legalSources.length > 0 ? (
+            <div className="mt-4 border-t border-line pt-3">
+              <h4 className="text-[12.5px] font-semibold text-ink">Sources checked</h4>
+              <div className="mt-2 space-y-2.5">
+                {answer.legalSources.map((source) => (
+                  <div key={`${source.ruleId}-${source.sourceId}`}>
+                    <p className="text-[13px] font-semibold text-ink">{source.title}</p>
+                    <p className="text-[12px] text-ink-soft">{source.provision}</p>
+                    <a
+                      href={source.canonicalUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-0.5 inline-block text-[12.5px] font-medium text-teal underline-offset-2 hover:underline"
+                    >
+                      View source
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </Disclosure>
       ) : null}
     </div>
   );
