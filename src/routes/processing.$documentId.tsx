@@ -33,12 +33,12 @@ export const Route = createFileRoute("/processing/$documentId")({
 const STEPS: { label: string; statuses: DocumentProcessingStatus[] }[] = [
   { label: "Reading document", statuses: ["QUEUED"] },
   { label: "Identifying important information", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
-  { label: "Analysing terms", statuses: ["EXTRACTING"] },
+  { label: "Understanding the terms", statuses: ["EXTRACTING"] },
   {
-    label: "Checking important risks and actions",
+    label: "Checking important clauses",
     statuses: ["VALIDATING_RESULT", "MATCHING_RULES"],
   },
-  { label: "Preparing your results", statuses: ["COMPLETED"] },
+  { label: "Preparing your answer", statuses: ["COMPLETED"] },
 ];
 
 /** Number of consecutive polling failures tolerated before surfacing an error. */
@@ -153,8 +153,7 @@ function Processing() {
               </p>
               {!backendFailed && !isLoading && (
                 <p className="mt-2 max-w-[300px] text-center text-[12px] leading-relaxed text-ink-soft">
-                  This usually takes 10–30 seconds. Keep this screen open and we’ll show your result
-                  as soon as it’s ready.
+                  Keep this screen open. Your result will appear as soon as it is ready.
                 </p>
               )}
 
@@ -342,7 +341,6 @@ function ProgressRing({ percent }: { percent: number }) {
           style={{ transition: "stroke-dashoffset 700ms ease" }}
         />
       </svg>
-      <span className="absolute font-display text-[26px] font-semibold text-ink">{clamped}%</span>
     </div>
   );
 }
