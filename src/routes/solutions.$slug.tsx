@@ -86,7 +86,7 @@ function SolutionDetail() {
             <PrimaryButton
               onClick={() => navigate({ to: "/upload", search: { solution: solution.slug } })}
             >
-              Upload a document
+              {solution.ctaLabel ?? "Upload a document"}
             </PrimaryButton>
           </div>
         ) : (
