@@ -1,7 +1,7 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { FileQuestion, FileText, Globe, Lightbulb, Search } from "lucide-react";
+import { FileQuestion, FileText, Globe, Search } from "lucide-react";
 import {
   getDocumentStatus,
   friendlyDocumentError,
@@ -175,18 +175,6 @@ function Processing() {
                 })}
               </div>
 
-              {!backendFailed && !isLoading && (
-                <div className="mt-9 flex w-full max-w-[320px] gap-3 rounded-2xl bg-teal-dim/70 px-4 py-4">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-teal">
-                    <Lightbulb size={16} aria-hidden />
-                  </span>
-                  <p className="text-[12.5px] leading-relaxed text-ink">
-                    <span className="block font-semibold">Did you know?</span>
-                    Untangle checks your document against South African rules and published
-                    guidance, not just the words on the page.
-                  </p>
-                </div>
-              )}
 
               {showProcessingError && (
                 <p
