@@ -234,8 +234,7 @@ export function LandingPage() {
           </h2>
           <p className="mt-3 text-[14.5px] leading-relaxed text-white/75">
             Untangle explains what a document says in everyday language. It does not replace a
-            lawyer, tax practitioner or accountant, and it does not act on your behalf. Your
-            documents are handled according to Untangle's privacy and retention rules.
+            lawyer, tax practitioner or accountant, and it does not act on your behalf.
           </p>
           <a
             href="#disclaimer"
@@ -261,9 +260,9 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 text-[13px] text-ink-soft md:flex-row md:justify-between">
           <p>© {new Date().getFullYear()} Untangle</p>
           <div className="flex gap-4">
-            <a href="#privacy" className="inline-flex min-h-[44px] items-center px-1">
-              Privacy
-            </a>
+            <Link to="/terms" className="inline-flex min-h-[44px] items-center px-1">
+              Terms &amp; privacy
+            </Link>
             <a href="#disclaimer" className="inline-flex min-h-[44px] items-center px-1">
               Disclaimer
             </a>
