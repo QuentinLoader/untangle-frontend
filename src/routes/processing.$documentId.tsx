@@ -167,7 +167,7 @@ function Processing() {
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal opacity-50 motion-reduce:animate-none" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-teal" />
                     </span>
-                    Still working · {formatElapsedTime(elapsedSeconds)}
+                    {formatElapsedTime(elapsedSeconds)}
                   </div>
                   <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
                     Keep this screen open. Your result will appear as soon as it is ready.
@@ -368,7 +368,8 @@ function NeedsReviewState({
 function formatElapsedTime(seconds: number) {
   if (seconds < 60) return `${seconds}s elapsed`;
   const minutes = Math.floor(seconds / 60);
-  return `${minutes} min elapsed`;
+  const secs = String(seconds % 60).padStart(2, "0");
+  return `${minutes} min ${secs} s elapsed`;
 }
 
 /** Continuous activity indicator — intentionally does not imply measured progress. */
