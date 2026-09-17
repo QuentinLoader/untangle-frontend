@@ -594,7 +594,9 @@ function leasePaymentLabel(label: string, family: LeaseFamilyView): string {
 function leaseProblemTitle(title: string, explanation: string, family: LeaseFamilyView): string {
   if (family !== "equipment") return title;
   const text = `${title} ${explanation}`.toLowerCase();
-  if (/miss(?:ed|ing)? (?:a )?payment|late payment|non-payment|payment default|arrears/.test(text)) {
+  if (
+    /miss(?:ed|ing)? (?:a )?payment|late payment|non-payment|payment default|arrears/.test(text)
+  ) {
     return "If you miss a payment";
   }
   if (/damage|damaged/.test(text)) return "If the equipment is damaged";
