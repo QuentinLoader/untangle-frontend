@@ -279,6 +279,7 @@ function NeedsReviewState({
               {failureMessage}
             </p>
           )}
+          <NeedsReviewNav />
         </div>
       );
     case "MODULE_NOT_ACTIVE":
