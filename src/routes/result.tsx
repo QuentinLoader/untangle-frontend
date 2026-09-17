@@ -445,9 +445,9 @@ function DetailsGroup({
 
 function SummarySection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="border-t border-line/70 pt-5 first:border-t-0 first:pt-0">
-      <h3 className="text-[12px] font-bold uppercase text-teal">{title}</h3>
-      <div className="mt-3">{children}</div>
+    <section className="border-t border-line/70 pt-6 first:border-t-0 first:pt-0">
+      <h3 className="font-display text-[17px] font-semibold leading-snug text-ink">{title}</h3>
+      <div className="mt-3.5">{children}</div>
     </section>
   );
 }
@@ -462,7 +462,7 @@ function SummaryFactRow({
   needsCheck?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 py-1.5">
+    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,11rem)] items-start gap-3 py-2">
       <div className="min-w-0">
         <span className="text-[13px] text-ink-soft">{label}</span>
         {needsCheck ? (
@@ -471,7 +471,7 @@ function SummaryFactRow({
           </span>
         ) : null}
       </div>
-      <span className="max-w-[11rem] text-right text-[14.5px] font-semibold leading-snug text-ink">
+      <span className="min-w-0 break-words text-right text-[14.5px] font-semibold leading-snug text-ink">
         {value}
       </span>
     </div>
@@ -746,6 +746,15 @@ function duplicatesFinancialImpactMoney(
         return /rent|rental|hire|regular|monthly|periodic|recurring payment/.test(normalizedLabel);
       case "deposit":
         return /deposit/.test(normalizedLabel);
+      case "initiation-fee":
+        return /initiation fee/.test(normalizedLabel);
+      case "monthly-service-fee":
+        return /monthly service fee|service fee/.test(normalizedLabel);
+      case "total-amount-repayable":
+        return /total (?:amount )?repayable/.test(normalizedLabel);
+      case "scheduled-base-payments":
+      case "total-scheduled-commitment":
+        return /scheduled payments|scheduled commitment/.test(normalizedLabel);
       case "balloon-value":
       case "residual-value":
         return /balloon|residual/.test(normalizedLabel);
@@ -1144,8 +1153,10 @@ function LeaseResultBody({
           ),
         )
       : breachClauses;
-  const paymentImpactItems = financialImpactItems.filter(
-    (item) => normalizedFinancialId(item.id) === "regular-payment",
+  const paymentImpactItems = financialImpactItems.filter((item) =>
+    ["regular-payment", "initiation-fee", "monthly-service-fee", "deposit"].includes(
+      normalizedFinancialId(item.id),
+    ),
   );
   const costImpactItems = financialImpactItems.filter((item) => {
     const id = normalizedFinancialId(item.id);
@@ -1154,9 +1165,6 @@ function LeaseResultBody({
         "scheduled-base-payments",
         "total-amount-repayable",
         "total-scheduled-commitment",
-        "initiation-fee",
-        "monthly-service-fee",
-        "deposit",
         "purchase-option-amount",
       ].includes(id) ||
       isCombinedBalloonResidual(item) ||
@@ -1195,7 +1203,7 @@ function LeaseResultBody({
 
   return (
     <div className="space-y-3">
-      <article className="rounded-2xl border border-line/70 bg-white p-5">
+      <article className="overflow-hidden rounded-2xl border border-line/70 bg-white px-5 py-5">
         <div className="flex items-start justify-between gap-3">
           <p className="text-[13px] font-medium text-teal">Analysis complete</p>
           <SeverityPill severity={summary.severity} />
@@ -1218,7 +1226,7 @@ function LeaseResultBody({
           </p>
         ) : null}
 
-        <div className="mt-6 space-y-5">
+        <div className="mt-7 space-y-6">
           <SummarySection title="What this agreement is">
             <div className="divide-y divide-line/60">
               {termItems.map((item) => (
@@ -1260,7 +1268,7 @@ function LeaseResultBody({
                 </div>
               ) : null}
               {paymentImpactItems.length > 0 ? (
-                <div className={summaryMoney.length > 0 ? "mt-2 border-t border-line/60" : ""}>
+                <div className={summaryMoney.length > 0 ? "mt-2 border-t border-line/60 pt-1" : ""}>
                   <FinancialImpactSummary items={paymentImpactItems} family={family} />
                 </div>
               ) : null}
@@ -1313,7 +1321,7 @@ function LeaseResultBody({
           ) : null}
 
           {problemClauses.length > 0 || defaultImpactItems.length > 0 ? (
-            <SummarySection title="If you default">
+            <SummarySection title={family === "equipment" ? "If something goes wrong" : "If you default"}>
               <div className="space-y-3">
                 {problemClauses.slice(0, 3).map((flag) => (
                   <div key={flag.id}>
@@ -1375,10 +1383,14 @@ function LeaseResultBody({
           ) : null}
 
           <SummarySection title="Questions you may want to ask">
-            <ul className="space-y-2">
+            <ul className="divide-y divide-line/60">
               {questions.map((question) => (
-                <li key={question} className="text-[13.5px] leading-relaxed text-ink-soft">
-                  {question}
+                <li
+                  key={question}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-2.5 text-[13.5px] leading-relaxed text-ink-soft"
+                >
+                  <span className="min-w-0">{question}</span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
                 </li>
               ))}
             </ul>
