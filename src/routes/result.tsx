@@ -970,7 +970,9 @@ function isGenericClauseText(value: string): boolean {
   );
 }
 
-function clauseSummarySentence(flag: LeaseDocumentResult["humanGuide"]["clausesToCheck"][number]): string {
+function clauseSummarySentence(
+  flag: LeaseDocumentResult["humanGuide"]["clausesToCheck"][number],
+): string {
   const explanation = completeFirstSentence(flag.explanation);
   if (!isGenericClauseText(explanation)) return explanation;
   return flag.leaseText ? completeFirstSentence(flag.leaseText) : "";
@@ -1239,26 +1241,26 @@ function LeaseResultBody({
   const identityDates = humanGuide.importantDates.filter((item) =>
     /start|commence|effective|end|expir/i.test(item.label),
   );
-  const endPositionStatements = uniqueCompleteSentences(
-    [
-      ...keyTerms
-        .filter((item) =>
-          /ownership|title transfer|purchase option|what happens at the end|return (?:the )?(?:vehicle|equipment)/i.test(
-            `${item.label} ${item.value}`,
-          ),
-        )
-        .filter((item) => !/return required/i.test(item.label) || supportsReturnRequirement(item.value))
-        .map((item) => `${item.label}: ${item.value}`),
-      ...humanGuide.clausesToCheck
-        .filter((item) =>
-          /ownership|title transfer|purchase option|what happens at the end|return (?:the )?(?:vehicle|equipment)/i.test(
-            `${item.title} ${item.explanation} ${item.leaseText ?? ""}`,
-          ),
-        )
-        .map((item) => clauseSummarySentence(item))
-        .filter(Boolean),
-    ],
-  ).slice(0, 2);
+  const endPositionStatements = uniqueCompleteSentences([
+    ...keyTerms
+      .filter((item) =>
+        /ownership|title transfer|purchase option|what happens at the end|return (?:the )?(?:vehicle|equipment)/i.test(
+          `${item.label} ${item.value}`,
+        ),
+      )
+      .filter(
+        (item) => !/return required/i.test(item.label) || supportsReturnRequirement(item.value),
+      )
+      .map((item) => `${item.label}: ${item.value}`),
+    ...humanGuide.clausesToCheck
+      .filter((item) =>
+        /ownership|title transfer|purchase option|what happens at the end|return (?:the )?(?:vehicle|equipment)/i.test(
+          `${item.title} ${item.explanation} ${item.leaseText ?? ""}`,
+        ),
+      )
+      .map((item) => clauseSummarySentence(item))
+      .filter(Boolean),
+  ]).slice(0, 2);
   const hasClearEndPosition = endPositionStatements.length > 0;
   const questions = leaseQuestions(family);
   const summaryMeaning = leaseSummaryMeaning(summary.plainEnglish, family);
