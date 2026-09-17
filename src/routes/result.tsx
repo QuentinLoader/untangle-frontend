@@ -517,6 +517,95 @@ function LeaseQuote({ text }: { text: string }) {
 const ENDING_WORDS = /cancel|terminat|notice|renew|end of lease|expiry/i;
 const BREACH_WORDS = /breach|default|remed|repossess|arrears|eviction/i;
 
+type LeaseFamilyView = "residential" | "commercial" | "vehicle" | "equipment" | "other";
+
+function leaseFamilyView(family?: string): LeaseFamilyView {
+  const normalized = family?.trim().toUpperCase() ?? "";
+  if (normalized.includes("RESIDENTIAL")) return "residential";
+  if (normalized.includes("COMMERCIAL")) return "commercial";
+  if (normalized.includes("VEHICLE") || normalized.includes("MOTOR")) return "vehicle";
+  if (
+    normalized.includes("EQUIPMENT") ||
+    normalized.includes("PLANT") ||
+    normalized.includes("MACHINERY")
+  ) {
+    return "equipment";
+  }
+  return "other";
+}
+
+const LEASE_FAMILY_WORDING: Record<
+  LeaseFamilyView,
+  { description: string; otherPartyResponsibilities: string }
+> = {
+  residential: {
+    description: "This is a residential property lease agreement.",
+    otherPartyResponsibilities: "Landlord responsibilities",
+  },
+  commercial: {
+    description: "This is a commercial property lease agreement.",
+    otherPartyResponsibilities: "Landlord / lessor responsibilities",
+  },
+  vehicle: {
+    description: "This is a vehicle lease or rental agreement.",
+    otherPartyResponsibilities: "Owner / lessor responsibilities",
+  },
+  equipment: {
+    description: "This is a plant and equipment hire agreement.",
+    otherPartyResponsibilities: "Owner responsibilities",
+  },
+  other: {
+    description: "This is a lease or hire agreement.",
+    otherPartyResponsibilities: "Other party responsibilities",
+  },
+};
+
+function leasePaymentLabel(label: string, family: LeaseFamilyView): string {
+  const normalized = label.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+  const isDeposit = /\bdeposit\b/.test(normalized);
+  const isInitial = /\b(initial|upfront|up front)\b/.test(normalized);
+  const isAdmin = /\b(admin|administration)\b/.test(normalized);
+  const isTax = /\b(vat|tax)\b/.test(normalized);
+  const isResidual = /\b(balloon|residual)\b/.test(normalized);
+  const isPeriodic = /\b(periodic|recurring|weekly|fortnightly)\b/.test(normalized);
+  const isMonthly = /\bmonthly\b/.test(normalized);
+  const isRent = /\brent(?:al)?\b/.test(normalized);
+  const isCharge = /\b(charge|payment|amount|fee)\b/.test(normalized);
+
+  if (isDeposit) return "Deposit";
+  if (family === "equipment") {
+    if (isAdmin) return "Administration fee";
+    if (isTax) return "VAT / tax charges";
+    if (isPeriodic || isMonthly) return "Periodic hire payment";
+    if (isRent || isCharge) return "Hire charge";
+  }
+  if (family === "vehicle") {
+    if (isResidual) return "Balloon / residual amount";
+    if (isMonthly) return "Monthly payment";
+    if (isRent || isPeriodic) return "Rental payment";
+  }
+  if (family === "residential" || family === "commercial") {
+    if (isInitial) return "Initial payment";
+    if (isRent) return "Rent";
+  }
+  return label;
+}
+
+function leaseProblemTitle(title: string, explanation: string, family: LeaseFamilyView): string {
+  if (family !== "equipment") return title;
+  const text = `${title} ${explanation}`.toLowerCase();
+  if (/miss(?:ed|ing)? (?:a )?payment|late payment|non-payment|payment default|arrears/.test(text)) {
+    return "If you miss a payment";
+  }
+  if (/damage|damaged/.test(text)) return "If the equipment is damaged";
+  if (/breakdown|breaks down|mechanical failure/.test(text)) return "If the equipment breaks down";
+  if (/cancel|terminat|end(?:ing|s)? the (?:lease|agreement)|expiry/.test(text)) {
+    return "If either side ends the agreement";
+  }
+  if (/fee|penalt|extra charge/.test(text)) return "Extra charges or penalties";
+  return title;
+}
+
 /** Short bullet form of a longer contractual sentence. */
 function shortBullet(value: string): string {
   const head = firstSentence(practicalLeaseCopy(value)).replace(/\s+/g, " ").trim();
@@ -540,6 +629,8 @@ function LeaseResultBody({
   const validationWarnings = result.validationWarnings ?? [];
   const keyTerms = humanGuide.keyTerms ?? [];
   const askCapability = result.ask?.supported === true ? result.ask : null;
+  const family = leaseFamilyView(document.family);
+  const familyWording = LEASE_FAMILY_WORDING[family];
   const hasResponsibilities =
     humanGuide.tenantResponsibilities.length > 0 || humanGuide.landlordResponsibilities.length > 0;
 
@@ -588,7 +679,7 @@ function LeaseResultBody({
           <DetailsGroup title="Responsibilities">
             {humanGuide.tenantResponsibilities.length > 0 ? (
               <div>
-                <p className="text-[13px] font-semibold text-ink">Tenant / lessee</p>
+                <p className="text-[13px] font-semibold text-ink">Your responsibilities</p>
                 <div className="mt-2">
                   <Bullets items={humanGuide.tenantResponsibilities} />
                 </div>
@@ -602,7 +693,9 @@ function LeaseResultBody({
                     : ""
                 }
               >
-                <p className="text-[13px] font-semibold text-ink">Landlord / lessor</p>
+                <p className="text-[13px] font-semibold text-ink">
+                  {familyWording.otherPartyResponsibilities}
+                </p>
                 <div className="mt-2">
                   <Bullets items={humanGuide.landlordResponsibilities} />
                 </div>
@@ -701,7 +794,7 @@ function LeaseResultBody({
           Your lease in plain English
         </h2>
         <p className="mt-2 text-[14px] font-medium leading-snug text-ink-soft">
-          {humanGuide.whatThisIs || summary.headline}
+          {familyWording.description}
         </p>
         {document.documentTitle ? (
           <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-ink-soft">
@@ -720,7 +813,7 @@ function LeaseResultBody({
             {humanGuide.importantMoney.map((item) => (
               <FactRow
                 key={item.id}
-                label={item.label}
+                label={leasePaymentLabel(item.label, family)}
                 value={item.value}
                 needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
               />
@@ -765,7 +858,9 @@ function LeaseResultBody({
                 humanGuide.tenantResponsibilities.length > 0 ? "mt-4 border-t border-line pt-4" : ""
               }
             >
-              <p className="text-[13px] font-semibold text-ink">Landlord responsibilities</p>
+              <p className="text-[13px] font-semibold text-ink">
+                {familyWording.otherPartyResponsibilities}
+              </p>
               <div className="mt-2">
                 <Bullets items={humanGuide.landlordResponsibilities.slice(0, 4).map(shortBullet)} />
               </div>
@@ -798,7 +893,9 @@ function LeaseResultBody({
           <div className="space-y-3">
             {breachClauses.slice(0, 2).map((flag) => (
               <div key={flag.id}>
-                <p className="text-[13.5px] font-semibold text-ink">{flag.title}</p>
+                <p className="text-[13.5px] font-semibold text-ink">
+                  {leaseProblemTitle(flag.title, flag.explanation, family)}
+                </p>
                 <p className="mt-1 text-[13.5px] leading-relaxed text-ink-soft">
                   {practicalLeaseCopy(firstSentence(flag.explanation))}
                 </p>
