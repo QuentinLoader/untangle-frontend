@@ -1069,7 +1069,7 @@ function uniqueEndPositionStatements(values: string[]): string[] {
 }
 
 function endPositionFromKeyTerm(
-  item: LeaseDocumentResult["humanGuide"]["keyTerms"][number],
+  item: NonNullable<LeaseDocumentResult["humanGuide"]["keyTerms"]>[number],
 ): string {
   const value = completeFirstSentence(item.value);
   if (!value) return "";
