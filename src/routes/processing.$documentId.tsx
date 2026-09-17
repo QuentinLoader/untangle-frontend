@@ -319,6 +319,7 @@ function NeedsReviewState({
               {failureMessage}
             </p>
           )}
+          <NeedsReviewNav />
         </div>
       );
     case "MODULE_DETECTION_LOW_CONFIDENCE":
