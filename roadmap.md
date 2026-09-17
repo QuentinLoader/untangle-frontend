@@ -8,3 +8,6 @@
 - [x] Refine the LeaseCheck Summary into a calmer guided mobile answer without changing W15B semantics.
 - [x] Validate LeaseCheck at 393px for overflow, duplicate financial facts, and internal-code leaks.
 - [x] Confirm TaxSnap remains unchanged and the build/type checks pass.
+
+- [x] Apply the final LeaseCheck Summary intelligence pass without changing backend semantics.
+- [x] Validate mobile LeaseCheck summary cases and confirm TaxSnap remains unchanged.
