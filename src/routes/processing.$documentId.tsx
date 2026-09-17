@@ -53,11 +53,16 @@ function Processing() {
   const [failureMessage, setFailureMessage] = useState<string | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  const [lastCheckedAt, setLastCheckedAt] = useState<number | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
   const stoppedRef = useRef(false);
+  const pollNowRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const startedAt = Date.now();
     const timer = window.setInterval(() => {
+      setNow(Date.now());
       setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
     }, 1000);
 
@@ -70,6 +75,8 @@ function Processing() {
     let failures = 0;
 
     const poll = async () => {
+      if (timer) clearTimeout(timer);
+      setIsChecking(true);
       try {
         const response = await getDocumentStatus(documentId);
         if (stoppedRef.current) return;
@@ -77,12 +84,14 @@ function Processing() {
         const docStatus = response.data.status;
         const next = docStatus.processingStatus;
         setStatus(next);
+        setLastCheckedAt(Date.now());
         setDetectedDocumentType(docStatus.detectedDocumentType ?? null);
         setFailureCode((docStatus.failureCode as DocumentFailureCode | null) ?? null);
         setFailureMessage(docStatus.failureMessage ?? null);
         setQueryError(null);
         if (isTerminalProcessingStatus(next)) {
           stoppedRef.current = true;
+          setIsChecking(false);
           if (next === "COMPLETED") {
             void navigate({ to: "/result", search: { documentId, from: "upload" as const } });
           }
@@ -96,7 +105,12 @@ function Processing() {
           setQueryError(friendlyDocumentError(err));
         }
       }
+      setIsChecking(false);
       timer = setTimeout(() => void poll(), 3000);
+    };
+
+    pollNowRef.current = () => {
+      if (!stoppedRef.current) void poll();
     };
 
     void poll();
@@ -106,6 +120,7 @@ function Processing() {
       if (timer) clearTimeout(timer);
     };
   }, [documentId, navigate]);
+
 
   const isLoading = status === null;
   const needsReview = status === "NEEDS_REVIEW";
