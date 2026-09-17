@@ -659,7 +659,12 @@ function isDeclinedSelection(value: string): boolean {
 }
 
 function usefulFinancialItem(item: LeaseFinancialImpactItem): boolean {
-  return item.amountCents !== null || item.explanation.trim().length > 0;
+  return (
+    item.amountCents !== null ||
+    item.explanation.trim().length > 0 ||
+    Boolean(item.formula?.trim()) ||
+    item.missingInputs.length > 0
+  );
 }
 
 function summaryFinancialItem(item: LeaseFinancialImpactItem): boolean {
@@ -945,7 +950,14 @@ function uniqueCompleteSentences(values: string[]): string[] {
   values.forEach((value) => {
     const sentence = completeFirstSentence(value);
     const normalized = normalizedSummaryText(sentence);
-    if (!sentence || !normalized || seen.has(normalized)) return;
+    if (!sentence || !normalized) return;
+    const repeatsExisting = [...seen].some(
+      (existing) =>
+        existing === normalized ||
+        (Math.min(existing.length, normalized.length) > 24 &&
+          (existing.includes(normalized) || normalized.includes(existing))),
+    );
+    if (repeatsExisting) return;
     seen.add(normalized);
     sentences.push(sentence);
   });
