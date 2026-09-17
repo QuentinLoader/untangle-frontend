@@ -871,6 +871,45 @@ function shortBullet(value: string): string {
   return head.length > 140 ? `${head.slice(0, 137).trimEnd()}…` : head;
 }
 
+function agreementSays(value: string): string {
+  const statement = shortBullet(value).replace(/^the agreement says\s*/i, "").trim();
+  if (!statement) return "";
+  return `The agreement says ${statement.charAt(0).toLowerCase()}${statement.slice(1)}`;
+}
+
+function leaseQuestions(family: LeaseFamilyView): string[] {
+  if (family === "vehicle") {
+    return [
+      "What happens if I settle early?",
+      "Is the balloon compulsory?",
+      "Do I own the vehicle after the last payment?",
+      "What happens if I miss a payment?",
+      "What would I owe if I cancelled now?",
+    ];
+  }
+  if (family === "equipment") {
+    return [
+      "What happens if I end the hire early?",
+      "Who pays if the equipment breaks down?",
+      "What happens if I miss a payment?",
+      "What condition must I return the equipment in?",
+    ];
+  }
+  return [
+    "How can I cancel this lease?",
+    "Who pays for maintenance?",
+    "What happens if payment is late?",
+    "What happens to the deposit?",
+  ];
+}
+
+function unclearEndPosition(family: LeaseFamilyView): string {
+  if (family === "vehicle" || family === "equipment") {
+    return "The agreement does not clearly confirm what happens to ownership, purchase or return at the end.";
+  }
+  return "The agreement does not clearly confirm what must happen at the end of the term.";
+}
+
 function LeaseResultBody({
   result,
   documentId,
