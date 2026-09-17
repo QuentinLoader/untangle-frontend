@@ -64,6 +64,8 @@ export const Route = createFileRoute("/result")({
         content:
           "A plain-English answer that tells you what the document means and what to do next.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: withAuth(Result),
@@ -376,12 +378,6 @@ function practicalLeaseCopy(value: string): string {
     .replace(/legal heads-up/gi, "important point");
 }
 
-/** Sentence case for a generated check item, without double "check the" prefixes. */
-function checkItemText(text: string): string {
-  const clean = text.trim().replace(/\s+/g, " ");
-  return clean.charAt(0).toUpperCase() + clean.slice(1);
-}
-
 function leaseTermNeedsCheck(
   label: string,
   warnings: NonNullable<LeaseDocumentResult["validationWarnings"]>,
@@ -447,27 +443,16 @@ function DetailsGroup({
   );
 }
 
-function SummaryCard({
-  title,
-  children,
-  icon,
-}: {
-  title: string;
-  children: ReactNode;
-  icon?: ReactNode;
-}) {
+function SummarySection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-line/70 bg-white p-4">
-      <div className="flex items-center gap-2">
-        {icon}
-        <h3 className="text-[14px] font-semibold text-ink">{title}</h3>
-      </div>
+    <section className="border-t border-line/70 pt-5 first:border-t-0 first:pt-0">
+      <h3 className="text-[12px] font-bold uppercase text-teal">{title}</h3>
       <div className="mt-3">{children}</div>
     </section>
   );
 }
 
-function FactRow({
+function SummaryFactRow({
   label,
   value,
   needsCheck = false,
@@ -744,66 +729,60 @@ function FinancialImpactSummary({
   family: LeaseFamilyView;
 }) {
   return (
-    <SummaryCard title="What this agreement could cost you">
-      <div className="divide-y divide-line/60">
-        {items.map((item) => {
-          const id = normalizedFinancialId(item.id);
-          const isCommitment = id === "total-scheduled-commitment";
-          const isOptional = id === "purchase-option-amount";
-          const isExposure = ["arrears", "amount-due", "late-payment-fee"].includes(id);
-          return (
-            <div
-              key={item.id}
-              className={isCommitment ? "rounded-xl bg-teal-dim px-3 py-3" : "py-3"}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-semibold leading-snug text-ink">
-                    {financialImpactLabel(item, family)}
-                  </p>
-                  {item.status === "PARTIAL" ? (
-                    <span className="mt-1 inline-block rounded-full bg-tint-sand px-2 py-0.5 text-[10px] font-semibold text-stamp-amber">
-                      Partial estimate
-                    </span>
-                  ) : isOptional ? (
-                    <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
-                      Optional
-                    </span>
-                  ) : isExposure ? (
-                    <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
-                      Possible or current exposure
-                    </span>
-                  ) : null}
-                </div>
-                {item.amountCents !== null ? (
-                  <span
-                    className={`shrink-0 text-right font-semibold text-ink ${isCommitment ? "text-[19px]" : "text-[15px]"}`}
-                  >
-                    {formatFinancialImpactAmount(item.amountCents, item.currency)}
+    <div className="divide-y divide-line/60">
+      {items.map((item) => {
+        const id = normalizedFinancialId(item.id);
+        const isCommitment = id === "total-scheduled-commitment";
+        const isOptional = id === "purchase-option-amount";
+        const isExposure = ["arrears", "amount-due", "late-payment-fee"].includes(id);
+        return (
+          <div key={item.id} className={isCommitment ? "rounded-xl bg-teal-dim px-3 py-3" : "py-3"}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold leading-snug text-ink">
+                  {financialImpactLabel(item, family)}
+                </p>
+                {item.status === "PARTIAL" ? (
+                  <span className="mt-1 inline-block rounded-full bg-tint-sand px-2 py-0.5 text-[10px] font-semibold text-stamp-amber">
+                    Partial estimate
+                  </span>
+                ) : isOptional ? (
+                  <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
+                    Optional
+                  </span>
+                ) : isExposure ? (
+                  <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
+                    Possible or current exposure
                   </span>
                 ) : null}
               </div>
-              {item.explanation.trim() ? (
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
-                  {item.explanation}
-                </p>
-              ) : null}
-              {id === "deposit" ? (
-                <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
-                  Shown separately from the scheduled cost.
-                </p>
-              ) : null}
-              {item.status === "PARTIAL" && item.missingInputs.length > 0 ? (
-                <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-soft">
-                  Still needed: {item.missingInputs.map(plainInputLabel).filter(Boolean).join(", ")}
-                  .
-                </p>
+              {item.amountCents !== null ? (
+                <span
+                  className={`shrink-0 text-right font-semibold text-ink ${isCommitment ? "text-[19px]" : "text-[15px]"}`}
+                >
+                  {formatFinancialImpactAmount(item.amountCents, item.currency)}
+                </span>
               ) : null}
             </div>
-          );
-        })}
-      </div>
-    </SummaryCard>
+            {item.explanation.trim() ? (
+              <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
+                {item.explanation}
+              </p>
+            ) : null}
+            {id === "deposit" ? (
+              <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
+                Shown separately from the scheduled cost.
+              </p>
+            ) : null}
+            {item.status === "PARTIAL" && item.missingInputs.length > 0 ? (
+              <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-soft">
+                Still needed: {item.missingInputs.map(plainInputLabel).filter(Boolean).join(", ")}.
+              </p>
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -882,6 +861,47 @@ function leaseSummaryMeaning(value: string, family: LeaseFamilyView): string {
 function shortBullet(value: string): string {
   const head = firstSentence(practicalLeaseCopy(value)).replace(/\s+/g, " ").trim();
   return head.length > 140 ? `${head.slice(0, 137).trimEnd()}…` : head;
+}
+
+function agreementSays(value: string): string {
+  const statement = shortBullet(value)
+    .replace(/^the agreement says\s*/i, "")
+    .trim();
+  if (!statement) return "";
+  return `The agreement says ${statement.charAt(0).toLowerCase()}${statement.slice(1)}`;
+}
+
+function leaseQuestions(family: LeaseFamilyView): string[] {
+  if (family === "vehicle") {
+    return [
+      "What happens if I settle early?",
+      "Is the balloon compulsory?",
+      "Do I own the vehicle after the last payment?",
+      "What happens if I miss a payment?",
+      "What would I owe if I cancelled now?",
+    ];
+  }
+  if (family === "equipment") {
+    return [
+      "What happens if I end the hire early?",
+      "Who pays if the equipment breaks down?",
+      "What happens if I miss a payment?",
+      "What condition must I return the equipment in?",
+    ];
+  }
+  return [
+    "How can I cancel this lease?",
+    "Who pays for maintenance?",
+    "What happens if payment is late?",
+    "What happens to the deposit?",
+  ];
+}
+
+function unclearEndPosition(family: LeaseFamilyView): string {
+  if (family === "vehicle" || family === "equipment") {
+    return "The agreement does not clearly confirm what happens to ownership, purchase or return at the end.";
+  }
+  return "The agreement does not clearly confirm what must happen at the end of the term.";
 }
 
 function LeaseResultBody({
@@ -1068,21 +1088,51 @@ function LeaseResultBody({
           ),
         )
       : breachClauses;
-  const thingsToCheck = [
-    ...leaseWarningLabels(validationWarnings).map((label) => checkItemText(`Confirm the ${label}`)),
-    ...humanGuide.clausesToCheck.map((flag) =>
-      checkItemText(
-        /^(check|confirm|review)\b/i.test(flag.title)
-          ? flag.title
-          : `Check the ${flag.title.toLowerCase()}`,
-      ),
+  const paymentImpactItems = financialImpactItems.filter(
+    (item) => normalizedFinancialId(item.id) === "regular-payment",
+  );
+  const costImpactItems = financialImpactItems.filter((item) =>
+    [
+      "scheduled-base-payments",
+      "total-scheduled-commitment",
+      "balloon-value",
+      "residual-value",
+      "deposit",
+      "purchase-option-amount",
+    ].includes(normalizedFinancialId(item.id)),
+  );
+  const earlyImpactItems = financialImpactItems.filter((item) =>
+    ["early-termination-estimate", "termination-charge-per-remaining-payment"].includes(
+      normalizedFinancialId(item.id),
     ),
-  ].slice(0, 5);
-  const nextSteps = humanGuide.nextSteps.slice(0, 4);
+  );
+  const defaultImpactItems = financialImpactItems.filter((item) =>
+    ["arrears", "amount-due", "late-payment-fee"].includes(normalizedFinancialId(item.id)),
+  );
+  const termItems = keyTerms.filter((item) => /term|duration/i.test(item.label)).slice(0, 1);
+  const identityDates = humanGuide.importantDates.filter((item) =>
+    /start|commence|effective|end|expir/i.test(item.label),
+  );
+  const endPositionItems = [...keyTerms, ...humanGuide.clausesToCheck]
+    .filter((item) =>
+      /ownership|title transfer|purchase option|return (?:the )?(?:vehicle|equipment)|what happens at the end/i.test(
+        "value" in item ? `${item.label} ${item.value}` : `${item.title} ${item.explanation}`,
+      ),
+    )
+    .slice(0, 2);
+  const hasClearEndPosition = endPositionItems.length > 0;
+  const questions = leaseQuestions(family);
+  const summaryMeaning = leaseSummaryMeaning(summary.plainEnglish, family);
+  const showSummaryMeaning =
+    summaryMoney.length === 0 &&
+    financialImpactItems.length === 0 &&
+    dateItems.length === 0 &&
+    !hasResponsibilities &&
+    humanGuide.clausesToCheck.length === 0;
 
   return (
     <div className="space-y-3">
-      <section className="rounded-2xl border border-line/70 bg-white p-5">
+      <article className="rounded-2xl border border-line/70 bg-white p-5">
         <div className="flex items-start justify-between gap-3">
           <p className="text-[13px] font-medium text-teal">Analysis complete</p>
           <SeverityPill severity={summary.severity} />
@@ -1099,190 +1149,192 @@ function LeaseResultBody({
             <span className="truncate">{document.documentTitle}</span>
           </p>
         ) : null}
-        {leaseSummaryMeaning(summary.plainEnglish, family) ? (
+        {showSummaryMeaning && summaryMeaning ? (
           <p className="mt-3 whitespace-pre-line text-[14.5px] leading-[1.6] text-ink-soft">
-            {leaseSummaryMeaning(summary.plainEnglish, family)}
+            {summaryMeaning}
           </p>
         ) : null}
-      </section>
 
-      {summaryMoney.length > 0 ? (
-        <SummaryCard title="What you need to pay">
-          <div className="divide-y divide-line/60">
-            {summaryMoney.map((item) => (
-              <FactRow
-                key={item.id}
-                label={leasePaymentLabel(item.label, family)}
-                value={item.value}
-                needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
-              />
-            ))}
-          </div>
-        </SummaryCard>
-      ) : null}
-
-      {financialImpactItems.length > 0 ? (
-        <FinancialImpactSummary items={financialImpactItems} family={family} />
-      ) : null}
-
-      {dateItems.length > 0 ? (
-        <SummaryCard title="Key dates" icon={<CalendarDays className="h-4 w-4 text-teal" />}>
-          <div className="divide-y divide-line/60">
-            {dateItems.map((item) => (
-              <FactRow
-                key={item.id}
-                label={item.label}
-                value={item.value}
-                needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
-              />
-            ))}
-          </div>
-          {datesNeedCheck || validationWarnings.length > 0 ? (
-            <p className="mt-3 text-[12.5px] leading-relaxed text-stamp-amber">
-              Some details should be checked against the original document.
-            </p>
-          ) : null}
-        </SummaryCard>
-      ) : null}
-
-      {hasResponsibilities ? (
-        <SummaryCard title="Who must do what">
-          {humanGuide.tenantResponsibilities.length > 0 ? (
-            <div>
-              <p className="text-[13px] font-semibold text-ink">Your responsibilities</p>
-              <div className="mt-2">
-                <Bullets items={humanGuide.tenantResponsibilities.slice(0, 4).map(shortBullet)} />
-              </div>
+        <div className="mt-6 space-y-5">
+          <SummarySection title="What this agreement is">
+            <div className="divide-y divide-line/60">
+              {termItems.map((item) => (
+                <SummaryFactRow
+                  key={item.id}
+                  label={item.label}
+                  value={item.value}
+                  needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
+                />
+              ))}
+              {identityDates.map((item) => (
+                <SummaryFactRow
+                  key={item.id}
+                  label={item.label}
+                  value={item.value}
+                  needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
+                />
+              ))}
             </div>
-          ) : null}
-          {humanGuide.landlordResponsibilities.length > 0 ? (
-            <div
-              className={
-                humanGuide.tenantResponsibilities.length > 0 ? "mt-4 border-t border-line pt-4" : ""
-              }
-            >
-              <p className="text-[13px] font-semibold text-ink">
-                {familyWording.otherPartyResponsibilities}
+            {datesNeedCheck ? (
+              <p className="mt-2 text-[12px] leading-relaxed text-stamp-amber">
+                Some dates should be checked against the original document.
               </p>
-              <div className="mt-2">
-                <Bullets items={humanGuide.landlordResponsibilities.slice(0, 4).map(shortBullet)} />
-              </div>
-            </div>
-          ) : null}
-        </SummaryCard>
-      ) : null}
+            ) : null}
+          </SummarySection>
 
-      {noticeItem || endingClauses.length > 0 ? (
-        <SummaryCard title="If you want to end the lease">
-          {noticeItem ? (
-            <p className="text-[13.5px] leading-relaxed text-ink">
-              The lease states a notice period of{" "}
-              <span className="font-semibold">{noticeItem.value}</span>.
-            </p>
+          {summaryMoney.length > 0 || paymentImpactItems.length > 0 ? (
+            <SummarySection title="What you are paying">
+              {summaryMoney.length > 0 ? (
+                <div className="divide-y divide-line/60">
+                  {summaryMoney.map((item) => (
+                    <SummaryFactRow
+                      key={item.id}
+                      label={leasePaymentLabel(item.label, family)}
+                      value={item.value}
+                      needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {paymentImpactItems.length > 0 ? (
+                <div className={summaryMoney.length > 0 ? "mt-2 border-t border-line/60" : ""}>
+                  <FinancialImpactSummary items={paymentImpactItems} family={family} />
+                </div>
+              ) : null}
+            </SummarySection>
           ) : null}
-          {endingClauses.slice(0, 2).map((flag) => (
-            <div key={flag.id} className={noticeItem ? "mt-3" : ""}>
+
+          {costImpactItems.length > 0 ? (
+            <SummarySection title="What this could cost">
+              <FinancialImpactSummary items={costImpactItems} family={family} />
+            </SummarySection>
+          ) : null}
+
+          <SummarySection title="What happens at the end">
+            {endPositionItems.length > 0 ? (
+              <div className="space-y-2">
+                {endPositionItems.map((item) => (
+                  <p key={item.id} className="text-[13.5px] leading-relaxed text-ink-soft">
+                    {"value" in item
+                      ? `${item.label}: ${item.value}`
+                      : practicalLeaseCopy(firstSentence(item.explanation))}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+            {!hasClearEndPosition ? (
               <p className="text-[13.5px] leading-relaxed text-ink-soft">
-                {practicalLeaseCopy(firstSentence(flag.explanation))}
+                {unclearEndPosition(family)}
               </p>
-              {flag.leaseText ? <LeaseQuote text={flag.leaseText} /> : null}
-            </div>
-          ))}
-        </SummaryCard>
-      ) : null}
+            ) : null}
+          </SummarySection>
 
-      {problemClauses.length > 0 ? (
-        <SummaryCard title="If something goes wrong">
-          <div className="space-y-3">
-            {problemClauses.slice(0, 2).map((flag) => (
-              <div key={flag.id}>
-                <p className="text-[13.5px] font-semibold text-ink">
-                  {leaseProblemTitle(flag.title, flag.explanation, family)}
+          {noticeItem || endingClauses.length > 0 || earlyImpactItems.length > 0 ? (
+            <SummarySection title="If you end it early">
+              {noticeItem ? (
+                <p className="text-[13.5px] leading-relaxed text-ink">
+                  The agreement states a notice period of <strong>{noticeItem.value}</strong>.
                 </p>
-                <p className="mt-1 text-[13.5px] leading-relaxed text-ink-soft">
-                  {practicalLeaseCopy(firstSentence(flag.explanation))}
+              ) : null}
+              {endingClauses.slice(0, 2).map((flag) => (
+                <p key={flag.id} className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">
+                  {agreementSays(flag.explanation)}
                 </p>
-                {flag.leaseText ? <LeaseQuote text={flag.leaseText} /> : null}
-              </div>
-            ))}
-          </div>
-        </SummaryCard>
-      ) : null}
-
-      {thingsToCheck.length > 0 ? (
-        <SummaryCard
-          title="Things to check"
-          icon={<AlertTriangle className="h-4 w-4 text-stamp-amber" />}
-        >
-          <ul className="space-y-2">
-            {thingsToCheck.map((item) => (
-              <li key={item} className="flex gap-2 text-[13.5px] leading-relaxed text-ink-soft">
-                <span className="text-stamp-amber" aria-hidden="true">
-                  •
-                </span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            onClick={() => onNavigate("details")}
-            className="mt-3 min-h-[44px] text-[13px] font-semibold text-teal"
-          >
-            See the full wording in Full details
-          </button>
-        </SummaryCard>
-      ) : null}
-
-      {nextSteps.length > 0 ? (
-        <SummaryCard title="What to do next">
-          <div className="space-y-3">
-            {nextSteps.map((step, index) => (
-              <div key={step.id} className="flex gap-3">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal text-[12px] font-bold text-white">
-                  {index + 1}
+              ))}
+              {earlyImpactItems.length > 0 ? (
+                <div className="mt-3 border-t border-line/60 pt-2">
+                  <FinancialImpactSummary items={earlyImpactItems} family={family} />
                 </div>
-                <div className="min-w-0 pt-0.5">
-                  <p className="text-[14px] font-semibold leading-snug text-ink">{step.title}</p>
-                  {step.detail ? (
-                    <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-                      {practicalLeaseCopy(firstSentence(step.detail))}
+              ) : null}
+            </SummarySection>
+          ) : null}
+
+          {problemClauses.length > 0 || defaultImpactItems.length > 0 ? (
+            <SummarySection title="If you default">
+              <div className="space-y-3">
+                {problemClauses.slice(0, 3).map((flag) => (
+                  <div key={flag.id}>
+                    <p className="text-[13.5px] font-semibold text-ink">
+                      {leaseProblemTitle(flag.title, flag.explanation, family)}
                     </p>
-                  ) : null}
-                </div>
+                    <p className="mt-1 text-[13.5px] leading-relaxed text-ink-soft">
+                      {agreementSays(flag.explanation)}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </SummaryCard>
-      ) : null}
+              {defaultImpactItems.length > 0 ? (
+                <div className="mt-3 border-t border-line/60 pt-2">
+                  <p className="pt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                    The agreement says these charges or amounts may apply.
+                  </p>
+                  <FinancialImpactSummary items={defaultImpactItems} family={family} />
+                </div>
+              ) : null}
+            </SummarySection>
+          ) : null}
 
-      <section className="rounded-2xl border border-line/70 bg-white p-4">
-        <p className="text-[14px] font-semibold text-ink">Have a question about this lease?</p>
-        <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-          For example: How can I cancel this lease? Who pays for maintenance? What happens if rent
-          is paid late? What happens to the deposit?
-        </p>
-        <div className="mt-3">
-          {askCapability ? (
-            <NextSectionButton label="Ask LeaseCheck" onClick={() => onNavigate("ask")} />
-          ) : (
-            <AskComingSoonButton />
-          )}
+          {humanGuide.tenantResponsibilities.length > 0 ? (
+            <SummarySection title="Your responsibilities">
+              <Bullets items={humanGuide.tenantResponsibilities.slice(0, 6).map(shortBullet)} />
+            </SummarySection>
+          ) : null}
+
+          {humanGuide.landlordResponsibilities.length > 0 ? (
+            <SummarySection title={familyWording.otherPartyResponsibilities}>
+              <Bullets items={humanGuide.landlordResponsibilities.slice(0, 5).map(shortBullet)} />
+            </SummarySection>
+          ) : null}
+
+          {yourRights.length > 0 ? (
+            <SummarySection title="Your rights and important protections">
+              <div className="space-y-3">
+                {yourRights.slice(0, 3).map((right) => (
+                  <div key={right.id} className="flex gap-2.5">
+                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
+                    <div>
+                      <p className="text-[13.5px] font-semibold text-ink">{right.title}</p>
+                      <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink-soft">
+                        {practicalLeaseCopy(firstSentence(right.explanation))}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate("details")}
+                className="mt-3 min-h-[44px] text-[13px] font-semibold text-teal"
+              >
+                See Legal details
+              </button>
+            </SummarySection>
+          ) : null}
+
+          <SummarySection title="Questions you may want to ask">
+            <ul className="space-y-2">
+              {questions.map((question) => (
+                <li key={question} className="text-[13.5px] leading-relaxed text-ink-soft">
+                  {question}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4">
+              {askCapability ? (
+                <NextSectionButton label="Ask LeaseCheck" onClick={() => onNavigate("ask")} />
+              ) : (
+                <AskComingSoonButton />
+              )}
+            </div>
+          </SummarySection>
         </div>
-      </section>
+      </article>
 
       <ResultNavRow
         label="Full details"
         hint="Every extracted term, the original wording and legal detail"
         onClick={() => onNavigate("details")}
       />
-
-      {yourRights.length > 0 || humanGuide.legalNotes.length > 0 ? (
-        <p className="px-1 text-[11.5px] leading-relaxed text-ink-soft">
-          There are additional legal protections that may apply. See Legal details under Full
-          details.
-        </p>
-      ) : null}
     </div>
   );
 }
