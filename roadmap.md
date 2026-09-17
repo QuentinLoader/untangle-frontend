@@ -11,3 +11,6 @@
 
 - [x] Apply the final LeaseCheck Summary intelligence pass without changing backend semantics.
 - [x] Validate mobile LeaseCheck summary cases and confirm TaxSnap remains unchanged.
+
+- [ ] Apply the final pre-PolicyCheck LeaseCheck Summary suitability pass.
+- [ ] Validate weak financial, end-position duplicate, generic clause, long responsibility, W15B, mobile, and TaxSnap cases.
