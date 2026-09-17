@@ -93,17 +93,9 @@ export function normaliseEntitlements(payload: RawRecord): Entitlements {
 
   const remaining =
     num(usageRaw["remaining"]) ??
-    num(
-      pick(
-        featureRaw,
-        "remainingAnalyses",
-        "analysesRemaining",
-        "remainingFreeAnalyses",
-      ),
-    );
+    num(pick(featureRaw, "remainingAnalyses", "analysesRemaining", "remainingFreeAnalyses"));
 
-  const unlimited =
-    isPlus || bool(pick(featureRaw, "unlimitedAnalyses"), false);
+  const unlimited = isPlus || bool(pick(featureRaw, "unlimitedAnalyses"), false);
 
   return {
     plan,
