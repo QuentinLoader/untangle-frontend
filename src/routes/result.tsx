@@ -1119,13 +1119,20 @@ function LeaseResultBody({
   );
   const endPositionItems = [...keyTerms, ...humanGuide.clausesToCheck]
     .filter((item) =>
-      /ownership|title transfer|purchase option|return (?:the )?(?:vehicle|equipment)|balloon|residual|end.of.term/i.test(
+      /ownership|title transfer|purchase option|return (?:the )?(?:vehicle|equipment)|what happens at the end/i.test(
         "value" in item ? `${item.label} ${item.value}` : `${item.title} ${item.explanation}`,
       ),
     )
     .slice(0, 2);
   const hasClearEndPosition = endPositionItems.length > 0;
   const questions = leaseQuestions(family);
+  const summaryMeaning = leaseSummaryMeaning(summary.plainEnglish, family);
+  const showSummaryMeaning =
+    summaryMoney.length === 0 &&
+    financialImpactItems.length === 0 &&
+    dateItems.length === 0 &&
+    !hasResponsibilities &&
+    humanGuide.clausesToCheck.length === 0;
 
   return (
     <div className="space-y-3">
@@ -1146,9 +1153,9 @@ function LeaseResultBody({
             <span className="truncate">{document.documentTitle}</span>
           </p>
         ) : null}
-        {leaseSummaryMeaning(summary.plainEnglish, family) ? (
+        {showSummaryMeaning && summaryMeaning ? (
           <p className="mt-3 whitespace-pre-line text-[14.5px] leading-[1.6] text-ink-soft">
-            {leaseSummaryMeaning(summary.plainEnglish, family)}
+            {summaryMeaning}
           </p>
         ) : null}
 
@@ -1262,6 +1269,9 @@ function LeaseResultBody({
               </div>
               {defaultImpactItems.length > 0 ? (
                 <div className="mt-3 border-t border-line/60 pt-2">
+                  <p className="pt-1 text-[12.5px] leading-relaxed text-ink-soft">
+                    The agreement says these charges or amounts may apply.
+                  </p>
                   <FinancialImpactSummary items={defaultImpactItems} family={family} />
                 </div>
               ) : null}
