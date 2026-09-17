@@ -52,7 +52,17 @@ function Processing() {
   const [failureCode, setFailureCode] = useState<DocumentFailureCode | null>(null);
   const [failureMessage, setFailureMessage] = useState<string | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const stoppedRef = useRef(false);
+
+  useEffect(() => {
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     stoppedRef.current = false;
@@ -135,11 +145,7 @@ function Processing() {
             />
           ) : (
             <>
-              <ProgressRing
-                percent={
-                  backendFailed ? 100 : Math.max(8, ((currentIndex + 1) / order.length) * 100)
-                }
-              />
+              <ActivityRing active={!backendFailed} />
 
               <h2
                 className="mt-7 text-center font-display text-[22px] font-semibold leading-snug text-ink"
@@ -151,9 +157,27 @@ function Processing() {
                 {copy.body}
               </p>
               {!backendFailed && !isLoading && (
-                <p className="mt-2 max-w-[300px] text-center text-[12px] leading-relaxed text-ink-soft">
-                  Keep this screen open. Your result will appear as soon as it is ready.
-                </p>
+                <div className="mt-3 flex flex-col items-center gap-2 text-center">
+                  <div
+                    className="inline-flex min-h-7 items-center gap-2 rounded-full bg-teal/10 px-3 text-[12px] font-medium text-teal"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span className="relative flex h-2 w-2" aria-hidden>
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal opacity-50 motion-reduce:animate-none" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-teal" />
+                    </span>
+                    Still working · {formatElapsedTime(elapsedSeconds)}
+                  </div>
+                  <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
+                    Keep this screen open. Your result will appear as soon as it is ready.
+                  </p>
+                  {elapsedSeconds >= 45 && (
+                    <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
+                      Detailed documents can take a little longer. Analysis is continuing normally.
+                    </p>
+                  )}
+                </div>
               )}
 
               <div className="mt-9 w-full max-w-[300px] space-y-4">
@@ -317,26 +341,32 @@ function NeedsReviewState({
   }
 }
 
-/** Circular progress dial — calm, state-driven, no fake percentages between states. */
-function ProgressRing({ percent }: { percent: number }) {
-  const clamped = Math.max(0, Math.min(100, Math.round(percent)));
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
+function formatElapsedTime(seconds: number) {
+  if (seconds < 60) return `${seconds}s elapsed`;
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes} min elapsed`;
+}
+
+/** Continuous activity indicator — intentionally does not imply measured progress. */
+function ActivityRing({ active }: { active: boolean }) {
   return (
     <div className="relative grid h-[136px] w-[136px] place-items-center">
-      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90" aria-hidden>
-        <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--paper-2)" strokeWidth="9" />
+      <svg
+        viewBox="0 0 120 120"
+        className={`h-full w-full -rotate-90 ${active ? "animate-spin motion-reduce:animate-none" : ""}`}
+        style={{ animationDuration: "1.8s" }}
+        aria-hidden
+      >
+        <circle cx="60" cy="60" r="52" fill="none" stroke="var(--paper-2)" strokeWidth="9" />
         <circle
           cx="60"
           cy="60"
-          r={radius}
+          r="52"
           fill="none"
           stroke="var(--teal)"
           strokeWidth="9"
           strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - clamped / 100)}
-          style={{ transition: "stroke-dashoffset 700ms ease" }}
+          strokeDasharray="245 327"
         />
       </svg>
     </div>
