@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -954,18 +954,19 @@ function uniqueCompleteSentences(values: string[]): string[] {
 }
 
 function isGenericClauseText(value: string): boolean {
+  const cleaned = practicalLeaseCopy(value).toLowerCase().replace(/\s+/g, " ").trim();
   const normalized = normalizedSummaryText(value);
   if (!normalized) return true;
   return (
-    /^(contains?|includes?|has|found|detected) (fee|penalty|clause|term|wording)/.test(normalized) ||
-    /^check (fee|penalty|this|clause|term|wording)/.test(normalized) ||
-    /^fee penalty (term|wording)$/.test(normalized) ||
-    /^clause$/.test(normalized) ||
-    /^check this wording$/.test(normalized) ||
-    /^contains clause$/.test(normalized) ||
-    /^contains fee penalty term$/.test(normalized) ||
-    normalized === "the document contains a clause" ||
-    normalized === "the document contains a fee or penalty term"
+    /\b(document|agreement|lease) contains? (?:a |an )?(fee|penalty|clause|term|wording)/.test(
+      cleaned,
+    ) ||
+    /\b(check|review) (?:the |this )?(fee|penalty|clause|term|wording)/.test(cleaned) ||
+    /^(contains?|includes?|has|found|detected)( fee| penalty| clause| term| wording)?$/.test(
+      normalized,
+    ) ||
+    /^check( fee| penalty| clause| term| wording)?$/.test(normalized) ||
+    /^fee penalty( term)?$/.test(normalized)
   );
 }
 
