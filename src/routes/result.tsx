@@ -447,27 +447,16 @@ function DetailsGroup({
   );
 }
 
-function SummaryCard({
-  title,
-  children,
-  icon,
-}: {
-  title: string;
-  children: ReactNode;
-  icon?: ReactNode;
-}) {
+function SummarySection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-line/70 bg-white p-4">
-      <div className="flex items-center gap-2">
-        {icon}
-        <h3 className="text-[14px] font-semibold text-ink">{title}</h3>
-      </div>
+    <section className="border-t border-line/70 pt-5 first:border-t-0 first:pt-0">
+      <h3 className="text-[12px] font-bold uppercase text-teal">{title}</h3>
       <div className="mt-3">{children}</div>
     </section>
   );
 }
 
-function FactRow({
+function SummaryFactRow({
   label,
   value,
   needsCheck = false,
@@ -744,8 +733,7 @@ function FinancialImpactSummary({
   family: LeaseFamilyView;
 }) {
   return (
-    <SummaryCard title="What this agreement could cost you">
-      <div className="divide-y divide-line/60">
+    <div className="divide-y divide-line/60">
         {items.map((item) => {
           const id = normalizedFinancialId(item.id);
           const isCommitment = id === "total-scheduled-commitment";
@@ -802,8 +790,7 @@ function FinancialImpactSummary({
             </div>
           );
         })}
-      </div>
-    </SummaryCard>
+    </div>
   );
 }
 
