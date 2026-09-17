@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -662,6 +662,10 @@ function usefulFinancialItem(item: LeaseFinancialImpactItem): boolean {
   return item.amountCents !== null || item.explanation.trim().length > 0;
 }
 
+function summaryFinancialItem(item: LeaseFinancialImpactItem): boolean {
+  return item.amountCents !== null && item.status !== "NOT_CALCULABLE";
+}
+
 function financialImpactLabel(item: LeaseFinancialImpactItem, family: LeaseFamilyView): string {
   if (isCombinedBalloonResidual(item)) return "Final balloon / residual payment";
   switch (normalizedFinancialId(item.id)) {
@@ -804,8 +808,8 @@ function FinancialImpactSummary({
                   {financialImpactLabel(item, family)}
                 </p>
                 {item.status === "PARTIAL" ? (
-                  <span className="mt-1 inline-block rounded-full bg-tint-sand px-2 py-0.5 text-[10px] font-semibold text-stamp-amber">
-                    Partial estimate
+                  <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
+                    Estimate from stated figures
                   </span>
                 ) : isOptional ? (
                   <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
@@ -825,7 +829,7 @@ function FinancialImpactSummary({
                 </span>
               ) : null}
             </div>
-            {item.explanation.trim() ? (
+            {item.explanation.trim() && item.status !== "PARTIAL" ? (
               <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
                 {item.explanation}
               </p>
@@ -833,11 +837,6 @@ function FinancialImpactSummary({
             {id === "deposit" ? (
               <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
                 Shown separately from the scheduled cost.
-              </p>
-            ) : null}
-            {item.status === "PARTIAL" && item.missingInputs.length > 0 ? (
-              <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-soft">
-                Still needed: {item.missingInputs.map(plainInputLabel).filter(Boolean).join(", ")}.
               </p>
             ) : null}
           </div>
@@ -918,18 +917,66 @@ function leaseSummaryMeaning(value: string, family: LeaseFamilyView): string {
   return firstSentence(clean.slice(first.length).trim());
 }
 
-/** Short bullet form of a longer contractual sentence. */
-function shortBullet(value: string): string {
-  const head = firstSentence(practicalLeaseCopy(value)).replace(/\s+/g, " ").trim();
-  return head.length > 140 ? `${head.slice(0, 137).trimEnd()}…` : head;
+function completeFirstSentence(value: string): string {
+  return firstSentence(practicalLeaseCopy(value)).replace(/\s+/g, " ").trim();
 }
 
 function agreementSays(value: string): string {
-  const statement = shortBullet(value)
+  const statement = completeFirstSentence(value)
     .replace(/^the agreement says\s*/i, "")
     .trim();
   if (!statement) return "";
   return `The agreement says ${statement.charAt(0).toLowerCase()}${statement.slice(1)}`;
+}
+
+function normalizedSummaryText(value: string): string {
+  return practicalLeaseCopy(value)
+    .toLowerCase()
+    .replace(/\b(the|a|an|this|that|agreement|lease|document|clause|term|wording)\b/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function uniqueCompleteSentences(values: string[]): string[] {
+  const seen = new Set<string>();
+  const sentences: string[] = [];
+
+  values.forEach((value) => {
+    const sentence = completeFirstSentence(value);
+    const normalized = normalizedSummaryText(sentence);
+    if (!sentence || !normalized || seen.has(normalized)) return;
+    seen.add(normalized);
+    sentences.push(sentence);
+  });
+
+  return sentences;
+}
+
+function isGenericClauseText(value: string): boolean {
+  const normalized = normalizedSummaryText(value);
+  if (!normalized) return true;
+  return (
+    /^(contains?|includes?|has|found|detected) (fee|penalty|clause|term|wording)/.test(normalized) ||
+    /^check (fee|penalty|this|clause|term|wording)/.test(normalized) ||
+    /^fee penalty (term|wording)$/.test(normalized) ||
+    /^clause$/.test(normalized) ||
+    /^check this wording$/.test(normalized) ||
+    /^contains clause$/.test(normalized) ||
+    /^contains fee penalty term$/.test(normalized) ||
+    normalized === "the document contains a clause" ||
+    normalized === "the document contains a fee or penalty term"
+  );
+}
+
+function clauseSummarySentence(flag: LeaseDocumentResult["humanGuide"]["clausesToCheck"][number]): string {
+  const explanation = completeFirstSentence(flag.explanation);
+  if (!isGenericClauseText(explanation)) return explanation;
+  return flag.leaseText ? completeFirstSentence(flag.leaseText) : "";
+}
+
+function supportsReturnRequirement(value: string): boolean {
+  return /\b(return|deliver back|hand back|surrender|give back)\b/i.test(value);
 }
 
 function leaseQuestions(family: LeaseFamilyView): string[] {
@@ -987,11 +1034,12 @@ function LeaseResultBody({
   const financialImpactItems = withoutDuplicateBalloonResidual(
     (result.financialImpact?.items ?? []).filter(usefulFinancialItem),
   ).sort((left, right) => financialItemOrder(left) - financialItemOrder(right));
+  const summaryFinancialImpactItems = financialImpactItems.filter(summaryFinancialItem);
   const financialImpactWarnings = (result.financialImpact?.warnings ?? []).filter((warning) =>
     warning.trim(),
   );
   const summaryMoney = humanGuide.importantMoney.filter(
-    (item) => !duplicatesFinancialImpactMoney(item.label, financialImpactItems),
+    (item) => !duplicatesFinancialImpactMoney(item.label, summaryFinancialImpactItems),
   );
   const tenantResponsibilities = humanGuide.tenantResponsibilities.filter(
     (value) => !isDeclinedSelection(value),
@@ -1139,26 +1187,32 @@ function LeaseResultBody({
     leaseTermNeedsCheck(item.label, validationWarnings),
   );
   const noticeItem = dateItems.find((item) => /notice/i.test(item.label));
-  const endingClauses = humanGuide.clausesToCheck.filter((flag) =>
-    ENDING_WORDS.test(`${flag.title} ${flag.explanation}`),
-  );
-  const breachClauses = humanGuide.clausesToCheck.filter((flag) =>
-    BREACH_WORDS.test(`${flag.title} ${flag.explanation}`),
-  );
+  const endingClauses = humanGuide.clausesToCheck.filter((flag) => {
+    const summarySentence = clauseSummarySentence(flag);
+    return Boolean(summarySentence) && ENDING_WORDS.test(`${flag.title} ${summarySentence}`);
+  });
+  const breachClauses = humanGuide.clausesToCheck.filter((flag) => {
+    const summarySentence = clauseSummarySentence(flag);
+    return Boolean(summarySentence) && BREACH_WORDS.test(`${flag.title} ${summarySentence}`);
+  });
   const problemClauses =
     family === "equipment"
-      ? humanGuide.clausesToCheck.filter((flag) =>
-          /breach|default|remed|repossess|arrears|damage|breakdown|mechanical failure|fee|penalt|extra charge/i.test(
-            `${flag.title} ${flag.explanation}`,
-          ),
-        )
+      ? humanGuide.clausesToCheck.filter((flag) => {
+          const summarySentence = clauseSummarySentence(flag);
+          return (
+            Boolean(summarySentence) &&
+            /breach|default|remed|repossess|arrears|damage|breakdown|mechanical failure|fee|penalt|extra charge/i.test(
+              `${flag.title} ${summarySentence}`,
+            )
+          );
+        })
       : breachClauses;
-  const paymentImpactItems = financialImpactItems.filter((item) =>
+  const paymentImpactItems = summaryFinancialImpactItems.filter((item) =>
     ["regular-payment", "initiation-fee", "monthly-service-fee", "deposit"].includes(
       normalizedFinancialId(item.id),
     ),
   );
-  const costImpactItems = financialImpactItems.filter((item) => {
+  const costImpactItems = summaryFinancialImpactItems.filter((item) => {
     const id = normalizedFinancialId(item.id);
     return (
       [
@@ -1172,31 +1226,44 @@ function LeaseResultBody({
       id === "residual-value"
     );
   });
-  const earlyImpactItems = financialImpactItems.filter((item) =>
+  const earlyImpactItems = summaryFinancialImpactItems.filter((item) =>
     ["early-termination-estimate", "termination-charge-per-remaining-payment"].includes(
       normalizedFinancialId(item.id),
     ),
   );
-  const defaultImpactItems = financialImpactItems.filter((item) =>
+  const defaultImpactItems = summaryFinancialImpactItems.filter((item) =>
     ["arrears", "amount-due", "late-payment-fee"].includes(normalizedFinancialId(item.id)),
   );
   const termItems = keyTerms.filter((item) => /term|duration/i.test(item.label)).slice(0, 1);
   const identityDates = humanGuide.importantDates.filter((item) =>
     /start|commence|effective|end|expir/i.test(item.label),
   );
-  const endPositionItems = [...keyTerms, ...humanGuide.clausesToCheck]
-    .filter((item) =>
-      /ownership|title transfer|purchase option|return (?:the )?(?:vehicle|equipment)|what happens at the end/i.test(
-        "value" in item ? `${item.label} ${item.value}` : `${item.title} ${item.explanation}`,
-      ),
-    )
-    .slice(0, 2);
-  const hasClearEndPosition = endPositionItems.length > 0;
+  const endPositionStatements = uniqueCompleteSentences(
+    [
+      ...keyTerms
+        .filter((item) =>
+          /ownership|title transfer|purchase option|what happens at the end|return (?:the )?(?:vehicle|equipment)/i.test(
+            `${item.label} ${item.value}`,
+          ),
+        )
+        .filter((item) => !/return required/i.test(item.label) || supportsReturnRequirement(item.value))
+        .map((item) => `${item.label}: ${item.value}`),
+      ...humanGuide.clausesToCheck
+        .filter((item) =>
+          /ownership|title transfer|purchase option|what happens at the end|return (?:the )?(?:vehicle|equipment)/i.test(
+            `${item.title} ${item.explanation} ${item.leaseText ?? ""}`,
+          ),
+        )
+        .map((item) => clauseSummarySentence(item))
+        .filter(Boolean),
+    ],
+  ).slice(0, 2);
+  const hasClearEndPosition = endPositionStatements.length > 0;
   const questions = leaseQuestions(family);
   const summaryMeaning = leaseSummaryMeaning(summary.plainEnglish, family);
   const showSummaryMeaning =
     summaryMoney.length === 0 &&
-    financialImpactItems.length === 0 &&
+    summaryFinancialImpactItems.length === 0 &&
     dateItems.length === 0 &&
     !hasResponsibilities &&
     humanGuide.clausesToCheck.length === 0;
@@ -1282,13 +1349,11 @@ function LeaseResultBody({
           ) : null}
 
           <SummarySection title="What happens at the end">
-            {endPositionItems.length > 0 ? (
+            {endPositionStatements.length > 0 ? (
               <div className="space-y-2">
-                {endPositionItems.map((item) => (
-                  <p key={item.id} className="text-[13.5px] leading-relaxed text-ink-soft">
-                    {"value" in item
-                      ? `${item.label}: ${item.value}`
-                      : practicalLeaseCopy(firstSentence(item.explanation))}
+                {endPositionStatements.map((item) => (
+                  <p key={item} className="text-[13.5px] leading-relaxed text-ink-soft">
+                    {item}
                   </p>
                 ))}
               </div>
@@ -1309,7 +1374,7 @@ function LeaseResultBody({
               ) : null}
               {endingClauses.slice(0, 2).map((flag) => (
                 <p key={flag.id} className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">
-                  {agreementSays(flag.explanation)}
+                  {agreementSays(clauseSummarySentence(flag))}
                 </p>
               ))}
               {earlyImpactItems.length > 0 ? (
@@ -1331,7 +1396,7 @@ function LeaseResultBody({
                       {leaseProblemTitle(flag.title, flag.explanation, family)}
                     </p>
                     <p className="mt-1 text-[13.5px] leading-relaxed text-ink-soft">
-                      {agreementSays(flag.explanation)}
+                      {agreementSays(clauseSummarySentence(flag))}
                     </p>
                   </div>
                 ))}
@@ -1349,13 +1414,13 @@ function LeaseResultBody({
 
           {tenantResponsibilities.length > 0 ? (
             <SummarySection title="Your responsibilities">
-              <Bullets items={tenantResponsibilities.slice(0, 6).map(shortBullet)} />
+              <Bullets items={uniqueCompleteSentences(tenantResponsibilities).slice(0, 6)} />
             </SummarySection>
           ) : null}
 
           {landlordResponsibilities.length > 0 ? (
             <SummarySection title={familyWording.otherPartyResponsibilities}>
-              <Bullets items={landlordResponsibilities.slice(0, 5).map(shortBullet)} />
+              <Bullets items={uniqueCompleteSentences(landlordResponsibilities).slice(0, 5)} />
             </SummarySection>
           ) : null}
 
