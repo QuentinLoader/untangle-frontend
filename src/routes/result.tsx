@@ -64,6 +64,8 @@ export const Route = createFileRoute("/result")({
         content:
           "A plain-English answer that tells you what the document means and what to do next.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: withAuth(Result),
@@ -374,12 +376,6 @@ function practicalLeaseCopy(value: string): string {
     .replace(/applicability has not been established/gi, "it is not clear whether this applies")
     .replace(/statutory position/gi, "legal position")
     .replace(/legal heads-up/gi, "important point");
-}
-
-/** Sentence case for a generated check item, without double "check the" prefixes. */
-function checkItemText(text: string): string {
-  const clean = text.trim().replace(/\s+/g, " ");
-  return clean.charAt(0).toUpperCase() + clean.slice(1);
 }
 
 function leaseTermNeedsCheck(
