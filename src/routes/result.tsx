@@ -602,14 +602,14 @@ function leaseProblemTitle(title: string, explanation: string, family: LeaseFami
 
 const FINANCIAL_IMPACT_ORDER = [
   "regular-payment",
-  "scheduled-base-payments",
-  "total-amount-repayable",
-  "total-scheduled-commitment",
   "initiation-fee",
   "monthly-service-fee",
+  "deposit",
+  "total-amount-repayable",
+  "scheduled-base-payments",
+  "total-scheduled-commitment",
   "balloon-value",
   "residual-value",
-  "deposit",
   "purchase-option-amount",
   "early-termination-estimate",
   "termination-charge-per-remaining-payment",
@@ -669,6 +669,12 @@ function usefulFinancialItem(item: LeaseFinancialImpactItem): boolean {
 
 function summaryFinancialItem(item: LeaseFinancialImpactItem): boolean {
   return item.amountCents !== null && item.status !== "NOT_CALCULABLE";
+}
+
+function hasFinancialAmount(item: LeaseFinancialImpactItem): item is LeaseFinancialImpactItem & {
+  amountCents: number;
+} {
+  return item.amountCents !== null;
 }
 
 function financialImpactLabel(item: LeaseFinancialImpactItem, family: LeaseFamilyView): string {
@@ -937,7 +943,10 @@ function agreementSays(value: string): string {
 function normalizedSummaryText(value: string): string {
   return practicalLeaseCopy(value)
     .toLowerCase()
-    .replace(/\b(the|a|an|this|that|agreement|lease|document|clause|term|wording)\b/g, " ")
+    .replace(
+      /\b(the|a|an|this|that|agreement|lease|document|clause|term|wording|summary|required|requirement|at|end)\b/g,
+      " ",
+    )
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -973,6 +982,7 @@ function isGenericClauseText(value: string): boolean {
     /\b(document|agreement|lease) contains? (?:a |an )?(fee|penalty|clause|term|wording)/.test(
       cleaned,
     ) ||
+    /\bcontains? (?:a |an )?(fee|penalty|clause|term|wording)\b/.test(cleaned) ||
     /\b(check|review) (?:the |this )?(fee|penalty|clause|term|wording)/.test(cleaned) ||
     /^(contains?|includes?|has|found|detected)( fee| penalty| clause| term| wording)?$/.test(
       normalized,
@@ -982,16 +992,87 @@ function isGenericClauseText(value: string): boolean {
   );
 }
 
+function hasConcreteCustomerConsequence(value: string): boolean {
+  const cleaned = practicalLeaseCopy(value).toLowerCase().replace(/\s+/g, " ").trim();
+  if (!cleaned || isGenericClauseText(cleaned)) return false;
+
+  const hasSpecificFigure = /\b(r\s?\d|zar|rand|\d+(?:\.\d+)?\s?%|\d+\s+(?:day|days|month|months|payment|payments|hour|hours))\b/i.test(
+    cleaned,
+  );
+  const hasTrigger = /\b(if|when|unless|after|before|on breach|default|arrears|late|miss(?:ed)? payment|non-payment|damage|breakdown|cancel|terminat|expiry|notice)\b/i.test(
+    cleaned,
+  );
+  const hasConsequence = /\b(must|may|can|will|liable|responsible|required|pay|charge|fee|penalt|interest|cancel|terminat|repossess|evict|forfeit|repair|replace|return|deliver back|hand back|surrender)\b/i.test(
+    cleaned,
+  );
+  const hasNamedPartyDuty = /\b(you|tenant|hirer|lessee|lessor|landlord|owner|customer|borrower|renter)\b[\s\S]{0,120}\b(must|may|can|will|liable|responsible|required|pay|charge|cancel|terminat|repossess|repair|replace|return)\b/i.test(
+    cleaned,
+  );
+
+  return hasSpecificFigure || (hasTrigger && hasConsequence) || hasNamedPartyDuty;
+}
+
 function clauseSummarySentence(
   flag: LeaseDocumentResult["humanGuide"]["clausesToCheck"][number],
 ): string {
   const explanation = completeFirstSentence(flag.explanation);
-  if (!isGenericClauseText(explanation)) return explanation;
-  return flag.leaseText ? completeFirstSentence(flag.leaseText) : "";
+  if (hasConcreteCustomerConsequence(explanation)) return explanation;
+
+  const leaseText = flag.leaseText ? completeFirstSentence(flag.leaseText) : "";
+  if (hasConcreteCustomerConsequence(leaseText)) return leaseText;
+
+  return "";
 }
 
 function supportsReturnRequirement(value: string): boolean {
-  return /\b(return|deliver back|hand back|surrender|give back)\b/i.test(value);
+  return /\b(return|redeliver|deliver back|hand back|surrender|give back)\b/i.test(value);
+}
+
+function ownershipStaysWithOwner(value: string): boolean {
+  const normalized = practicalLeaseCopy(value).toLowerCase().replace(/\s+/g, " ").trim();
+  return (
+    /\b(ownership|title)\b/.test(normalized) &&
+    /\b(remains?|stays?|vested|retained|kept)\b/.test(normalized) &&
+    /\b(owner|lessor)\b/.test(normalized)
+  );
+}
+
+function explicitReturnRequirement(label: string, value: string): boolean {
+  const cleanValue = practicalLeaseCopy(value).toLowerCase().replace(/\s+/g, " ").trim();
+  if (ownershipStaysWithOwner(cleanValue) && !supportsReturnRequirement(cleanValue)) return false;
+  if (supportsReturnRequirement(cleanValue)) return true;
+  return /return required/i.test(label) && /\b(yes|required|must|has to|needs to)\b/i.test(cleanValue);
+}
+
+function endPositionStatementKey(value: string): string {
+  if (ownershipStaysWithOwner(value)) return "ownership-stays-with-owner";
+  if (supportsReturnRequirement(value)) return "return-obligation";
+  return normalizedSummaryText(value);
+}
+
+function uniqueEndPositionStatements(values: string[]): string[] {
+  const seen = new Set<string>();
+  const statements: string[] = [];
+
+  values.forEach((value) => {
+    const statement = completeFirstSentence(value);
+    const key = endPositionStatementKey(statement);
+    if (!statement || !key || seen.has(key)) return;
+    seen.add(key);
+    statements.push(statement);
+  });
+
+  return statements;
+}
+
+function endPositionFromKeyTerm(
+  item: LeaseDocumentResult["humanGuide"]["keyTerms"][number],
+): string {
+  const value = completeFirstSentence(item.value);
+  if (!value) return "";
+  if (/return required/i.test(item.label) && !explicitReturnRequirement(item.label, value)) return "";
+  if (ownershipStaysWithOwner(`${item.label} ${value}`)) return "Ownership stays with the owner.";
+  return `${item.label}: ${value}`;
 }
 
 function leaseQuestions(family: LeaseFamilyView): string[] {
