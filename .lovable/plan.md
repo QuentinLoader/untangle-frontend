@@ -6,6 +6,8 @@ Turn the existing LeaseCheck Summary into one coherent, mobile-first explanation
 ## Changes
 - Replace the separate Summary cards with one primary “Your lease in plain English” container.
 - Organise that container into a consistent sequence: agreement identity, key payments, backend financial impact, end-of-term position, early ending, default consequences, customer responsibilities, other-party responsibilities, useful protections, and contextual Ask questions.
+- When ownership, purchase, or return is not confirmed by the available result, state plainly that the agreement does not clearly confirm the end-of-term position.
+- Phrase default consequences as contractual facts beginning with “The agreement says…” rather than automatic legal rights or inevitable outcomes.
 - Reuse only existing document, terms, clause, responsibility, rights, and `financialImpact` values; do not calculate, infer, or broaden facts.
 - Keep family-specific language for residential, commercial, vehicle, equipment, and unknown agreements.
 - Prevent repeated amounts and facts within Summary, including separating early-termination/default figures from scheduled-cost figures.
@@ -21,3 +23,5 @@ Turn the existing LeaseCheck Summary into one coherent, mobile-first explanation
 - Check current diagnostics and the production build signal.
 - Verify mobile rendering at 393px for residential, commercial, vehicle, and equipment-style payloads, including no horizontal scrolling or exposed taxonomy codes.
 - Confirm Full details retains the prior extracted and legal content and Ask remains mounted.
+- Confirm no amount is duplicated across Summary sections unless a second mention is necessary for context.
+- Confirm no `sourceFieldKeys`, raw family codes, or internal statuses appear in the customer-facing Summary.
