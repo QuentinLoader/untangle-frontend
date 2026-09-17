@@ -734,62 +734,58 @@ function FinancialImpactSummary({
 }) {
   return (
     <div className="divide-y divide-line/60">
-        {items.map((item) => {
-          const id = normalizedFinancialId(item.id);
-          const isCommitment = id === "total-scheduled-commitment";
-          const isOptional = id === "purchase-option-amount";
-          const isExposure = ["arrears", "amount-due", "late-payment-fee"].includes(id);
-          return (
-            <div
-              key={item.id}
-              className={isCommitment ? "rounded-xl bg-teal-dim px-3 py-3" : "py-3"}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-semibold leading-snug text-ink">
-                    {financialImpactLabel(item, family)}
-                  </p>
-                  {item.status === "PARTIAL" ? (
-                    <span className="mt-1 inline-block rounded-full bg-tint-sand px-2 py-0.5 text-[10px] font-semibold text-stamp-amber">
-                      Partial estimate
-                    </span>
-                  ) : isOptional ? (
-                    <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
-                      Optional
-                    </span>
-                  ) : isExposure ? (
-                    <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
-                      Possible or current exposure
-                    </span>
-                  ) : null}
-                </div>
-                {item.amountCents !== null ? (
-                  <span
-                    className={`shrink-0 text-right font-semibold text-ink ${isCommitment ? "text-[19px]" : "text-[15px]"}`}
-                  >
-                    {formatFinancialImpactAmount(item.amountCents, item.currency)}
+      {items.map((item) => {
+        const id = normalizedFinancialId(item.id);
+        const isCommitment = id === "total-scheduled-commitment";
+        const isOptional = id === "purchase-option-amount";
+        const isExposure = ["arrears", "amount-due", "late-payment-fee"].includes(id);
+        return (
+          <div key={item.id} className={isCommitment ? "rounded-xl bg-teal-dim px-3 py-3" : "py-3"}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold leading-snug text-ink">
+                  {financialImpactLabel(item, family)}
+                </p>
+                {item.status === "PARTIAL" ? (
+                  <span className="mt-1 inline-block rounded-full bg-tint-sand px-2 py-0.5 text-[10px] font-semibold text-stamp-amber">
+                    Partial estimate
+                  </span>
+                ) : isOptional ? (
+                  <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
+                    Optional
+                  </span>
+                ) : isExposure ? (
+                  <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
+                    Possible or current exposure
                   </span>
                 ) : null}
               </div>
-              {item.explanation.trim() ? (
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
-                  {item.explanation}
-                </p>
-              ) : null}
-              {id === "deposit" ? (
-                <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
-                  Shown separately from the scheduled cost.
-                </p>
-              ) : null}
-              {item.status === "PARTIAL" && item.missingInputs.length > 0 ? (
-                <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-soft">
-                  Still needed: {item.missingInputs.map(plainInputLabel).filter(Boolean).join(", ")}
-                  .
-                </p>
+              {item.amountCents !== null ? (
+                <span
+                  className={`shrink-0 text-right font-semibold text-ink ${isCommitment ? "text-[19px]" : "text-[15px]"}`}
+                >
+                  {formatFinancialImpactAmount(item.amountCents, item.currency)}
+                </span>
               ) : null}
             </div>
-          );
-        })}
+            {item.explanation.trim() ? (
+              <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
+                {item.explanation}
+              </p>
+            ) : null}
+            {id === "deposit" ? (
+              <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
+                Shown separately from the scheduled cost.
+              </p>
+            ) : null}
+            {item.status === "PARTIAL" && item.missingInputs.length > 0 ? (
+              <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-soft">
+                Still needed: {item.missingInputs.map(plainInputLabel).filter(Boolean).join(", ")}.
+              </p>
+            ) : null}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -872,7 +868,9 @@ function shortBullet(value: string): string {
 }
 
 function agreementSays(value: string): string {
-  const statement = shortBullet(value).replace(/^the agreement says\s*/i, "").trim();
+  const statement = shortBullet(value)
+    .replace(/^the agreement says\s*/i, "")
+    .trim();
   if (!statement) return "";
   return `The agreement says ${statement.charAt(0).toLowerCase()}${statement.slice(1)}`;
 }
