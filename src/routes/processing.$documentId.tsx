@@ -184,16 +184,48 @@ function Processing() {
                     </span>
                     Still working · {formatElapsedTime(elapsedSeconds)}
                   </div>
+                  <p className="text-[12px] leading-relaxed text-ink-soft" aria-live="polite">
+                    {isChecking
+                      ? "Checking now…"
+                      : lastCheckedAt
+                        ? `Last checked ${formatSinceCheck(now, lastCheckedAt)}`
+                        : "Connecting…"}
+                  </p>
                   <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
                     Keep this screen open. Your result will appear as soon as it is ready.
                   </p>
-                  {elapsedSeconds >= 45 && (
+                  {elapsedSeconds >= 45 && elapsedSeconds < 120 && (
                     <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
                       Detailed documents can take a little longer. Analysis is continuing normally.
                     </p>
                   )}
+                  {elapsedSeconds >= 120 && (
+                    <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
+                      Longer documents can take a few minutes. Nothing has gone wrong — you can also
+                      leave this page and find the document in your Vault later.
+                    </p>
+                  )}
+                  <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => pollNowRef.current()}
+                      disabled={isChecking}
+                      className="inline-flex min-h-11 items-center rounded-full border border-teal/30 px-4 text-[13px] font-medium text-teal disabled:opacity-50"
+                    >
+                      Check again now
+                    </button>
+                    {elapsedSeconds >= 120 && (
+                      <Link
+                        to="/vault"
+                        className="inline-flex min-h-11 items-center px-3 text-[13px] font-medium text-ink-soft underline underline-offset-2"
+                      >
+                        Go to Vault
+                      </Link>
+                    )}
+                  </div>
                 </div>
               )}
+
 
               <div className="mt-9 w-full max-w-[300px] space-y-4">
                 {STEPS.map((step) => {
