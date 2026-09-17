@@ -122,9 +122,10 @@ export function normaliseEntitlements(payload: RawRecord): Entitlements {
     unlimitedAnalyses: unlimited,
     monthlyAnalysisLimit: limit,
     monthlyAnalysisUsed: used,
+    // Presentation guard: never surface a negative or over-allowance count.
     remainingAnalyses:
       remaining !== null
-        ? remaining
+        ? Math.max(remaining, 0)
         : limit !== null && used !== null
           ? Math.max(limit - used, 0)
           : null,
@@ -159,6 +160,9 @@ export function friendlyEntitlementError(error: unknown): string {
 export function usageLine(entitlements: Entitlements): string | null {
   if (entitlements.unlimitedAnalyses) return "Unlimited analyses on Untangle Plus.";
   const { monthlyAnalysisUsed: used, monthlyAnalysisLimit: limit } = entitlements;
-  if (used === null || limit === null) return null;
-  return `${used} of ${limit} free analyses used this month.`;
+  if (limit === null || used === null || limit <= 0) return null;
+  if (used >= limit) {
+    return `You've used all ${limit} free analyses for this month. Untangle Plus gives you unlimited analyses and more.`;
+  }
+  return `${Math.min(used, limit)} of ${limit} free analyses used this month.`;
 }
