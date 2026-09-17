@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -7,8 +7,7 @@ import { fetchAuthMe } from "@/lib/api-client";
 import { unregisterPushDevice } from "@/lib/push";
 import { readPushFid, rememberPushFid } from "@/hooks/usePushReminders";
 import type { AuthContextValue, UntangleUser } from "./auth.types";
-
-export const AuthContext = createContext<AuthContextValue | null>(null);
+import { AuthContext } from "./auth-context";
 
 function requireConfig() {
   if (!isSupabaseConfigured) throw new Error("Authentication is not configured.");
