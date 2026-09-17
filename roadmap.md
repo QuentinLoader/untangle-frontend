@@ -9,5 +9,5 @@
 - [x] Validate LeaseCheck at 393px for overflow, duplicate financial facts, and internal-code leaks.
 - [x] Confirm TaxSnap remains unchanged and the build/type checks pass.
 
-- [ ] Apply the final LeaseCheck Summary intelligence pass without changing backend semantics.
-- [ ] Validate mobile LeaseCheck summary cases and confirm TaxSnap remains unchanged.
+- [x] Apply the final LeaseCheck Summary intelligence pass without changing backend semantics.
+- [x] Validate mobile LeaseCheck summary cases and confirm TaxSnap remains unchanged.
