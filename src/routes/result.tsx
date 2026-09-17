@@ -629,9 +629,7 @@ function isCombinedBalloonResidual(item: LeaseFinancialImpactItem): boolean {
 }
 
 function financialItemOrder(item: LeaseFinancialImpactItem): number {
-  const id = isCombinedBalloonResidual(item)
-    ? "balloon-value"
-    : normalizedFinancialId(item.id);
+  const id = isCombinedBalloonResidual(item) ? "balloon-value" : normalizedFinancialId(item.id);
   const index = FINANCIAL_IMPACT_ORDER.indexOf(id as (typeof FINANCIAL_IMPACT_ORDER)[number]);
   return index === -1 ? FINANCIAL_IMPACT_ORDER.length : index;
 }
@@ -653,7 +651,11 @@ function withoutDuplicateBalloonResidual(
 
 /** Declined or unselected optional products are choices, not responsibilities. */
 function isDeclinedSelection(value: string): boolean {
-  return /\bdeclined?\b/i.test(value) || /\bnone selected\b/i.test(value) || /\bnot selected\b/i.test(value);
+  return (
+    /\bdeclined?\b/i.test(value) ||
+    /\bnone selected\b/i.test(value) ||
+    /\bnot selected\b/i.test(value)
+  );
 }
 
 function usefulFinancialItem(item: LeaseFinancialImpactItem): boolean {
@@ -1045,9 +1047,7 @@ function LeaseResultBody({
             {landlordResponsibilities.length > 0 ? (
               <div
                 className={
-                  tenantResponsibilities.length > 0
-                    ? "mt-4 border-t border-line pt-4"
-                    : ""
+                  tenantResponsibilities.length > 0 ? "mt-4 border-t border-line pt-4" : ""
                 }
               >
                 <p className="text-[13px] font-semibold text-ink">
