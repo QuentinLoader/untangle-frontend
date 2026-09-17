@@ -31,6 +31,7 @@ import {
   severityLabel,
   type DocumentResult,
   type LeaseDocumentResult,
+  type LeaseFinancialImpactItem,
   type TaxDocumentResult,
   type ResultSeverity,
 } from "@/lib/documents";
@@ -608,6 +609,267 @@ function leaseProblemTitle(title: string, explanation: string, family: LeaseFami
   return title;
 }
 
+const FINANCIAL_IMPACT_ORDER = [
+  "regular-payment",
+  "scheduled-base-payments",
+  "total-scheduled-commitment",
+  "balloon-value",
+  "residual-value",
+  "deposit",
+  "purchase-option-amount",
+  "early-termination-estimate",
+  "termination-charge-per-remaining-payment",
+  "arrears",
+  "amount-due",
+  "late-payment-fee",
+] as const;
+
+function normalizedFinancialId(id: string): string {
+  return id.trim().toLowerCase().replaceAll("_", "-");
+}
+
+function financialItemOrder(item: LeaseFinancialImpactItem): number {
+  const index = FINANCIAL_IMPACT_ORDER.indexOf(
+    normalizedFinancialId(item.id) as (typeof FINANCIAL_IMPACT_ORDER)[number],
+  );
+  return index === -1 ? FINANCIAL_IMPACT_ORDER.length : index;
+}
+
+function usefulFinancialItem(item: LeaseFinancialImpactItem): boolean {
+  return item.amountCents !== null || item.explanation.trim().length > 0;
+}
+
+function financialImpactLabel(item: LeaseFinancialImpactItem, family: LeaseFamilyView): string {
+  switch (normalizedFinancialId(item.id)) {
+    case "regular-payment":
+      if (!/^regular[ _-]?payment$/i.test(item.label.trim())) {
+        return leasePaymentLabel(item.label, family);
+      }
+      if (family === "vehicle") return "Regular vehicle payment";
+      if (family === "equipment") return "Regular hire payment";
+      if (family === "residential" || family === "commercial") return "Regular rent payment";
+      return "Regular payment";
+    case "scheduled-base-payments":
+      return "Scheduled payments over the term";
+    case "total-scheduled-commitment":
+      return "Estimated scheduled commitment";
+    case "balloon-value":
+      return "Balloon amount";
+    case "residual-value":
+      return "Residual value";
+    case "deposit":
+      return "Deposit";
+    case "purchase-option-amount":
+      return "Optional purchase amount";
+    case "early-termination-estimate":
+      return "If you end it early";
+    case "termination-charge-per-remaining-payment":
+      return "Charge per remaining payment";
+    case "arrears":
+      return "Arrears";
+    case "amount-due":
+      return "Amount due";
+    case "late-payment-fee":
+      return "Late-payment fee";
+    default:
+      return item.label;
+  }
+}
+
+/** Currency display only: no totals, rates or payment counts are derived here. */
+function formatFinancialImpactAmount(amountCents: number, currency: string | null): string {
+  const amount = amountCents / 100;
+  if (currency?.toUpperCase() === "ZAR") {
+    const value = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(amount);
+    return `R ${value}`;
+  }
+  if (currency) {
+    return new Intl.NumberFormat("en-ZA", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  }
+  return new Intl.NumberFormat("en-ZA", { maximumFractionDigits: 2 }).format(amount);
+}
+
+function plainInputLabel(value: string): string {
+  const readable = value
+    .trim()
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+  return readable ? readable.charAt(0).toUpperCase() + readable.slice(1) : "";
+}
+
+function duplicatesFinancialImpactMoney(
+  label: string,
+  financialItems: LeaseFinancialImpactItem[],
+): boolean {
+  const normalizedLabel = label.toLowerCase();
+  return financialItems.some((item) => {
+    switch (normalizedFinancialId(item.id)) {
+      case "regular-payment":
+        return /rent|rental|hire|regular|monthly|periodic|recurring payment/.test(normalizedLabel);
+      case "deposit":
+        return /deposit/.test(normalizedLabel);
+      case "balloon-value":
+      case "residual-value":
+        return /balloon|residual/.test(normalizedLabel);
+      case "purchase-option-amount":
+        return /purchase option|buyout/.test(normalizedLabel);
+      case "early-termination-estimate":
+      case "termination-charge-per-remaining-payment":
+        return /early termination|cancellation (?:charge|fee)|termination (?:charge|fee)/.test(
+          normalizedLabel,
+        );
+      case "arrears":
+        return /arrears/.test(normalizedLabel);
+      case "amount-due":
+        return /amount due/.test(normalizedLabel);
+      case "late-payment-fee":
+        return /late.payment fee/.test(normalizedLabel);
+      default:
+        return false;
+    }
+  });
+}
+
+function FinancialImpactSummary({
+  items,
+  family,
+}: {
+  items: LeaseFinancialImpactItem[];
+  family: LeaseFamilyView;
+}) {
+  return (
+    <SummaryCard title="What this agreement could cost you">
+      <div className="divide-y divide-line/60">
+        {items.map((item) => {
+          const id = normalizedFinancialId(item.id);
+          const isCommitment = id === "total-scheduled-commitment";
+          const isOptional = id === "purchase-option-amount";
+          const isExposure = ["arrears", "amount-due", "late-payment-fee"].includes(id);
+          return (
+            <div
+              key={item.id}
+              className={isCommitment ? "rounded-xl bg-teal-dim px-3 py-3" : "py-3"}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold leading-snug text-ink">
+                    {financialImpactLabel(item, family)}
+                  </p>
+                  {item.status === "PARTIAL" ? (
+                    <span className="mt-1 inline-block rounded-full bg-tint-sand px-2 py-0.5 text-[10px] font-semibold text-stamp-amber">
+                      Partial estimate
+                    </span>
+                  ) : isOptional ? (
+                    <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
+                      Optional
+                    </span>
+                  ) : isExposure ? (
+                    <span className="mt-1 inline-block text-[11px] font-medium text-ink-soft">
+                      Possible or current exposure
+                    </span>
+                  ) : null}
+                </div>
+                {item.amountCents !== null ? (
+                  <span
+                    className={`shrink-0 text-right font-semibold text-ink ${isCommitment ? "text-[19px]" : "text-[15px]"}`}
+                  >
+                    {formatFinancialImpactAmount(item.amountCents, item.currency)}
+                  </span>
+                ) : null}
+              </div>
+              {item.explanation.trim() ? (
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
+                  {item.explanation}
+                </p>
+              ) : null}
+              {id === "deposit" ? (
+                <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
+                  Shown separately from the scheduled cost.
+                </p>
+              ) : null}
+              {item.status === "PARTIAL" && item.missingInputs.length > 0 ? (
+                <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-soft">
+                  Still needed: {item.missingInputs.map(plainInputLabel).filter(Boolean).join(", ")}
+                  .
+                </p>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </SummaryCard>
+  );
+}
+
+function FinancialImpactDetails({
+  items,
+  warnings,
+  family,
+}: {
+  items: LeaseFinancialImpactItem[];
+  warnings: string[];
+  family: LeaseFamilyView;
+}) {
+  return (
+    <DetailsGroup title="How these figures were worked out">
+      <div className="space-y-4">
+        {items.map((item) => (
+          <div key={item.id} className="rounded-xl bg-paper px-3 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-[13px] font-semibold leading-snug text-ink">
+                {financialImpactLabel(item, family)}
+              </p>
+              {item.amountCents !== null ? (
+                <span className="shrink-0 text-[13px] font-semibold text-ink">
+                  {formatFinancialImpactAmount(item.amountCents, item.currency)}
+                </span>
+              ) : null}
+            </div>
+            {item.status === "PARTIAL" ? (
+              <p className="mt-1 text-[11px] font-semibold text-stamp-amber">Partial estimate</p>
+            ) : null}
+            {item.explanation.trim() ? (
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">{item.explanation}</p>
+            ) : null}
+            {item.formula?.trim() ? (
+              <p className="mt-2 text-[12px] leading-relaxed text-ink-soft">
+                <span className="font-semibold text-ink">Method: </span>
+                {item.formula}
+              </p>
+            ) : null}
+            {item.missingInputs.length > 0 ? (
+              <p className="mt-2 text-[12px] leading-relaxed text-ink-soft">
+                <span className="font-semibold text-ink">Still needed: </span>
+                {item.missingInputs.map(plainInputLabel).filter(Boolean).join(", ")}.
+              </p>
+            ) : null}
+          </div>
+        ))}
+        {warnings.length > 0 ? (
+          <div className="border-t border-line pt-3">
+            <p className="text-[12.5px] font-semibold text-ink">Important notes</p>
+            <ul className="mt-2 space-y-2">
+              {warnings
+                .filter((warning) => warning.trim())
+                .map((warning) => (
+                  <li key={warning} className="text-[12.5px] leading-relaxed text-ink-soft">
+                    {warning}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+    </DetailsGroup>
+  );
+}
+
 function leaseSummaryMeaning(value: string, family: LeaseFamilyView): string {
   const clean = value.trim();
   if (family === "other" || !/^this is\b/i.test(clean)) return firstSentence(clean);
@@ -641,6 +903,15 @@ function LeaseResultBody({
   const askCapability = result.ask?.supported === true ? result.ask : null;
   const family = leaseFamilyView(document.family);
   const familyWording = LEASE_FAMILY_WORDING[family];
+  const financialImpactItems = (result.financialImpact?.items ?? [])
+    .filter(usefulFinancialItem)
+    .sort((left, right) => financialItemOrder(left) - financialItemOrder(right));
+  const financialImpactWarnings = (result.financialImpact?.warnings ?? []).filter((warning) =>
+    warning.trim(),
+  );
+  const summaryMoney = humanGuide.importantMoney.filter(
+    (item) => !duplicatesFinancialImpactMoney(item.label, financialImpactItems),
+  );
   const hasResponsibilities =
     humanGuide.tenantResponsibilities.length > 0 || humanGuide.landlordResponsibilities.length > 0;
 
@@ -761,6 +1032,14 @@ function LeaseResultBody({
           </DetailsGroup>
         ) : null}
 
+        {financialImpactItems.length > 0 || financialImpactWarnings.length > 0 ? (
+          <FinancialImpactDetails
+            items={financialImpactItems}
+            warnings={financialImpactWarnings}
+            family={family}
+          />
+        ) : null}
+
         <LeaseLegalDetails result={result} />
       </div>
     );
@@ -827,10 +1106,10 @@ function LeaseResultBody({
         ) : null}
       </section>
 
-      {humanGuide.importantMoney.length > 0 ? (
+      {summaryMoney.length > 0 ? (
         <SummaryCard title="What you need to pay">
           <div className="divide-y divide-line/60">
-            {humanGuide.importantMoney.map((item) => (
+            {summaryMoney.map((item) => (
               <FactRow
                 key={item.id}
                 label={leasePaymentLabel(item.label, family)}
@@ -840,6 +1119,10 @@ function LeaseResultBody({
             ))}
           </div>
         </SummaryCard>
+      ) : null}
+
+      {financialImpactItems.length > 0 ? (
+        <FinancialImpactSummary items={financialImpactItems} family={family} />
       ) : null}
 
       {dateItems.length > 0 ? (

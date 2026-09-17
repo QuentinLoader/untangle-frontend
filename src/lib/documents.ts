@@ -468,6 +468,28 @@ export type LeaseKeyValueItem = {
   sourceKind: "LEASE";
 };
 
+export type LeaseFinancialImpactStatus = "CALCULATED" | "PARTIAL" | "NOT_CALCULABLE";
+
+/** Trusted financial figures supplied by LeaseCheck. The frontend only formats these values. */
+export type LeaseFinancialImpactItem = {
+  id: string;
+  label: string;
+  amountCents: number | null;
+  currency: string | null;
+  status: LeaseFinancialImpactStatus;
+  explanation: string;
+  formula: string | null;
+  sourceFieldKeys: string[];
+  missingInputs: string[];
+};
+
+export type LeaseFinancialImpact = {
+  version: "lease-financial-impact-v1" | string;
+  family: string;
+  items: LeaseFinancialImpactItem[];
+  warnings: string[];
+};
+
 /** Capability metadata advertised by a LeaseCheck V3 result. */
 export type LeaseAskCapability = {
   version: "lease-ask-capability-v1" | string;
@@ -554,6 +576,8 @@ export type LeaseDocumentResult = {
     policy: "APPROVED_RULES_ONLY" | string;
     publishedRuleIds: string[];
   };
+  /** Backend-calculated financial impact. Never derive or recalculate these values here. */
+  financialImpact?: LeaseFinancialImpact;
   ask?: LeaseAskCapability;
   disclaimer: { wording: string };
 };
