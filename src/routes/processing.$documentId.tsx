@@ -224,6 +224,25 @@ function Processing() {
   );
 }
 
+function NeedsReviewNav() {
+  return (
+    <div className="mt-8 flex w-full max-w-[280px] flex-col gap-3">
+      <Link
+        to="/"
+        className="flex h-12 items-center justify-center rounded-full bg-teal text-[15px] font-semibold text-white transition-opacity active:opacity-80"
+      >
+        Back to Home
+      </Link>
+      <Link
+        to="/upload"
+        className="flex h-12 items-center justify-center rounded-full border border-line bg-white text-[15px] font-semibold text-ink transition-colors active:bg-paper-2"
+      >
+        Upload another document
+      </Link>
+    </div>
+  );
+}
+
 function NeedsReviewState({
   failureCode,
   detectedDocumentType,
@@ -260,6 +279,7 @@ function NeedsReviewState({
               {failureMessage}
             </p>
           )}
+          <NeedsReviewNav />
         </div>
       );
     case "MODULE_NOT_ACTIVE":
@@ -279,6 +299,7 @@ function NeedsReviewState({
               {failureMessage}
             </p>
           )}
+          <NeedsReviewNav />
         </div>
       );
     case "JURISDICTION_NOT_SUPPORTED":
@@ -298,6 +319,7 @@ function NeedsReviewState({
               {failureMessage}
             </p>
           )}
+          <NeedsReviewNav />
         </div>
       );
     case "MODULE_DETECTION_LOW_CONFIDENCE":
@@ -317,6 +339,7 @@ function NeedsReviewState({
               {failureMessage}
             </p>
           )}
+          <NeedsReviewNav />
         </div>
       );
     default:
@@ -336,6 +359,7 @@ function NeedsReviewState({
               {failureMessage}
             </p>
           )}
+          <NeedsReviewNav />
         </div>
       );
   }
