@@ -549,6 +549,9 @@ const LEASE_FAMILY_WORDING: Record<
 function leasePaymentLabel(label: string, family: LeaseFamilyView): string {
   const normalized = label.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
   const isDeposit = /\bdeposit\b/.test(normalized);
+  const isInitiation = /\binitiation\b/.test(normalized);
+  const isServiceFee = /\bservice fee\b/.test(normalized);
+  const isTotalRepayable = /\btotal (?:amount )?repayable\b/.test(normalized);
   const isInitial = /\b(initial|upfront|up front)\b/.test(normalized);
   const isAdmin = /\b(admin|administration)\b/.test(normalized);
   const isTax = /\b(vat|tax)\b/.test(normalized);
@@ -559,6 +562,9 @@ function leasePaymentLabel(label: string, family: LeaseFamilyView): string {
   const isCharge = /\b(charge|payment|amount|fee)\b/.test(normalized);
 
   if (isDeposit) return "Deposit";
+  if (isTotalRepayable) return "Total amount repayable";
+  if (isInitiation) return "Initiation fee";
+  if (isServiceFee) return "Monthly service fee";
   if (family === "equipment") {
     if (isAdmin) return "Administration fee";
     if (isTax) return "VAT / tax charges";
@@ -597,7 +603,10 @@ function leaseProblemTitle(title: string, explanation: string, family: LeaseFami
 const FINANCIAL_IMPACT_ORDER = [
   "regular-payment",
   "scheduled-base-payments",
+  "total-amount-repayable",
   "total-scheduled-commitment",
+  "initiation-fee",
+  "monthly-service-fee",
   "balloon-value",
   "residual-value",
   "deposit",
@@ -613,11 +622,40 @@ function normalizedFinancialId(id: string): string {
   return id.trim().toLowerCase().replaceAll("_", "-");
 }
 
+/** The backend may return balloon and residual as one combined obligation. */
+function isCombinedBalloonResidual(item: LeaseFinancialImpactItem): boolean {
+  const haystack = `${normalizedFinancialId(item.id)} ${item.label.toLowerCase()}`;
+  return /\bballoon\b/.test(haystack) && /\bresidual\b/.test(haystack);
+}
+
 function financialItemOrder(item: LeaseFinancialImpactItem): number {
-  const index = FINANCIAL_IMPACT_ORDER.indexOf(
-    normalizedFinancialId(item.id) as (typeof FINANCIAL_IMPACT_ORDER)[number],
-  );
+  const id = isCombinedBalloonResidual(item) ? "balloon-value" : normalizedFinancialId(item.id);
+  const index = FINANCIAL_IMPACT_ORDER.indexOf(id as (typeof FINANCIAL_IMPACT_ORDER)[number]);
   return index === -1 ? FINANCIAL_IMPACT_ORDER.length : index;
+}
+
+/** Show a combined balloon/residual obligation once; drop only matching separate items. */
+function withoutDuplicateBalloonResidual(
+  items: LeaseFinancialImpactItem[],
+): LeaseFinancialImpactItem[] {
+  const combined = items.find(isCombinedBalloonResidual);
+  if (!combined || combined.amountCents === null) return items;
+  return items.filter(
+    (item) =>
+      isCombinedBalloonResidual(item) ||
+      !/balloon|residual/i.test(item.label) ||
+      item.amountCents === null ||
+      item.amountCents !== combined.amountCents,
+  );
+}
+
+/** Declined or unselected optional products are choices, not responsibilities. */
+function isDeclinedSelection(value: string): boolean {
+  return (
+    /\bdeclined?\b/i.test(value) ||
+    /\bnone selected\b/i.test(value) ||
+    /\bnot selected\b/i.test(value)
+  );
 }
 
 function usefulFinancialItem(item: LeaseFinancialImpactItem): boolean {
@@ -625,6 +663,7 @@ function usefulFinancialItem(item: LeaseFinancialImpactItem): boolean {
 }
 
 function financialImpactLabel(item: LeaseFinancialImpactItem, family: LeaseFamilyView): string {
+  if (isCombinedBalloonResidual(item)) return "Final balloon / residual payment";
   switch (normalizedFinancialId(item.id)) {
     case "regular-payment":
       if (!/^regular[ _-]?payment$/i.test(item.label.trim())) {
@@ -636,8 +675,14 @@ function financialImpactLabel(item: LeaseFinancialImpactItem, family: LeaseFamil
       return "Regular payment";
     case "scheduled-base-payments":
       return "Scheduled payments over the term";
+    case "total-amount-repayable":
+      return "Total amount repayable";
     case "total-scheduled-commitment":
       return "Estimated scheduled commitment";
+    case "initiation-fee":
+      return "Initiation fee";
+    case "monthly-service-fee":
+      return "Monthly service fee";
     case "balloon-value":
       return "Balloon amount";
     case "residual-value":
@@ -694,8 +739,10 @@ function duplicatesFinancialImpactMoney(
 ): boolean {
   const normalizedLabel = label.toLowerCase();
   return financialItems.some((item) => {
+    if (isCombinedBalloonResidual(item)) return /balloon|residual/.test(normalizedLabel);
     switch (normalizedFinancialId(item.id)) {
       case "regular-payment":
+        if (/\bservice fee\b/.test(normalizedLabel)) return false;
         return /rent|rental|hire|regular|monthly|periodic|recurring payment/.test(normalizedLabel);
       case "deposit":
         return /deposit/.test(normalizedLabel);
@@ -732,7 +779,12 @@ function FinancialImpactSummary({
     <div className="divide-y divide-line/60">
       {items.map((item) => {
         const id = normalizedFinancialId(item.id);
-        const isCommitment = id === "total-scheduled-commitment";
+        const mainTotalId = items.some(
+          (candidate) => normalizedFinancialId(candidate.id) === "total-amount-repayable",
+        )
+          ? "total-amount-repayable"
+          : "total-scheduled-commitment";
+        const isCommitment = id === mainTotalId;
         const isOptional = id === "purchase-option-amount";
         const isExposure = ["arrears", "amount-due", "late-payment-fee"].includes(id);
         return (
@@ -923,17 +975,23 @@ function LeaseResultBody({
   const askCapability = result.ask?.supported === true ? result.ask : null;
   const family = leaseFamilyView(document.family);
   const familyWording = LEASE_FAMILY_WORDING[family];
-  const financialImpactItems = (result.financialImpact?.items ?? [])
-    .filter(usefulFinancialItem)
-    .sort((left, right) => financialItemOrder(left) - financialItemOrder(right));
+  const financialImpactItems = withoutDuplicateBalloonResidual(
+    (result.financialImpact?.items ?? []).filter(usefulFinancialItem),
+  ).sort((left, right) => financialItemOrder(left) - financialItemOrder(right));
   const financialImpactWarnings = (result.financialImpact?.warnings ?? []).filter((warning) =>
     warning.trim(),
   );
   const summaryMoney = humanGuide.importantMoney.filter(
     (item) => !duplicatesFinancialImpactMoney(item.label, financialImpactItems),
   );
+  const tenantResponsibilities = humanGuide.tenantResponsibilities.filter(
+    (value) => !isDeclinedSelection(value),
+  );
+  const landlordResponsibilities = humanGuide.landlordResponsibilities.filter(
+    (value) => !isDeclinedSelection(value),
+  );
   const hasResponsibilities =
-    humanGuide.tenantResponsibilities.length > 0 || humanGuide.landlordResponsibilities.length > 0;
+    tenantResponsibilities.length > 0 || landlordResponsibilities.length > 0;
 
   if (section === "ask") {
     return askCapability ? (
@@ -978,27 +1036,25 @@ function LeaseResultBody({
 
         {hasResponsibilities ? (
           <DetailsGroup title="Responsibilities">
-            {humanGuide.tenantResponsibilities.length > 0 ? (
+            {tenantResponsibilities.length > 0 ? (
               <div>
                 <p className="text-[13px] font-semibold text-ink">Your responsibilities</p>
                 <div className="mt-2">
-                  <Bullets items={humanGuide.tenantResponsibilities} />
+                  <Bullets items={tenantResponsibilities} />
                 </div>
               </div>
             ) : null}
-            {humanGuide.landlordResponsibilities.length > 0 ? (
+            {landlordResponsibilities.length > 0 ? (
               <div
                 className={
-                  humanGuide.tenantResponsibilities.length > 0
-                    ? "mt-4 border-t border-line pt-4"
-                    : ""
+                  tenantResponsibilities.length > 0 ? "mt-4 border-t border-line pt-4" : ""
                 }
               >
                 <p className="text-[13px] font-semibold text-ink">
                   {familyWording.otherPartyResponsibilities}
                 </p>
                 <div className="mt-2">
-                  <Bullets items={humanGuide.landlordResponsibilities} />
+                  <Bullets items={landlordResponsibilities} />
                 </div>
               </div>
             ) : null}
@@ -1091,16 +1147,23 @@ function LeaseResultBody({
   const paymentImpactItems = financialImpactItems.filter(
     (item) => normalizedFinancialId(item.id) === "regular-payment",
   );
-  const costImpactItems = financialImpactItems.filter((item) =>
-    [
-      "scheduled-base-payments",
-      "total-scheduled-commitment",
-      "balloon-value",
-      "residual-value",
-      "deposit",
-      "purchase-option-amount",
-    ].includes(normalizedFinancialId(item.id)),
-  );
+  const costImpactItems = financialImpactItems.filter((item) => {
+    const id = normalizedFinancialId(item.id);
+    return (
+      [
+        "scheduled-base-payments",
+        "total-amount-repayable",
+        "total-scheduled-commitment",
+        "initiation-fee",
+        "monthly-service-fee",
+        "deposit",
+        "purchase-option-amount",
+      ].includes(id) ||
+      isCombinedBalloonResidual(item) ||
+      id === "balloon-value" ||
+      id === "residual-value"
+    );
+  });
   const earlyImpactItems = financialImpactItems.filter((item) =>
     ["early-termination-estimate", "termination-charge-per-remaining-payment"].includes(
       normalizedFinancialId(item.id),
@@ -1274,15 +1337,15 @@ function LeaseResultBody({
             </SummarySection>
           ) : null}
 
-          {humanGuide.tenantResponsibilities.length > 0 ? (
+          {tenantResponsibilities.length > 0 ? (
             <SummarySection title="Your responsibilities">
-              <Bullets items={humanGuide.tenantResponsibilities.slice(0, 6).map(shortBullet)} />
+              <Bullets items={tenantResponsibilities.slice(0, 6).map(shortBullet)} />
             </SummarySection>
           ) : null}
 
-          {humanGuide.landlordResponsibilities.length > 0 ? (
+          {landlordResponsibilities.length > 0 ? (
             <SummarySection title={familyWording.otherPartyResponsibilities}>
-              <Bullets items={humanGuide.landlordResponsibilities.slice(0, 5).map(shortBullet)} />
+              <Bullets items={landlordResponsibilities.slice(0, 5).map(shortBullet)} />
             </SummarySection>
           ) : null}
 
