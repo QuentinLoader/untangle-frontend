@@ -359,6 +359,7 @@ function NeedsReviewState({
               {failureMessage}
             </p>
           )}
+          <NeedsReviewNav />
         </div>
       );
   }
