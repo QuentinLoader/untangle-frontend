@@ -792,7 +792,8 @@ function FinancialImpactSummary({
               ) : null}
               {item.status === "PARTIAL" && item.missingInputs.length > 0 ? (
                 <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-soft">
-                  Still needed: {item.missingInputs.map(plainInputLabel).filter(Boolean).join(", ")}.
+                  Still needed: {item.missingInputs.map(plainInputLabel).filter(Boolean).join(", ")}
+                  .
                 </p>
               ) : null}
             </div>
@@ -831,9 +832,7 @@ function FinancialImpactDetails({
               <p className="mt-1 text-[11px] font-semibold text-stamp-amber">Partial estimate</p>
             ) : null}
             {item.explanation.trim() ? (
-              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
-                {item.explanation}
-              </p>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">{item.explanation}</p>
             ) : null}
             {item.formula?.trim() ? (
               <p className="mt-2 text-[12px] leading-relaxed text-ink-soft">
@@ -853,11 +852,13 @@ function FinancialImpactDetails({
           <div className="border-t border-line pt-3">
             <p className="text-[12.5px] font-semibold text-ink">Important notes</p>
             <ul className="mt-2 space-y-2">
-              {warnings.filter((warning) => warning.trim()).map((warning) => (
-                <li key={warning} className="text-[12.5px] leading-relaxed text-ink-soft">
-                  {warning}
-                </li>
-              ))}
+              {warnings
+                .filter((warning) => warning.trim())
+                .map((warning) => (
+                  <li key={warning} className="text-[12.5px] leading-relaxed text-ink-soft">
+                    {warning}
+                  </li>
+                ))}
             </ul>
           </div>
         ) : null}
