@@ -5,6 +5,6 @@
 - [x] Anchor default consequences with “The agreement says…” wording.
 - [x] Verify no unnecessary duplicate Summary amounts or leaked internal fields/statuses.
 - [x] Verify mobile family variants and current diagnostics.
-- [ ] Refine the LeaseCheck Summary into a calmer guided mobile answer without changing W15B semantics.
-- [ ] Validate LeaseCheck at 393px for overflow, duplicate financial facts, and internal-code leaks.
-- [ ] Confirm TaxSnap remains unchanged and the build/type checks pass.
+- [x] Refine the LeaseCheck Summary into a calmer guided mobile answer without changing W15B semantics.
+- [x] Validate LeaseCheck at 393px for overflow, duplicate financial facts, and internal-code leaks.
+- [x] Confirm TaxSnap remains unchanged and the build/type checks pass.
