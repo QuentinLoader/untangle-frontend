@@ -391,8 +391,19 @@ function NeedsReviewState({
 function formatElapsedTime(seconds: number) {
   if (seconds < 60) return `${seconds}s elapsed`;
   const minutes = Math.floor(seconds / 60);
-  return `${minutes} min elapsed`;
+  const rest = seconds % 60;
+  return `${minutes}m ${String(rest).padStart(2, "0")}s elapsed`;
 }
+
+/** Time since the last successful status check, so the screen never looks frozen. */
+function formatSinceCheck(now: number, lastCheckedAt: number) {
+  const seconds = Math.max(0, Math.floor((now - lastCheckedAt) / 1000));
+  if (seconds <= 1) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes} min ago`;
+}
+
 
 /** Continuous activity indicator — intentionally does not imply measured progress. */
 function ActivityRing({ active }: { active: boolean }) {
