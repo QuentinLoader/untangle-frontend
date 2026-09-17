@@ -642,10 +642,13 @@ function usefulFinancialItem(item: LeaseFinancialImpactItem): boolean {
 function financialImpactLabel(item: LeaseFinancialImpactItem, family: LeaseFamilyView): string {
   switch (normalizedFinancialId(item.id)) {
     case "regular-payment":
-      if (family === "vehicle") return "Monthly vehicle payment";
-      if (family === "equipment") return "Monthly hire payment";
-      if (family === "residential" || family === "commercial") return "Monthly rent";
-      return item.label;
+      if (!/^regular[ _-]?payment$/i.test(item.label.trim())) {
+        return leasePaymentLabel(item.label, family);
+      }
+      if (family === "vehicle") return "Regular vehicle payment";
+      if (family === "equipment") return "Regular hire payment";
+      if (family === "residential" || family === "commercial") return "Regular rent payment";
+      return "Regular payment";
     case "scheduled-base-payments":
       return "Scheduled payments over the term";
     case "total-scheduled-commitment":
@@ -787,7 +790,7 @@ function FinancialImpactSummary({
               ) : null}
               {id === "deposit" ? (
                 <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
-                  Shown separately and not included here as part of the scheduled cost.
+                  Shown separately from the scheduled cost.
                 </p>
               ) : null}
               {item.status === "PARTIAL" && item.missingInputs.length > 0 ? (
