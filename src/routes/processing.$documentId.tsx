@@ -53,11 +53,16 @@ function Processing() {
   const [failureMessage, setFailureMessage] = useState<string | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  const [lastCheckedAt, setLastCheckedAt] = useState<number | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
   const stoppedRef = useRef(false);
+  const pollNowRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const startedAt = Date.now();
     const timer = window.setInterval(() => {
+      setNow(Date.now());
       setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
     }, 1000);
 
@@ -70,6 +75,8 @@ function Processing() {
     let failures = 0;
 
     const poll = async () => {
+      if (timer) clearTimeout(timer);
+      setIsChecking(true);
       try {
         const response = await getDocumentStatus(documentId);
         if (stoppedRef.current) return;
@@ -77,12 +84,14 @@ function Processing() {
         const docStatus = response.data.status;
         const next = docStatus.processingStatus;
         setStatus(next);
+        setLastCheckedAt(Date.now());
         setDetectedDocumentType(docStatus.detectedDocumentType ?? null);
         setFailureCode((docStatus.failureCode as DocumentFailureCode | null) ?? null);
         setFailureMessage(docStatus.failureMessage ?? null);
         setQueryError(null);
         if (isTerminalProcessingStatus(next)) {
           stoppedRef.current = true;
+          setIsChecking(false);
           if (next === "COMPLETED") {
             void navigate({ to: "/result", search: { documentId, from: "upload" as const } });
           }
@@ -96,7 +105,12 @@ function Processing() {
           setQueryError(friendlyDocumentError(err));
         }
       }
+      setIsChecking(false);
       timer = setTimeout(() => void poll(), 3000);
+    };
+
+    pollNowRef.current = () => {
+      if (!stoppedRef.current) void poll();
     };
 
     void poll();
@@ -106,6 +120,7 @@ function Processing() {
       if (timer) clearTimeout(timer);
     };
   }, [documentId, navigate]);
+
 
   const isLoading = status === null;
   const needsReview = status === "NEEDS_REVIEW";
@@ -169,16 +184,48 @@ function Processing() {
                     </span>
                     Still working · {formatElapsedTime(elapsedSeconds)}
                   </div>
+                  <p className="text-[12px] leading-relaxed text-ink-soft" aria-live="polite">
+                    {isChecking
+                      ? "Checking now…"
+                      : lastCheckedAt
+                        ? `Last checked ${formatSinceCheck(now, lastCheckedAt)}`
+                        : "Connecting…"}
+                  </p>
                   <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
                     Keep this screen open. Your result will appear as soon as it is ready.
                   </p>
-                  {elapsedSeconds >= 45 && (
+                  {elapsedSeconds >= 45 && elapsedSeconds < 120 && (
                     <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
                       Detailed documents can take a little longer. Analysis is continuing normally.
                     </p>
                   )}
+                  {elapsedSeconds >= 120 && (
+                    <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
+                      Longer documents can take a few minutes. Nothing has gone wrong — you can also
+                      leave this page and find the document in your Vault later.
+                    </p>
+                  )}
+                  <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => pollNowRef.current()}
+                      disabled={isChecking}
+                      className="inline-flex min-h-11 items-center rounded-full border border-teal/30 px-4 text-[13px] font-medium text-teal disabled:opacity-50"
+                    >
+                      Check again now
+                    </button>
+                    {elapsedSeconds >= 120 && (
+                      <Link
+                        to="/vault"
+                        className="inline-flex min-h-11 items-center px-3 text-[13px] font-medium text-ink-soft underline underline-offset-2"
+                      >
+                        Go to Vault
+                      </Link>
+                    )}
+                  </div>
                 </div>
               )}
+
 
               <div className="mt-9 w-full max-w-[300px] space-y-4">
                 {STEPS.map((step) => {
@@ -344,8 +391,19 @@ function NeedsReviewState({
 function formatElapsedTime(seconds: number) {
   if (seconds < 60) return `${seconds}s elapsed`;
   const minutes = Math.floor(seconds / 60);
-  return `${minutes} min elapsed`;
+  const rest = seconds % 60;
+  return `${minutes}m ${String(rest).padStart(2, "0")}s elapsed`;
 }
+
+/** Time since the last successful status check, so the screen never looks frozen. */
+function formatSinceCheck(now: number, lastCheckedAt: number) {
+  const seconds = Math.max(0, Math.floor((now - lastCheckedAt) / 1000));
+  if (seconds <= 1) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes} min ago`;
+}
+
 
 /** Continuous activity indicator — intentionally does not imply measured progress. */
 function ActivityRing({ active }: { active: boolean }) {
