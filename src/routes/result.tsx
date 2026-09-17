@@ -1321,7 +1321,9 @@ function LeaseResultBody({
           ) : null}
 
           {problemClauses.length > 0 || defaultImpactItems.length > 0 ? (
-            <SummarySection title={family === "equipment" ? "If something goes wrong" : "If you default"}>
+            <SummarySection
+              title={family === "equipment" ? "If something goes wrong" : "If you default"}
+            >
               <div className="space-y-3">
                 {problemClauses.slice(0, 3).map((flag) => (
                   <div key={flag.id}>
