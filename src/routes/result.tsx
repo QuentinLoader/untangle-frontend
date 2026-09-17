@@ -606,6 +606,14 @@ function leaseProblemTitle(title: string, explanation: string, family: LeaseFami
   return title;
 }
 
+function leaseSummaryMeaning(value: string, family: LeaseFamilyView): string {
+  const clean = value.trim();
+  if (family === "other" || !/^this is\b/i.test(clean)) return firstSentence(clean);
+  const first = firstSentence(clean);
+  if (!/\b(lease|rental|hire|agreement|document)\b/i.test(first)) return first;
+  return firstSentence(clean.slice(first.length).trim());
+}
+
 /** Short bullet form of a longer contractual sentence. */
 function shortBullet(value: string): string {
   const head = firstSentence(practicalLeaseCopy(value)).replace(/\s+/g, " ").trim();
@@ -651,7 +659,7 @@ function LeaseResultBody({
               {humanGuide.importantMoney.map((item) => (
                 <LeaseTermRow
                   key={item.id}
-                  label={item.label}
+                  label={leasePaymentLabel(item.label, family)}
                   value={item.value}
                   needsCheck={leaseTermNeedsCheck(item.label, validationWarnings)}
                 />
@@ -771,6 +779,14 @@ function LeaseResultBody({
   const breachClauses = humanGuide.clausesToCheck.filter((flag) =>
     BREACH_WORDS.test(`${flag.title} ${flag.explanation}`),
   );
+  const problemClauses =
+    family === "equipment"
+      ? humanGuide.clausesToCheck.filter((flag) =>
+          /breach|default|remed|repossess|arrears|damage|breakdown|mechanical failure|fee|penalt|extra charge/i.test(
+            `${flag.title} ${flag.explanation}`,
+          ),
+        )
+      : breachClauses;
   const thingsToCheck = [
     ...leaseWarningLabels(validationWarnings).map((label) => checkItemText(`Confirm the ${label}`)),
     ...humanGuide.clausesToCheck.map((flag) =>
@@ -802,9 +818,11 @@ function LeaseResultBody({
             <span className="truncate">{document.documentTitle}</span>
           </p>
         ) : null}
-        <p className="mt-3 whitespace-pre-line text-[14.5px] leading-[1.6] text-ink-soft">
-          {firstSentence(summary.plainEnglish)}
-        </p>
+        {leaseSummaryMeaning(summary.plainEnglish, family) ? (
+          <p className="mt-3 whitespace-pre-line text-[14.5px] leading-[1.6] text-ink-soft">
+            {leaseSummaryMeaning(summary.plainEnglish, family)}
+          </p>
+        ) : null}
       </section>
 
       {humanGuide.importantMoney.length > 0 ? (
@@ -888,10 +906,10 @@ function LeaseResultBody({
         </SummaryCard>
       ) : null}
 
-      {breachClauses.length > 0 ? (
+      {problemClauses.length > 0 ? (
         <SummaryCard title="If something goes wrong">
           <div className="space-y-3">
-            {breachClauses.slice(0, 2).map((flag) => (
+            {problemClauses.slice(0, 2).map((flag) => (
               <div key={flag.id}>
                 <p className="text-[13.5px] font-semibold text-ink">
                   {leaseProblemTitle(flag.title, flag.explanation, family)}
