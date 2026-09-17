@@ -299,6 +299,7 @@ function NeedsReviewState({
               {failureMessage}
             </p>
           )}
+          <NeedsReviewNav />
         </div>
       );
     case "JURISDICTION_NOT_SUPPORTED":
