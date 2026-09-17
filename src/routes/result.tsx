@@ -671,10 +671,13 @@ function summaryFinancialItem(item: LeaseFinancialImpactItem): boolean {
   return item.amountCents !== null && item.status !== "NOT_CALCULABLE";
 }
 
-function hasFinancialAmount(item: LeaseFinancialImpactItem): item is LeaseFinancialImpactItem & {
-  amountCents: number;
-} {
-  return item.amountCents !== null;
+function usefulSummaryMoneyItem(
+  item: LeaseDocumentResult["humanGuide"]["importantMoney"][number],
+): boolean {
+  const value = practicalLeaseCopy(`${item.label} ${item.value}`).toLowerCase();
+  return !/cannot safely calculate|still needed|explicit payment count|missing input|not calculable|partial estimate|formula|calculation/i.test(
+    value,
+  );
 }
 
 function financialImpactLabel(item: LeaseFinancialImpactItem, family: LeaseFamilyView): string {
@@ -1134,9 +1137,9 @@ function LeaseResultBody({
   const financialImpactWarnings = (result.financialImpact?.warnings ?? []).filter((warning) =>
     warning.trim(),
   );
-  const summaryMoney = humanGuide.importantMoney.filter(
-    (item) => !duplicatesFinancialImpactMoney(item.label, summaryFinancialImpactItems),
-  );
+  const summaryMoney = humanGuide.importantMoney
+    .filter(usefulSummaryMoneyItem)
+    .filter((item) => !duplicatesFinancialImpactMoney(item.label, summaryFinancialImpactItems));
   const tenantResponsibilities = humanGuide.tenantResponsibilities.filter(
     (value) => !isDeclinedSelection(value),
   );
@@ -1334,17 +1337,15 @@ function LeaseResultBody({
   const identityDates = humanGuide.importantDates.filter((item) =>
     /start|commence|effective|end|expir/i.test(item.label),
   );
-  const endPositionStatements = uniqueCompleteSentences([
+  const endPositionStatements = uniqueEndPositionStatements([
     ...keyTerms
       .filter((item) =>
         /ownership|title transfer|purchase option|what happens at the end|return (?:the )?(?:vehicle|equipment)/i.test(
           `${item.label} ${item.value}`,
         ),
       )
-      .filter(
-        (item) => !/return required/i.test(item.label) || supportsReturnRequirement(item.value),
-      )
-      .map((item) => `${item.label}: ${item.value}`),
+      .map(endPositionFromKeyTerm)
+      .filter(Boolean),
     ...humanGuide.clausesToCheck
       .filter((item) =>
         /ownership|title transfer|purchase option|what happens at the end|return (?:the )?(?:vehicle|equipment)/i.test(
