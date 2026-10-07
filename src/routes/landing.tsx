@@ -1,104 +1,49 @@
 import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Leaf } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  FileText,
+  LockKeyhole,
+  Receipt,
+  ShieldCheck,
+  WalletCards,
+} from "lucide-react";
 import { useAuth } from "@/auth/useAuth";
-import welcomeImage from "@/assets/welcome-mountains.jpg";
-import { BlockCard } from "@/components/untangle/BlockCard";
-import { StampBadge } from "@/components/untangle/StampBadge";
-import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
-import { ProductRow } from "@/components/untangle/ProductRow";
-import { AccordionItem } from "@/components/untangle/Accordion";
+import { PublicSiteShell } from "@/components/untangle/public/PublicSiteShell";
 import { SOLUTION_LIST } from "@/lib/solutions";
 
 export const Route = createFileRoute("/landing")({
   head: () => ({
     meta: [
-      { title: "Untangle — Real documents. Clear answers." },
+      { title: "Untangle South Africa — Important documents, explained clearly" },
       {
         name: "description",
         content:
-          "Upload a South African tax notice, residential lease, insurance policy or employment document. Untangle explains what it means, what matters and what to do next, in plain language.",
+          "Understand SARS letters, agreements, insurance documents and employment paperwork in plain language with Untangle South Africa.",
       },
-      { property: "og:title", content: "Untangle — Real documents. Clear answers." },
+      { property: "og:title", content: "Untangle South Africa — Important documents, explained clearly" },
       {
         property: "og:description",
-        content:
-          "Plain-language explanations of South African tax notices, leases, insurance policies and employment documents.",
+        content: "Understand the paperwork. Know what matters. Know what to do next.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "/landing" },
     ],
-    links: [{ rel: "canonical", href: "/landing" }],
+    links: [{ rel: "canonical", href: "/" }],
   }),
   component: LandingPage,
 });
-
-const STEPS = [
-  { title: "Upload it", desc: "Take a photo or choose a PDF." },
-  { title: "We analyse it", desc: "Untangle identifies the document and the details that matter." },
-  {
-    title: "Get the plain-language version",
-    desc: "See what it means, what matters and what you may need to do.",
-  },
-  {
-    title: "Stay ahead of dates",
-    desc: "Create reminders for reliable deadlines.",
-  },
-];
-
-const QUESTIONS = [
-  {
-    label: "TaxSnap",
-    title: "What does this SARS notice actually mean?",
-    answer:
-      "Untangle explains the type of notice, what SARS is asking for, the amounts involved and which action matters next.",
-  },
-  {
-    label: "LeaseCheck",
-    title: "How much notice does my lease require?",
-    answer:
-      "Untangle surfaces the notice period written into your lease, along with deposits, escalation and responsibilities.",
-  },
-  {
-    label: "PolicyCheck",
-    title: "Why was my insurance claim rejected?",
-    answer:
-      "Untangle explains the reason recorded in the decision letter, the policy terms it relies on and the escalation route available to you.",
-  },
-  {
-    label: "WorkCheck",
-    title: "What does this clause in my employment contract mean?",
-    answer:
-      "Untangle translates contract and workplace wording into everyday language and highlights terms worth a closer look.",
-  },
-];
-
-function SectionHeading({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="font-display text-[24px] font-semibold leading-tight md:text-[30px]">
-      {children}
-    </h2>
-  );
-}
 
 export function LandingPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
-  // Signed-in visitors go straight to their Home. (At "/" the gate shows Home
-  // instead, so this only fires on /landing.)
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/", replace: true });
+    if (!loading && session) {
+      navigate({ to: "/home", replace: true });
+    }
   }, [loading, session, navigate]);
 
-  const toUpload = () => navigate({ to: "/upload", search: {} });
-  const scrollToHow = () =>
-    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
-
-  // Never render the public landing experience while auth is unresolved or a
-  // valid signed-in session is already present. This prevents the public hero
-  // from flashing before an authenticated redirect completes.
   if (loading || session) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper" aria-busy="true">
@@ -108,183 +53,235 @@ export function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-paper text-ink">
-      {/* HEADER */}
-      <header className="sticky top-0 z-30 border-b border-line bg-paper/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-2.5">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-[10px] bg-teal text-white">
-              <Leaf className="h-[16px] w-[16px]" aria-hidden />
-            </span>
-            <span className="font-display text-[19px] font-semibold">Untangle</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Link
-              to="/login"
-              search={{ redirect: undefined }}
-              className="flex min-h-[44px] shrink-0 items-center whitespace-nowrap rounded-[12px] px-3 text-[14px] font-semibold text-ink"
-            >
-              Sign in
-            </Link>
-            <PrimaryButton
-              onClick={toUpload}
-              className="min-h-[44px] w-auto whitespace-nowrap px-4 py-[10px] text-[14px]"
-            >
-              Try it free
-            </PrimaryButton>
-          </div>
-        </div>
-      </header>
+    <PublicSiteShell>
+      <main>
+        <section className="mx-auto max-w-[1180px] px-5 pb-12 pt-11 sm:px-7 md:pt-16 lg:px-8 lg:pb-16">
+          <div className="max-w-3xl">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.07em] text-teal">
+              Built for South Africa
+            </p>
+            <h1 className="mt-3 text-[38px] font-semibold leading-[1.06] tracking-[-0.045em] text-ink sm:text-[50px] lg:text-[58px]">
+              Important documents, explained clearly.
+            </h1>
+            <p className="mt-5 max-w-2xl text-[16px] leading-7 text-ink-soft">
+              Untangle South Africa helps you understand the paperwork that can affect your money,
+              work, home and decisions — without making you decode the jargon first.
+            </p>
 
-      {/* HERO */}
-      <section className="mx-auto max-w-6xl px-5 pb-10 pt-9 md:py-14">
-        <div className="mx-auto max-w-2xl md:mx-0">
-          <span className="inline-block rounded-full bg-teal-dim px-3 py-[6px] font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-teal">
-            Built for South Africa
-          </span>
-          <h1 className="mt-4 font-display text-[34px] font-semibold leading-[1.12] md:text-[46px]">
-            Confusing document?
-            <br />
-            <span className="text-teal">Untangle it.</span>
-          </h1>
-          <p className="mt-4 text-[16px] leading-relaxed text-ink-soft">
-            Upload a tax notice, lease, insurance policy or employment document. Untangle explains
-            what it means and what to do next — in plain language.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <PrimaryButton onClick={toUpload} className="sm:w-auto sm:px-6">
-              Upload your first document — free
-            </PrimaryButton>
-            <SecondaryButton onClick={scrollToHow} className="sm:w-auto sm:px-6">
-              See how it works
-            </SecondaryButton>
+            <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+              <Link
+                to="/signup"
+                search={{ redirect: "/home" }}
+                className="inline-flex min-h-[50px] items-center gap-2 rounded-xl bg-teal px-5 text-[14.5px] font-semibold text-white"
+              >
+                Create a free account
+                <ArrowRight size={17} aria-hidden />
+              </Link>
+              <Link
+                to="/login"
+                search={{ redirect: "/home" }}
+                className="inline-flex min-h-11 items-center px-2 text-[13.5px] font-semibold text-teal"
+              >
+                I already have an account
+              </Link>
+            </div>
+
+            <p className="mt-3 text-[12.5px] text-ink-soft">
+              Start free with up to 3 successful analyses per month.
+            </p>
           </div>
-        </div>
+        </section>
 
-        {/* MISTY MOUNTAINS */}
-        <div className="relative mt-8 overflow-hidden rounded-3xl border border-line">
-          <img
-            src={welcomeImage}
-            alt="Misty mountains at dawn"
-            className="h-[180px] w-full object-cover md:h-[240px]"
-          />
-          <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent"
-            aria-hidden
-          />
-          <p className="absolute bottom-3 left-4 text-[12.5px] font-medium text-white/95">
-            Private documents. Secure processing. Plain-language guidance.
-          </p>
-        </div>
-
-        {/* REAL EXAMPLE */}
-        <div className="mt-6">
-          <BlockCard title="TaxSnap" action={<StampBadge label="Urgent" color="red" />}>
-            <h2 className="text-[19px] font-semibold leading-snug text-ink">
-              SARS wants R4,200 paid by 14 Jul
+        <section className="border-y border-line bg-white">
+          <div className="mx-auto max-w-[1180px] px-5 py-11 sm:px-7 lg:px-8 lg:py-14">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+              Specialist tools
+            </p>
+            <h2 className="mt-2 max-w-2xl text-[26px] font-semibold tracking-[-0.025em] text-ink sm:text-[30px]">
+              Start with the problem you are dealing with.
             </h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-ink-soft">
-              A demand for an outstanding assessment. If nothing is paid or disputed by the
-              deadline, interest and collection steps may follow.
-            </p>
-            <p className="mt-3 text-[11.5px] text-ink-soft">
-              Illustrative example — not a real document.
-            </p>
-          </BlockCard>
-        </div>
-      </section>
 
-      {/* PRODUCTS */}
-      <section className="mx-auto max-w-3xl px-5 py-9">
-        <SectionHeading>What Untangle covers</SectionHeading>
-        <div className="mt-5 space-y-3">
-          {SOLUTION_LIST.map((solution) => (
-            <ProductRow key={solution.slug} solution={solution} />
-          ))}
-        </div>
-      </section>
+            <div className="mt-7 grid gap-4 sm:grid-cols-2">
+              {SOLUTION_LIST.map((solution) => {
+                const Icon = solution.icon;
+                const livePath =
+                  solution.slug === "taxsnap"
+                    ? "/taxsnap"
+                    : solution.slug === "leasecheck"
+                      ? "/leasecheck"
+                      : null;
+                const accent =
+                  solution.slug === "taxsnap"
+                    ? "var(--stamp-red)"
+                    : solution.slug === "leasecheck"
+                      ? "var(--teal)"
+                      : "var(--line)";
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" className="scroll-mt-20 bg-paper-2 px-5 py-9">
-        <div className="mx-auto max-w-3xl">
-          <SectionHeading>How it works</SectionHeading>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {STEPS.map((step, i) => (
-              <div key={step.title} className="flex gap-3">
-                <span className="grid h-[28px] w-[28px] shrink-0 place-items-center rounded-full bg-teal font-mono text-[12px] font-bold text-white">
-                  {i + 1}
-                </span>
-                <div className="min-w-0">
-                  <h3 className="text-[15px] font-semibold text-ink">{step.title}</h3>
-                  <p className="mt-0.5 text-[13.5px] leading-relaxed text-ink-soft">{step.desc}</p>
-                </div>
+                const card = (
+                  <div
+                    className="h-full border border-line bg-paper px-5 py-5 transition-colors hover:bg-white"
+                    style={{ borderTopWidth: 3, borderTopColor: accent }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+                        style={{ backgroundColor: solution.tint, color: accent }}
+                        aria-hidden
+                      >
+                        <Icon size={20} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-3">
+                          <h3 className="text-[17px] font-semibold text-ink">{solution.name}</h3>
+                          {!livePath ? (
+                            <span className="rounded-full bg-white px-2 py-1 text-[10px] font-medium text-ink-soft">
+                              Coming soon
+                            </span>
+                          ) : (
+                            <ArrowRight size={17} className="text-ink-soft" aria-hidden />
+                          )}
+                        </div>
+                        <p className="mt-2 text-[13px] leading-5 text-ink-soft">
+                          {solution.shortDescription}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+
+                return livePath ? (
+                  <Link key={solution.slug} to={livePath as never} className="block">
+                    {card}
+                  </Link>
+                ) : (
+                  <div key={solution.slug}>{card}</div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[1180px] px-5 py-11 sm:px-7 lg:px-8 lg:py-14">
+          <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
+            <div>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+                How Untangle works
+              </p>
+              <h2 className="mt-2 text-[26px] font-semibold tracking-[-0.025em] text-ink sm:text-[30px]">
+                The answer first. The detail when you need it.
+              </h2>
+
+              <ol className="mt-6 space-y-5">
+                {[
+                  ["1", "Choose the specialist tool", "TaxSnap and LeaseCheck are available now; more tools will join the portfolio later."],
+                  ["2", "Upload the document", "Use the original PDF, image or a clear photo."],
+                  ["3", "See what matters", "Untangle gives you the 30-second answer first, then the practical meaning and full evidence."],
+                ].map(([number, title, detail]) => (
+                  <li key={number} className="grid grid-cols-[30px_minmax(0,1fr)] gap-3">
+                    <span className="grid h-7 w-7 place-items-center rounded-full bg-teal text-[12px] font-semibold text-white">
+                      {number}
+                    </span>
+                    <div>
+                      <p className="text-[14px] font-semibold text-ink">{title}</p>
+                      <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">{detail}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="border-t border-line pt-8 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+                Designed for real decisions
+              </p>
+
+              <div className="mt-5 space-y-5">
+                <TrustItem
+                  icon={<FileText size={18} />}
+                  title="Plain language, not more jargon"
+                  body="The first view tells you what the document is, what matters and what you may need to do."
+                />
+                <TrustItem
+                  icon={<LockKeyhole size={18} />}
+                  title="Private to your account"
+                  body="Documents and results sit behind your authenticated Untangle account."
+                />
+                <TrustItem
+                  icon={<ShieldCheck size={18} />}
+                  title="Evidence stays available"
+                  body="When you want the detail, you can go deeper into the source wording and checked guidance."
+                />
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* COMMON QUESTIONS */}
-      <section className="mx-auto max-w-3xl px-5 py-9">
-        <SectionHeading>Questions people actually ask</SectionHeading>
-        <div className="mt-4 rounded-2xl border border-line bg-white px-4">
-          {QUESTIONS.map((q) => (
-            <AccordionItem key={q.title} label={q.label} title={q.title}>
-              {q.answer}
-            </AccordionItem>
-          ))}
-        </div>
-      </section>
+        <section className="bg-paper-2">
+          <div className="mx-auto max-w-[1180px] px-5 py-11 sm:px-7 lg:px-8">
+            <div className="grid gap-6 md:grid-cols-[1fr_1fr]">
+              <div>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+                  Start free
+                </p>
+                <h2 className="mt-2 text-[24px] font-semibold text-ink">3 successful analyses per month</h2>
+                <p className="mt-2 text-[13px] leading-6 text-ink-soft">
+                  Create an account and use the available specialist tools before deciding whether you need more.
+                </p>
+              </div>
 
-      {/* TRUST */}
-      <section id="disclaimer" className="scroll-mt-24 bg-ink px-5 py-10 text-white">
-        <div className="mx-auto max-w-2xl">
-          <h2 className="font-display text-[22px] font-semibold leading-tight md:text-[28px]">
-            Clear information. Important decisions stay yours.
-          </h2>
-          <p className="mt-3 text-[14.5px] leading-relaxed text-white/75">
-            Untangle explains what a document says in everyday language. It does not replace a
-            lawyer, tax practitioner or accountant, and it does not act on your behalf.
-          </p>
-          <a
-            href="#disclaimer"
-            className="mt-3 inline-flex min-h-[44px] items-center text-[14px] font-semibold text-white underline underline-offset-4"
-          >
-            Read our disclaimer
-          </a>
-        </div>
-      </section>
-
-      {/* FINAL CTA */}
-      <section id="final-cta" className="px-5 py-10 text-center">
-        <div className="mx-auto max-w-xl">
-          <SectionHeading>Stop guessing what the document means.</SectionHeading>
-          <div className="mx-auto mt-5 max-w-sm">
-            <PrimaryButton onClick={toUpload}>Upload your first document — free</PrimaryButton>
+              <div className="border-t border-line pt-6 md:border-l md:border-t-0 md:pl-8 md:pt-0">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+                  Untangle Plus
+                </p>
+                <h2 className="mt-2 text-[24px] font-semibold text-ink">R79 / month</h2>
+                <p className="mt-2 text-[13px] leading-6 text-ink-soft">
+                  More analyses plus portfolio features such as Vault/history and reminders where supported.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-line px-5 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 text-[13px] text-ink-soft md:flex-row md:justify-between">
-          <p>© {new Date().getFullYear()} Untangle</p>
-          <div className="flex gap-4">
-            <Link to="/terms" className="inline-flex min-h-[44px] items-center px-1">
-              Terms &amp; privacy
+        <section className="bg-ink px-5 py-11 text-white">
+          <div className="mx-auto flex max-w-[900px] flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="text-[24px] font-semibold tracking-[-0.02em]">
+                Understand the document before it becomes the problem.
+              </h2>
+              <p className="mt-2 text-[13.5px] text-white/70">
+                Create your free Untangle South Africa account.
+              </p>
+            </div>
+            <Link
+              to="/signup"
+              search={{ redirect: "/home" }}
+              className="inline-flex min-h-[48px] items-center rounded-xl bg-white px-5 text-[14px] font-semibold text-ink"
+            >
+              Create free account
             </Link>
-            <a href="#disclaimer" className="inline-flex min-h-[44px] items-center px-1">
-              Disclaimer
-            </a>
-            <a href="#contact" className="inline-flex min-h-[44px] items-center px-1">
-              Contact
-            </a>
           </div>
-        </div>
-        <p className="mx-auto mt-3 max-w-6xl text-center text-[11.5px] text-ink-soft/80 md:text-left">
-          Untangle — an AddVision product
-        </p>
-      </footer>
+        </section>
+      </main>
+    </PublicSiteShell>
+  );
+}
+
+function TrustItem({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="grid grid-cols-[26px_minmax(0,1fr)] gap-3">
+      <span className="mt-0.5 text-teal" aria-hidden>{icon}</span>
+      <div>
+        <p className="text-[14px] font-semibold text-ink">{title}</p>
+        <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">{body}</p>
+      </div>
     </div>
   );
 }
