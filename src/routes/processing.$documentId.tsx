@@ -3,13 +3,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
-  Check,
   FileQuestion,
   FileText,
   Globe,
-  LockKeyhole,
   Search,
-  ShieldCheck,
 } from "lucide-react";
 import {
   getDocumentStatus,
@@ -93,7 +90,7 @@ function copyFor(status: DocumentProcessingStatus | null, solution?: Solution) {
     const taxCopy: Partial<Record<DocumentProcessingStatus, { title: string; body: string }>> = {
       QUEUED: {
         title: "Preparing your SARS document",
-        body: "TaxSnap is getting the document ready for analysis.",
+        body: "TaxSnap is getting the document ready.",
       },
       DETECTING_MODULE: {
         title: "Identifying the SARS document",
@@ -101,23 +98,23 @@ function copyFor(status: DocumentProcessingStatus | null, solution?: Solution) {
       },
       CLASSIFYING: {
         title: "Checking the document type",
-        body: "TaxSnap is placing it in the right SARS or tax category.",
+        body: "TaxSnap is placing it in the right tax category.",
       },
       EXTRACTING: {
         title: "Reading what matters",
-        body: "We’re finding important dates, amounts, requests and other key details.",
+        body: "We’re finding important dates, amounts and requests.",
       },
       VALIDATING_RESULT: {
         title: "Checking the important details",
-        body: "TaxSnap is checking the extracted information before showing it to you.",
+        body: "TaxSnap is validating the information before showing it to you.",
       },
       MATCHING_RULES: {
         title: "Checking what the notice requires",
-        body: "The document is being matched to the approved guidance used by TaxSnap.",
+        body: "The result is being checked against the approved guidance used by TaxSnap.",
       },
       COMPLETED: {
         title: "Your TaxSnap result is ready",
-        body: "We’re opening the plain-language explanation now.",
+        body: "Opening the plain-language explanation now.",
       },
     };
     return taxCopy[status] ?? processingCopy(status);
@@ -127,15 +124,15 @@ function copyFor(status: DocumentProcessingStatus | null, solution?: Solution) {
     const leaseCopy: Partial<Record<DocumentProcessingStatus, { title: string; body: string }>> = {
       QUEUED: {
         title: "Preparing your agreement",
-        body: "LeaseCheck is getting the document ready for analysis.",
+        body: "LeaseCheck is getting the document ready.",
       },
       DETECTING_MODULE: {
         title: "Identifying the agreement",
-        body: "We’re working out what type of agreement or lease-related document this is.",
+        body: "We’re working out what type of agreement or related document this is.",
       },
       CLASSIFYING: {
         title: "Understanding the document’s role",
-        body: "LeaseCheck is checking whether this is the main agreement, an amendment, a notice or another related document.",
+        body: "LeaseCheck is checking whether this is the main agreement, a change or a later notice.",
       },
       EXTRACTING: {
         title: "Reading the terms that matter",
@@ -143,15 +140,15 @@ function copyFor(status: DocumentProcessingStatus | null, solution?: Solution) {
       },
       VALIDATING_RESULT: {
         title: "Checking the important terms",
-        body: "LeaseCheck is checking the extracted information before explaining it.",
+        body: "LeaseCheck is validating the information before explaining it.",
       },
       MATCHING_RULES: {
         title: "Checking applicable protections",
-        body: "Approved legal guidance is applied only where the agreement type and facts support it.",
+        body: "Approved guidance is applied only where the agreement type and facts support it.",
       },
       COMPLETED: {
         title: "Your LeaseCheck result is ready",
-        body: "We’re opening the plain-language explanation now.",
+        body: "Opening the plain-language explanation now.",
       },
     };
     return leaseCopy[status] ?? processingCopy(status);
@@ -254,11 +251,13 @@ function Processing() {
   ];
   const currentIndex = status ? order.indexOf(status) : -1;
   const SpecialistIcon = solution?.icon ?? FileText;
+  const isTax = solution?.slug === "taxsnap";
+  const accent = isTax ? "var(--stamp-red)" : "var(--teal)";
 
   return (
     <div className="min-h-screen bg-paper text-ink">
       <header className="border-b border-line/80 bg-paper">
-        <div className="mx-auto flex min-h-[72px] max-w-[1180px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-[72px] max-w-[860px] items-center gap-3 px-4 sm:px-6">
           <Link
             to="/home"
             aria-label="Back to Home"
@@ -270,13 +269,13 @@ function Processing() {
             <p className="truncate text-[15px] font-semibold text-ink">
               {solution?.name ?? "Untangle South Africa"}
             </p>
-            <p className="truncate text-[11.5px] text-ink-soft">
-              {solution ? "Part of Untangle South Africa" : "Understanding your document"}
-            </p>
+            {solution ? (
+              <p className="truncate text-[11.5px] text-ink-soft">Part of Untangle South Africa</p>
+            ) : null}
           </div>
           <span
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-teal"
-            style={{ backgroundColor: solution?.tint ?? "var(--paper-2)" }}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+            style={{ backgroundColor: solution?.tint ?? "var(--paper-2)", color: accent }}
             aria-hidden
           >
             <SpecialistIcon size={18} strokeWidth={1.9} />
@@ -284,21 +283,21 @@ function Processing() {
         </div>
       </header>
 
-      <main className="mx-auto grid min-h-[calc(100vh-72px)] max-w-[1180px] gap-10 px-5 py-8 sm:px-7 lg:grid-cols-[minmax(0,720px)_320px] lg:gap-14 lg:px-8 lg:py-10">
-        <section className="min-w-0">
-          {needsReview ? (
-            <NeedsReviewState
-              failureCode={failureCode}
-              detectedDocumentType={detectedDocumentType}
-              failureMessage={failureMessage}
-              solutionSlug={solution?.slug}
-            />
-          ) : (
-            <>
-              <div className="flex flex-col items-start sm:flex-row sm:items-center sm:gap-7">
+      <main className="mx-auto w-full max-w-[860px] px-5 py-8 sm:px-7 sm:py-10">
+        {needsReview ? (
+          <NeedsReviewState
+            failureCode={failureCode}
+            detectedDocumentType={detectedDocumentType}
+            failureMessage={failureMessage}
+            solutionSlug={solution?.slug}
+          />
+        ) : (
+          <>
+            <div className="border-l-[3px] pl-4 sm:pl-5" style={{ borderLeftColor: accent }}>
+              <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-7">
                 <ActivityRing active={!backendFailed} />
-                <div className="mt-6 min-w-0 sm:mt-0">
-                  <p className="text-[12px] font-semibold uppercase tracking-[0.07em] text-teal">
+                <div className="min-w-0">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.07em] text-ink-soft">
                     Analysing your document
                   </p>
                   <h1
@@ -307,21 +306,28 @@ function Processing() {
                   >
                     {copy.title}
                   </h1>
-                  <p className="mt-3 max-w-xl text-[14.5px] leading-7 text-ink-soft">{copy.body}</p>
+                  <p className="mt-3 max-w-xl text-[14px] leading-6 text-ink-soft">{copy.body}</p>
 
                   {!backendFailed && !isLoading ? (
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                       <span
-                        className="inline-flex min-h-8 items-center gap-2 rounded-full bg-teal/10 px-3 text-[12px] font-medium text-teal"
+                        className="inline-flex min-h-8 items-center gap-2 rounded-full bg-white px-3 text-[12px] font-medium text-ink-soft"
                         role="status"
                         aria-live="polite"
                       >
                         <span className="relative flex h-2 w-2" aria-hidden>
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal opacity-50 motion-reduce:animate-none" />
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-teal" />
+                          <span
+                            className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-40 motion-reduce:animate-none"
+                            style={{ backgroundColor: accent }}
+                          />
+                          <span
+                            className="relative inline-flex h-2 w-2 rounded-full"
+                            style={{ backgroundColor: accent }}
+                          />
                         </span>
                         {formatElapsedTime(elapsedSeconds)}
                       </span>
+
                       {detectedDocumentType ? (
                         <span className="text-[12px] text-ink-soft">
                           {toTitleCase(detectedDocumentType)}
@@ -331,128 +337,52 @@ function Processing() {
                   ) : null}
                 </div>
               </div>
-
-              <div className="mt-9 max-w-2xl border-y border-line bg-white px-4 py-2 sm:px-5">
-                {steps.map((step) => {
-                  const indices = step.statuses.map((item) => order.indexOf(item));
-                  const stepIndex = Math.max(...indices);
-                  const stepMinIndex = Math.min(...indices);
-                  const done = currentIndex > stepIndex && currentIndex >= 0;
-                  const active =
-                    !done &&
-                    currentIndex >= stepMinIndex &&
-                    currentIndex <= stepIndex &&
-                    currentIndex >= 0;
-
-                  return (
-                    <StepRow
-                      key={step.label}
-                      label={step.label}
-                      done={done}
-                      active={active}
-                    />
-                  );
-                })}
-              </div>
-
-              {!backendFailed && !isLoading ? (
-                <div className="mt-6 max-w-2xl">
-                  <p className="text-[13px] leading-6 text-ink-soft">
-                    Keep this screen open and your result will appear as soon as it is ready.
-                    {elapsedSeconds >= 45
-                      ? " Detailed documents can take longer; the analysis is still continuing."
-                      : ""}
-                  </p>
-                </div>
-              ) : null}
-
-              {showProcessingError ? (
-                <div className="mt-6 max-w-2xl border-l-4 border-stamp-red bg-red-50 px-4 py-3" role="alert">
-                  <p className="text-[13.5px] font-semibold text-ink">We could not finish this step</p>
-                  <p className="mt-1 text-[13px] leading-5 text-ink-soft">
-                    {backendFailed
-                      ? copy.body
-                      : (queryError ?? "We could not check this document. Please try again.")}
-                  </p>
-                </div>
-              ) : null}
-            </>
-          )}
-        </section>
-
-        {!needsReview ? (
-          <aside className="min-w-0">
-            <div className="space-y-4 lg:sticky lg:top-8">
-              <section className="rounded-[16px] border border-line bg-white p-5">
-                <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
-                  What we are doing
-                </p>
-                <div className="mt-4 space-y-4">
-                  <ContextItem
-                    icon={<FileText size={17} />}
-                    title="Reading the original document"
-                    body="The analysis uses the uploaded document, not a generic description of it."
-                  />
-                  <ContextItem
-                    icon={<Check size={17} />}
-                    title="Checking before showing"
-                    body="Important extracted details are validated before the result is presented."
-                  />
-                  <ContextItem
-                    icon={<ShieldCheck size={17} />}
-                    title="Using the right specialist context"
-                    body={
-                      solution?.slug === "taxsnap"
-                        ? "TaxSnap keeps the SARS document, guidance and your next action separate."
-                        : solution?.slug === "leasecheck"
-                          ? "LeaseCheck distinguishes agreement facts, practical meaning and applicable legal guidance."
-                          : "Untangle identifies the supported specialist experience before presenting a result."
-                    }
-                  />
-                </div>
-              </section>
-
-              <section className="rounded-[16px] border border-line bg-white p-5">
-                <div className="flex gap-3">
-                  <LockKeyhole size={18} className="mt-0.5 shrink-0 text-teal" aria-hidden />
-                  <div>
-                    <p className="text-[13.5px] font-semibold text-ink">Private to your account</p>
-                    <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
-                      Your document and result stay behind your authenticated Untangle account.
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-4 border-t border-line pt-4 text-[11.5px] leading-5 text-ink-soft">
-                  Untangle South Africa is an AddVision product.{" "}
-                  <Link to="/terms" className="font-medium text-teal underline underline-offset-2">
-                    Terms &amp; privacy
-                  </Link>
-                </p>
-              </section>
             </div>
-          </aside>
-        ) : null}
-      </main>
-    </div>
-  );
-}
 
-function ContextItem({
-  icon,
-  title,
-  body,
-}: {
-  icon: ReactNode;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="grid grid-cols-[24px_minmax(0,1fr)] gap-3">
-      <span className="mt-0.5 text-teal" aria-hidden>{icon}</span>
-      <div>
-        <p className="text-[13.5px] font-semibold text-ink">{title}</p>
-        <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">{body}</p>
-      </div>
+            <div className="mt-8 border-y border-line bg-white px-4 py-2 sm:px-5">
+              {steps.map((step) => {
+                const indices = step.statuses.map((item) => order.indexOf(item));
+                const stepIndex = Math.max(...indices);
+                const stepMinIndex = Math.min(...indices);
+                const done = currentIndex > stepIndex && currentIndex >= 0;
+                const active =
+                  !done &&
+                  currentIndex >= stepMinIndex &&
+                  currentIndex <= stepIndex &&
+                  currentIndex >= 0;
+
+                return (
+                  <StepRow
+                    key={step.label}
+                    label={step.label}
+                    done={done}
+                    active={active}
+                    accent={accent}
+                  />
+                );
+              })}
+            </div>
+
+            {!backendFailed && !isLoading ? (
+              <p className="mt-5 text-[12.5px] leading-5 text-ink-soft">
+                Your result will open automatically when it is ready.
+                {elapsedSeconds >= 45 ? " Detailed documents can take a little longer." : ""}
+              </p>
+            ) : null}
+
+            {showProcessingError ? (
+              <div className="mt-6 border-l-2 border-stamp-red bg-red-50/70 px-4 py-3" role="alert">
+                <p className="text-[13px] font-semibold text-ink">We could not finish this step</p>
+                <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
+                  {backendFailed
+                    ? copy.body
+                    : (queryError ?? "We could not check this document. Please try again.")}
+                </p>
+              </div>
+            ) : null}
+          </>
+        )}
+      </main>
     </div>
   );
 }
@@ -489,7 +419,6 @@ function NeedsReviewState({
   solutionSlug?: string;
 }) {
   const readableDocumentType = detectedDocumentType ? toTitleCase(detectedDocumentType) : null;
-
   const state = reviewState(failureCode, readableDocumentType);
 
   return (
@@ -503,7 +432,7 @@ function NeedsReviewState({
       <h1 className="mt-2 text-[28px] font-semibold leading-[1.18] tracking-[-0.03em] text-ink">
         {state.title}
       </h1>
-      <p className="mt-3 max-w-xl text-[14.5px] leading-7 text-ink-soft">{state.body}</p>
+      <p className="mt-3 max-w-xl text-[14px] leading-6 text-ink-soft">{state.body}</p>
 
       {readableDocumentType ? (
         <div className="mt-5 border-l-2 border-line pl-4">
@@ -572,7 +501,7 @@ function formatElapsedTime(seconds: number) {
 
 function ActivityRing({ active }: { active: boolean }) {
   return (
-    <div className="relative grid h-[112px] w-[112px] shrink-0 place-items-center sm:h-[124px] sm:w-[124px]">
+    <div className="relative grid h-[104px] w-[104px] shrink-0 place-items-center sm:h-[116px] sm:w-[116px]">
       <svg
         viewBox="0 0 120 120"
         className={`h-full w-full -rotate-90 ${active ? "animate-spin motion-reduce:animate-none" : ""}`}
@@ -595,26 +524,32 @@ function ActivityRing({ active }: { active: boolean }) {
   );
 }
 
-function StepRow({ label, done, active }: { label: string; done: boolean; active?: boolean }) {
+function StepRow({
+  label,
+  done,
+  active,
+  accent,
+}: {
+  label: string;
+  done: boolean;
+  active?: boolean;
+  accent: string;
+}) {
   return (
-    <div className="flex min-h-[54px] items-center gap-3.5 border-t border-line/70 first:border-t-0">
+    <div className="flex min-h-[52px] items-center gap-3 border-t border-line/70 first:border-t-0">
       <div
-        className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-300 ${
-          done
-            ? "border-teal bg-teal"
-            : active
-              ? "animate-pulse border-teal bg-teal/10"
-              : "border-line bg-white"
-        }`}
+        className="flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-full border-2"
+        style={{
+          borderColor: done || active ? accent : "var(--line)",
+          backgroundColor: done ? accent : active ? "color-mix(in srgb, " + accent + " 10%, white)" : "white",
+        }}
       >
-        {done ? <span className="text-[13px] font-bold text-white">✓</span> : null}
-        {!done && active ? <span className="h-2 w-2 rounded-full bg-teal" /> : null}
+        {done ? <span className="text-[12px] font-bold text-white">✓</span> : null}
+        {!done && active ? (
+          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: accent }} />
+        ) : null}
       </div>
-      <span
-        className={`text-[14px] transition-colors duration-300 ${
-          done || active ? "font-medium text-ink" : "text-ink-soft"
-        }`}
-      >
+      <span className={done || active ? "text-[13.5px] font-medium text-ink" : "text-[13.5px] text-ink-soft"}>
         {label}
       </span>
     </div>
