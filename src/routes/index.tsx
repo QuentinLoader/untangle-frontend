@@ -6,7 +6,7 @@ import { LandingPage } from "./landing";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Untangle South Africa — Understand what to do next" },
+      { title: "Untangle South Africa — Important documents, explained clearly" },
       {
         name: "description",
         content:
