@@ -15,6 +15,10 @@ export function ResultWorkspace({
   navItems,
   children,
   context,
+  backTo = "/home",
+  backLabel = "Back to Home",
+  statusLabel = "Result ready",
+  trustNote = "Untangle South Africa is an AddVision product.",
 }: {
   productName: string;
   portfolioLabel: string;
@@ -22,15 +26,19 @@ export function ResultWorkspace({
   navItems: WorkspaceNavItem[];
   children: ReactNode;
   context: ReactNode;
+  backTo?: string;
+  backLabel?: string;
+  statusLabel?: string;
+  trustNote?: string;
 }) {
   return (
     <div className="min-h-screen bg-paper text-ink">
       <header className="sticky top-0 z-40 border-b border-line/80 bg-paper/95 backdrop-blur">
         <div className="mx-auto flex min-h-[72px] max-w-[1320px] items-center gap-4 px-4 sm:px-6 lg:px-8">
           <Link
-            to="/"
+            to={backTo}
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-ink transition-colors hover:bg-paper-2"
-            aria-label="Back to Untangle"
+            aria-label={backLabel}
           >
             <ArrowLeft size={20} aria-hidden />
           </Link>
@@ -43,7 +51,7 @@ export function ResultWorkspace({
             <p className="mt-0.5 truncate text-[12.5px] text-ink-soft">{documentLabel}</p>
           </div>
 
-          <StatusBadge tone="confirmed">Demo result</StatusBadge>
+          <StatusBadge tone="confirmed">{statusLabel}</StatusBadge>
         </div>
       </header>
 
@@ -58,7 +66,7 @@ export function ResultWorkspace({
                 {navItems.map((item) => (
                   <li key={item.id}>
                     <a
-                      href={`#${item.id}`}
+                      href={"#" + item.id}
                       className="block rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-soft transition-colors hover:bg-white hover:text-ink"
                     >
                       {item.label}
@@ -74,7 +82,7 @@ export function ResultWorkspace({
               {navItems.map((item) => (
                 <a
                   key={item.id}
-                  href={`#${item.id}`}
+                  href={"#" + item.id}
                   className="shrink-0 rounded-full border border-line bg-white px-3 py-2 text-[12.5px] font-semibold text-ink-soft"
                 >
                   {item.label}
@@ -92,7 +100,7 @@ export function ResultWorkspace({
               {context}
               <div className="flex items-start gap-2 border-t border-line pt-4 text-[12px] leading-5 text-ink-soft">
                 <ShieldCheck size={16} className="mt-0.5 shrink-0 text-teal" aria-hidden />
-                <p>Untangle South Africa is an AddVision product. This prototype uses synthetic demonstration information.</p>
+                <p>{trustNote}</p>
               </div>
             </div>
           </aside>

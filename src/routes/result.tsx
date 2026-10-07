@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { AskSectionPlaceholder, ResultSectionNav } from "@/components/untangle/ResultSectionNav";
 import { LeaseAskSection } from "@/components/untangle/LeaseAskSection";
+import { LeaseResultV2 } from "@/components/untangle/v2/LeaseResultV2";
 import {
   AskComingSoonButton,
   Disclosure,
@@ -119,6 +120,10 @@ function Result() {
   );
   const [active, setActive] = useState<string>(baseSections[0]?.id ?? "overview");
   const productName = solutionForModule(result?.document.module ?? null)?.name ?? "Untangle";
+
+  if (result && isLeaseResult(result)) {
+    return <LeaseResultV2 result={result} documentId={documentId} back={back} />;
+  }
 
   return (
     <div className="min-h-screen bg-paper">

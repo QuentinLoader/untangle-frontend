@@ -161,6 +161,8 @@ function LeaseCheckV2Prototype() {
       documentLabel="Synthetic vehicle finance agreement"
       navItems={NAV_ITEMS}
       context={<ContextRail />}
+      statusLabel="Demo result"
+      trustNote="Untangle South Africa is an AddVision product. This prototype uses synthetic demonstration information."
     >
       <div className="space-y-10">
         <ResultSection id="summary" title="Here’s what this agreement means for you">
