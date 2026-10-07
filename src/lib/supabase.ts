@@ -8,7 +8,6 @@ const supabaseUrl =
 
 const supabaseKey =
   env['VITE_SUPABASE_PUBLISHABLE_KEY'] ||
-  env['VITE_SUPABASE_ANON_KEY'] ||
   (typeof process !== "undefined" ? process.env['SUPABASE_PUBLISHABLE_KEY'] : undefined);
 
 export { supabase };
