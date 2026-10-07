@@ -1,13 +1,27 @@
 import type { Session, User } from "@supabase/supabase-js";
 
+export type UntangleUserRole = "USER" | "ADMIN";
+
+export type UntangleUserStatus =
+  | "ACTIVE"
+  | "SUSPENDED"
+  | "DELETION_PENDING"
+  | "DELETED";
+
 export type UntangleUser = {
   id: string;
   authUserId: string;
-  email: string;
+  email: string | null;
   displayName: string | null;
-  userType: string;
+  businessName: string | null;
+  userType: "INDIVIDUAL" | "SOLE_PROPRIETOR" | "REGISTERED_BUSINESS";
+  status: UntangleUserStatus;
+  role: UntangleUserRole;
   isAnonymous: boolean;
+  preferredLanguage: string;
   plan: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type AuthMeResponse = {
