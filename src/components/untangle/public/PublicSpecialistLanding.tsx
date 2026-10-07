@@ -1,8 +1,6 @@
-import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  CalendarClock,
   Check,
   FileSearch,
   LockKeyhole,
