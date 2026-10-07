@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { CheckCircle2, CreditCard, ShieldCheck } from "lucide-react";
 import { withAuth } from "@/auth/ProtectedRoute";
-import { BottomTabBar } from "@/components/untangle/BottomTabBar";
+import { AppShell } from "@/components/untangle/v2/AppShell";
 import { BlockCard } from "@/components/untangle/BlockCard";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -69,12 +69,12 @@ function PlanBillingPage() {
   const periodEnd = formatPeriodEnd(entitlements?.currentPeriodEnd ?? null);
 
   return (
-    <div className="min-h-screen bg-paper px-5 pt-8 pb-[110px]">
-      <div className="mx-auto max-w-md">
-        <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-teal">
+    <AppShell active="Account" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+      <div className="mx-auto w-full max-w-3xl">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
           Account
         </p>
-        <h1 className="mt-2 font-display text-[24px] font-semibold text-ink">Plan & billing</h1>
+        <h1 className="mt-2 text-[30px] tracking-[-0.03em] font-semibold text-ink">Plan & billing</h1>
         <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
           Your current plan, access period and renewal options.
         </p>
@@ -174,8 +174,6 @@ function PlanBillingPage() {
           <SecondaryButton onClick={() => navigate({ to: "/profile" })}>Back to account</SecondaryButton>
         </div>
       </div>
-
-      <BottomTabBar active="Account" />
-    </div>
+    </AppShell>
   );
 }
