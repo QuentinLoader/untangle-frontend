@@ -20,7 +20,7 @@ function Reminders() {
   const { entitlements } = useEntitlements();
 
   return (
-    <AppShell active="Reminders" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+    <AppShell active="Reminders" planLabel={entitlements?.planLabel ?? "Account"}>
       <div className="mx-auto w-full max-w-[860px]">
         <header>
           <h1 className="text-[30px] font-semibold tracking-[-0.03em] text-ink">Reminders</h1>

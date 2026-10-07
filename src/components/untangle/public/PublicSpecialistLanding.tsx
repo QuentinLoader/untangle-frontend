@@ -46,26 +46,29 @@ const CONFIG: Record<PublicSpecialist, PageConfig> = {
     benefits: [
       {
         title: "Know what SARS is asking",
-        detail: "The required action is separated from background wording and optional information.",
+        detail:
+          "The required action is separated from background wording and optional information.",
       },
       {
         title: "See dates and money clearly",
-        detail: "Important deadlines and amounts are brought forward when the document confirms them.",
+        detail:
+          "Important deadlines and amounts are brought forward when the document confirms them.",
       },
       {
         title: "Understand what happens next",
-        detail: "TaxSnap explains the practical consequence without turning every letter into an emergency.",
+        detail:
+          "TaxSnap explains the practical consequence without turning every letter into an emergency.",
       },
     ],
     exampleTitle: "From official wording to a clear next step",
-    exampleInput: "A SARS notice with formal wording, dates, reference numbers and payment information.",
+    exampleInput:
+      "A SARS notice with formal wording, dates, reference numbers and payment information.",
     exampleOutput: [
       { label: "What this is", value: "A payment-related SARS notice" },
       { label: "What matters", value: "A confirmed amount and response date" },
       { label: "What to do", value: "See the required action and where to respond" },
     ],
-    supporting:
-      "You do not need to know which SARS document type you received before you start.",
+    supporting: "You do not need to know which SARS document type you received before you start.",
   },
   leasecheck: {
     name: "LeaseCheck",
@@ -81,19 +84,23 @@ const CONFIG: Record<PublicSpecialist, PageConfig> = {
     benefits: [
       {
         title: "See the real financial commitment",
-        detail: "Payments, fees and end-of-term amounts are surfaced when the result confirms them.",
+        detail:
+          "Payments, fees and end-of-term amounts are surfaced when the result confirms them.",
       },
       {
         title: "Know who is responsible for what",
-        detail: "Your duties are separated from the landlord, lessor, finance provider or other party.",
+        detail:
+          "Your duties are separated from the landlord, lessor, finance provider or other party.",
       },
       {
         title: "Understand clauses and consequences",
-        detail: "Important terms, ending/default consequences and applicable protections are explained plainly.",
+        detail:
+          "Important terms, ending/default consequences and applicable protections are explained plainly.",
       },
     ],
     exampleTitle: "From agreement wording to a decision you can understand",
-    exampleInput: "A 72-month vehicle agreement with monthly payments, fees and a final balloon amount.",
+    exampleInput:
+      "A 72-month vehicle agreement with monthly payments, fees and a final balloon amount.",
     exampleOutput: [
       { label: "Monthly payment", value: "R9,649.47" },
       { label: "Term", value: "72 months" },
@@ -191,7 +198,10 @@ export function PublicSpecialistLanding({ product }: { product: PublicSpecialist
             </p>
             <div className="mt-4 divide-y divide-line/80">
               {config.benefits.map((item) => (
-                <div key={item.title} className="grid grid-cols-[24px_minmax(0,1fr)] gap-3 py-4 first:pt-0 last:pb-0">
+                <div
+                  key={item.title}
+                  className="grid grid-cols-[24px_minmax(0,1fr)] gap-3 py-4 first:pt-0 last:pb-0"
+                >
                   <Check size={17} className="mt-0.5 text-teal" aria-hidden />
                   <div>
                     <p className="text-[14px] font-semibold text-ink">{item.title}</p>
@@ -229,7 +239,10 @@ export function PublicSpecialistLanding({ product }: { product: PublicSpecialist
                 </p>
                 <dl className="mt-3 divide-y divide-line/80">
                   {config.exampleOutput.map((item) => (
-                    <div key={item.label} className="grid gap-1 py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-5">
+                    <div
+                      key={item.label}
+                      className="grid gap-1 py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-5"
+                    >
                       <dt className="text-[12.5px] font-medium text-ink-soft">{item.label}</dt>
                       <dd className="text-[13.5px] font-semibold text-ink">{item.value}</dd>
                     </div>
@@ -254,9 +267,17 @@ export function PublicSpecialistLanding({ product }: { product: PublicSpecialist
 
               <ol className="mt-6 space-y-4">
                 {[
-                  ["1", "Create your account", "Your documents and results stay tied to your authenticated account."],
+                  [
+                    "1",
+                    "Create your account",
+                    "Your documents and results stay tied to your authenticated account.",
+                  ],
                   ["2", "Upload the document", "Use a PDF, image or a clear photo."],
-                  ["3", "Get the specialist explanation", "See the important facts first, then open the deeper detail when you need it."],
+                  [
+                    "3",
+                    "Get the specialist explanation",
+                    "See the important facts first, then open the deeper detail when you need it.",
+                  ],
                 ].map(([number, title, detail]) => (
                   <li key={number} className="grid grid-cols-[30px_minmax(0,1fr)] gap-3">
                     <span className="grid h-7 w-7 place-items-center rounded-full bg-teal text-[12px] font-semibold text-white">
@@ -275,9 +296,12 @@ export function PublicSpecialistLanding({ product }: { product: PublicSpecialist
               <div className="flex gap-3">
                 <LockKeyhole size={19} className="mt-0.5 shrink-0 text-teal" aria-hidden />
                 <div>
-                  <p className="text-[14px] font-semibold text-ink">Your document stays behind your account</p>
+                  <p className="text-[14px] font-semibold text-ink">
+                    Your document stays behind your account
+                  </p>
                   <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
-                    Documents, results and account features require an authenticated Untangle session.
+                    Documents, results and account features require an authenticated Untangle
+                    session.
                   </p>
                 </div>
               </div>
@@ -285,9 +309,12 @@ export function PublicSpecialistLanding({ product }: { product: PublicSpecialist
               <div className="mt-5 flex gap-3">
                 <ShieldCheck size={19} className="mt-0.5 shrink-0 text-teal" aria-hidden />
                 <div>
-                  <p className="text-[14px] font-semibold text-ink">Important decisions stay yours</p>
+                  <p className="text-[14px] font-semibold text-ink">
+                    Important decisions stay yours
+                  </p>
                   <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
-                    Untangle explains the document in plain language. It does not act as your lawyer, tax practitioner or financial adviser.
+                    Untangle explains the document in plain language. It does not act as your
+                    lawyer, tax practitioner or financial adviser.
                   </p>
                 </div>
               </div>

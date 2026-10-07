@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MoreVertical, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { PageState } from "@/components/untangle/v2/PageState";
 import { AppShell } from "@/components/untangle/v2/AppShell";
 import { ScreenHeader } from "@/components/untangle/ScreenHeader";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
@@ -46,7 +47,12 @@ const PROCESSING_STATUSES = new Set([
 
 function Vault() {
   const navigate = useNavigate();
-  const { entitlements } = useEntitlements();
+  const {
+    entitlements,
+    isPending: accessPending,
+    error: accessError,
+    refetch: retryAccess,
+  } = useEntitlements();
   const vaultLocked = entitlements ? !entitlements.vaultEnabled : false;
 
   const queryClient = useQueryClient();
@@ -70,11 +76,11 @@ function Vault() {
     },
   });
 
-  const { data, isPending, error } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: ["documents"],
     queryFn: () => listDocuments(),
     retry: false,
-    enabled: !vaultLocked,
+    enabled: entitlements?.vaultEnabled === true,
   });
 
   const documents = useMemo(() => data?.data.documents ?? [], [data]);
@@ -118,11 +124,23 @@ function Vault() {
     doc.processingStatus === "COMPLETED" || PROCESSING_STATUSES.has(doc.processingStatus);
 
   return (
-    <AppShell active="Documents" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+    <AppShell active="Documents" planLabel={entitlements?.planLabel ?? "Account"}>
       <div className="mx-auto w-full max-w-4xl">
         <ScreenHeader title="Documents" subtitle="Everything you've uploaded to Untangle." />
 
-        {vaultLocked ? (
+        {accessPending ? (
+          <PageState
+            title="Checking your account…"
+            body="Confirming access to saved documents."
+            loading
+          />
+        ) : accessError ? (
+          <PageState
+            title="Account features could not be loaded"
+            body="Try again to view your documents."
+            onRetry={() => void retryAccess()}
+          />
+        ) : vaultLocked ? (
           <div className="mt-6">
             <UpgradePrompt
               title="Documents are part of Plus"
@@ -130,16 +148,19 @@ function Vault() {
             />
           </div>
         ) : isPending ? (
-          <p className="mt-8 text-[14px] text-ink-soft">Loading your documents…</p>
+          <PageState title="Loading your documents…" body="Fetching your saved analyses." loading />
         ) : error ? (
-          <p className="mt-8 text-[14px] text-ink-soft">{friendlyDocumentError(error)}</p>
+          <PageState
+            title="Documents could not be loaded"
+            body={friendlyDocumentError(error)}
+            onRetry={() => void refetch()}
+          />
         ) : documents.length === 0 ? (
-          <div className="mt-10 rounded-2xl border border-dashed border-line bg-white/70 p-6 text-center">
-            <p className="text-[16px] font-semibold text-ink">No documents yet</p>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">
-              Choose a product on Home and upload your first document.
-            </p>
-          </div>
+          <PageState
+            title="No documents yet"
+            body="Choose a product and upload your first document."
+            home
+          />
         ) : (
           <>
             <label className="relative mt-6 block">
@@ -184,7 +205,15 @@ function Vault() {
             ) : null}
 
             {visible.length === 0 ? (
-              <p className="mt-8 text-[14px] text-ink-soft">No documents match your search.</p>
+              <PageState
+                title="No matching documents"
+                body="Try a different search or clear the filters."
+                retryLabel="Clear filters"
+                onRetry={() => {
+                  setSearch("");
+                  setFilter("All");
+                }}
+              />
             ) : (
               <div className="mt-4 space-y-2.5">
                 {visible.map((doc) => {

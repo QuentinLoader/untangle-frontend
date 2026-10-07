@@ -48,11 +48,13 @@ export function ResultSection({
   title,
   intro,
   children,
+  disclosure = false,
 }: {
   id: string;
   title: string;
   intro?: string;
   children: ReactNode;
+  disclosure?: boolean;
 }) {
   return (
     <section
@@ -65,7 +67,19 @@ export function ResultSection({
       {intro ? (
         <p className="mt-2 max-w-3xl text-[14.5px] leading-7 text-ink-soft">{intro}</p>
       ) : null}
-      <div className="mt-5">{children}</div>
+      {disclosure ? (
+        <details className="mt-4">
+          <summary
+            aria-label={"Show " + title.toLowerCase()}
+            className="flex min-h-11 cursor-pointer items-center text-[14px] font-semibold text-teal"
+          >
+            Show details
+          </summary>
+          <div className="mt-3">{children}</div>
+        </details>
+      ) : (
+        <div className="mt-5">{children}</div>
+      )}
     </section>
   );
 }

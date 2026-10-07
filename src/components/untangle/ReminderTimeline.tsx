@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarClock, ChevronRight } from "lucide-react";
+import { PageState } from "@/components/untangle/v2/PageState";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import {
@@ -46,17 +47,22 @@ function statusText(view: ReminderView): string {
 
 export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }) {
   const navigate = useNavigate();
-  const { entitlements } = useEntitlements();
+  const {
+    entitlements,
+    isPending: accessPending,
+    error: accessError,
+    refetch: retryAccess,
+  } = useEntitlements();
   const remindersLocked = entitlements ? !entitlements.remindersEnabled : false;
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
 
-  const { data, isPending, error } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: REMINDERS_QUERY_KEY,
     queryFn: () => listReminders(),
     retry: false,
     refetchInterval: 30000,
     refetchOnWindowFocus: true,
-    enabled: !remindersLocked,
+    enabled: entitlements?.remindersEnabled === true,
   });
 
   const views = useMemo(() => (data?.data.reminders ?? []).map(reminderView), [data]);
@@ -65,6 +71,18 @@ export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }
   const past = views.filter((view) => view.state !== "DUE" && view.state !== "UPCOMING");
   const rows = tab === "upcoming" ? upcoming : past;
 
+  if (accessPending)
+    return (
+      <PageState title="Checking your account…" body="Confirming access to reminders." loading />
+    );
+  if (accessError)
+    return (
+      <PageState
+        title="Account features could not be loaded"
+        body="Try again to view reminders."
+        onRetry={() => void retryAccess()}
+      />
+    );
   if (remindersLocked) {
     return (
       <div className="max-w-2xl">
@@ -77,11 +95,17 @@ export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }
   }
 
   if (isPending) {
-    return <p className="text-[13.5px] text-ink-soft">Loading your reminders…</p>;
+    return <PageState title="Loading your reminders…" body="Checking important dates." loading />;
   }
 
   if (error) {
-    return <p className="text-[13.5px] text-ink-soft">{friendlyReminderError(error)}</p>;
+    return (
+      <PageState
+        title="Reminders could not be loaded"
+        body={friendlyReminderError(error)}
+        onRetry={() => void refetch()}
+      />
+    );
   }
 
   if (views.length === 0) {

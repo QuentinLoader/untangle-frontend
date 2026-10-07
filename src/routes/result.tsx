@@ -1,3 +1,6 @@
+import { AppShell } from "@/components/untangle/v2/AppShell";
+import { PageState } from "@/components/untangle/v2/PageState";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { LeaseResultV2 } from "@/components/untangle/v2/LeaseResultV2";
 import { TaxResultV2 } from "@/components/untangle/v2/TaxResultV2";
@@ -52,7 +55,7 @@ function Result() {
   const { documentId, from } = Route.useSearch();
   const back = resultBackTarget(from);
 
-  const { data, isPending, error } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: ["document-result", documentId],
     queryFn: () => getDocumentResult(documentId),
     enabled: documentId !== "",
@@ -88,6 +91,7 @@ function Result() {
         back={back}
         title="This result could not be loaded"
         body={friendlyDocumentError(error)}
+        onRetry={() => void refetch()}
       />
     );
   }
@@ -96,7 +100,15 @@ function Result() {
     return <LeaseResultV2 result={result} documentId={documentId} back={back} />;
   }
 
-  return <TaxResultV2 result={result} documentId={documentId} back={back} />;
+  if (result.document.module === "TAX")
+    return <TaxResultV2 result={result} documentId={documentId} back={back} />;
+  return (
+    <ResultState
+      back={back}
+      title="This specialist result is not available yet"
+      body="Return to Documents or choose an available product on Home."
+    />
+  );
 }
 
 function ResultState({
@@ -104,14 +116,17 @@ function ResultState({
   title,
   body,
   loading = false,
+  onRetry,
 }: {
   back: { to: string; label: string };
   title: string;
   body: string;
   loading?: boolean;
+  onRetry?: (() => void) | undefined;
 }) {
+  const { entitlements } = useEntitlements();
   return (
-    <div className="min-h-screen bg-paper text-ink">
+    <AppShell active="Documents" planLabel={entitlements?.planLabel ?? "Account"}>
       <header className="border-b border-line/80 bg-paper">
         <div className="mx-auto flex min-h-[72px] max-w-3xl items-center px-4 sm:px-6">
           <Link
@@ -122,19 +137,14 @@ function ResultState({
             <ArrowLeft size={20} aria-hidden />
           </Link>
           <div className="ml-2">
-            <p className="text-[16px] font-semibold text-ink">Untangle South Africa</p>
-            <p className="text-[12px] text-ink-soft">Document result</p>
+            <h1 className="text-[18px] font-semibold text-ink">Document result</h1>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto flex min-h-[65vh] max-w-3xl flex-col items-center justify-center px-5 py-12 text-center">
-        {loading ? (
-          <div className="mb-5 h-8 w-8 animate-spin rounded-full border-2 border-line border-t-teal" />
-        ) : null}
-        <h1 className="text-[24px] font-semibold tracking-[-0.02em] text-ink">{title}</h1>
-        <p className="mt-3 max-w-md text-[14px] leading-6 text-ink-soft">{body}</p>
-      </main>
-    </div>
+      <div className="mx-auto max-w-3xl py-6">
+        <PageState title={title} body={body} loading={loading} onRetry={onRetry} />
+      </div>
+    </AppShell>
   );
 }

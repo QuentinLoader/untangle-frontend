@@ -8,13 +8,15 @@ import {
   FileText,
   ShieldCheck,
 } from "lucide-react";
-import { BottomTabBar } from "@/components/untangle/BottomTabBar";
+import { AppShell } from "./AppShell";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import type { Solution } from "@/lib/solutions";
 
 export function PolicyCheckEntry({ solution }: { solution: Solution }) {
+  const { entitlements } = useEntitlements();
   return (
-    <div className="min-h-screen bg-paper pb-[104px] text-ink">
-      <main className="mx-auto w-full max-w-[980px] px-5 pb-12 pt-6 sm:px-7 lg:px-8 lg:pt-8">
+    <AppShell active="Home" planLabel={entitlements?.planLabel ?? "Account"}>
+      <div className="mx-auto w-full max-w-[980px]">
         <Link
           to="/home"
           className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-[13px] font-semibold text-ink-soft transition-colors hover:bg-white hover:text-ink"
@@ -54,10 +56,12 @@ export function PolicyCheckEntry({ solution }: { solution: Solution }) {
             </p>
 
             <div className="mt-6 border-l-2 border-blue-400 bg-blue-50/70 px-4 py-3">
-              <p className="text-[13.5px] font-semibold text-ink">PolicyCheck is in final validation</p>
+              <p className="text-[13.5px] font-semibold text-ink">
+                PolicyCheck is in final validation
+              </p>
               <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
-                The customer experience is being completed behind the release gate. Uploads stay
-                closed until genuine-document testing passes.
+                Uploads are not available yet. We’re checking the experience with real policy
+                documents before opening it to customers.
               </p>
             </div>
           </section>
@@ -66,13 +70,15 @@ export function PolicyCheckEntry({ solution }: { solution: Solution }) {
             <div className="flex-1 border border-line bg-white px-4 py-3">
               <p className="text-[13.5px] font-semibold text-ink">Understand my policy</p>
               <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
-                See purchased cover, premiums, excesses, waiting periods, exclusions and important conditions.
+                See purchased cover, premiums, excesses, waiting periods, exclusions and important
+                conditions.
               </p>
             </div>
             <div className="flex-1 border border-line bg-white px-4 py-3">
               <p className="text-[13.5px] font-semibold text-ink">Understand a claim decision</p>
               <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
-                See the insurer’s stated reason, the clause relied on and approved review guidance where supported.
+                See the insurer’s stated reason, the clause relied on and approved review guidance
+                where supported.
               </p>
             </div>
           </div>
@@ -98,26 +104,17 @@ export function PolicyCheckEntry({ solution }: { solution: Solution }) {
           <div className="mt-7 flex items-start gap-2.5 text-[12px] leading-5 text-ink-soft">
             <FileText size={15} className="mt-0.5 shrink-0 text-blue-600" aria-hidden />
             <p>
-              PolicyCheck may need more than one policy document to reconstruct the current position safely.
+              PolicyCheck may need more than one policy document to reconstruct the current position
+              safely.
             </p>
           </div>
         </div>
-      </main>
-
-      <BottomTabBar active="Home" />
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
-function Point({
-  icon,
-  title,
-  detail,
-}: {
-  icon: ReactNode;
-  title: string;
-  detail: string;
-}) {
+function Point({ icon, title, detail }: { icon: ReactNode; title: string; detail: string }) {
   return (
     <div className="grid grid-cols-[26px_minmax(0,1fr)] gap-3 py-4">
       <span className="mt-0.5 text-blue-600" aria-hidden>

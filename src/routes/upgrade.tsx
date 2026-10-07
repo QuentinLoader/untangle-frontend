@@ -67,7 +67,7 @@ function PlanBillingPage() {
   const periodEnd = formatPeriodEnd(entitlements?.currentPeriodEnd ?? null);
 
   return (
-    <AppShell active="Account" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+    <AppShell active="Account" planLabel={entitlements?.planLabel ?? "Account"}>
       <div className="mx-auto w-full max-w-[820px]">
         <Link
           to="/profile"
@@ -98,15 +98,19 @@ function PlanBillingPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[12px] font-medium text-ink-soft">Current plan</p>
-                  <p className="mt-1 text-[22px] font-semibold text-ink">{entitlements.planLabel}</p>
+                  <p className="mt-1 text-[22px] font-semibold text-ink">
+                    {entitlements.planLabel}
+                  </p>
                 </div>
                 <span className="rounded-full bg-teal-dim px-2.5 py-1 text-[10.5px] font-semibold text-teal">
-                  {isPlus ? entitlements.subscriptionStatus ?? "Active" : "Free"}
+                  {isPlus ? (entitlements.subscriptionStatus ?? "Active") : "Free"}
                 </span>
               </div>
 
               {!isPlus && usageLine(entitlements) ? (
-                <p className="mt-4 text-[13px] leading-5 text-ink-soft">{usageLine(entitlements)}</p>
+                <p className="mt-4 text-[13px] leading-5 text-ink-soft">
+                  {usageLine(entitlements)}
+                </p>
               ) : null}
 
               {isPlus ? (
@@ -141,9 +145,7 @@ function PlanBillingPage() {
                 <p className="text-[26px] font-semibold tracking-[-0.03em] text-ink">R79</p>
                 <p className="mt-0.5 text-[12.5px] text-ink-soft">for one month</p>
               </div>
-              <p className="text-right text-[12px] leading-5 text-ink-soft">
-                No automatic renewal
-              </p>
+              <p className="text-right text-[12px] leading-5 text-ink-soft">No automatic renewal</p>
             </div>
 
             <ul className="mt-5 divide-y divide-line/80 border-y border-line/80">
@@ -177,7 +179,8 @@ function PlanBillingPage() {
         <div className="mt-5 flex items-start gap-2.5 px-1 text-[12px] leading-5 text-ink-soft">
           <ShieldCheck size={16} className="mt-0.5 shrink-0 text-teal" aria-hidden />
           <p>
-            Payment is completed securely through Ozow. Untangle does not receive your banking credentials.
+            Payment is completed securely through Ozow. Untangle does not receive your banking
+            credentials.
           </p>
         </div>
       </div>

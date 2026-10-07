@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, ChevronRight, Clock, FileText, Upload } from "lucide-react";
 import { withAuth } from "@/auth/ProtectedRoute";
+import { PageState } from "@/components/untangle/v2/PageState";
 import { AppShell } from "@/components/untangle/v2/AppShell";
 import { useAuth } from "@/auth/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -22,7 +23,8 @@ export const Route = createFileRoute("/home")({
       { title: "Home — Untangle South Africa" },
       {
         name: "description",
-        content: "Choose a specialist tool, continue a recent document or see what needs attention.",
+        content:
+          "Choose a specialist tool, continue a recent document or see what needs attention.",
       },
     ],
   }),
@@ -78,7 +80,12 @@ function RecentDocumentRow({
 function HomePage() {
   const navigate = useNavigate();
   const { profile, user } = useAuth();
-  const { entitlements, error: entitlementsError } = useEntitlements();
+  const {
+    entitlements,
+    isPending: accessPending,
+    error: entitlementsError,
+    refetch: retryAccess,
+  } = useEntitlements();
   const name = firstName(resolveDisplayName(profile, user));
 
   const remindersQuery = useQuery({
@@ -129,7 +136,7 @@ function HomePage() {
   };
 
   return (
-    <AppShell active="Home" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+    <AppShell active="Home" planLabel={entitlements?.planLabel ?? "Account"}>
       <div className="mx-auto w-full max-w-[940px]">
         <section>
           <h1 className="text-[30px] font-semibold tracking-[-0.03em] text-ink sm:text-[34px]">
@@ -140,15 +147,6 @@ function HomePage() {
             What do you want to understand?
           </p>
         </section>
-
-        {entitlementsError ? (
-          <div className="mt-5 flex items-start gap-3 border-l-2 border-stamp-amber bg-amber-50/70 px-3 py-2.5">
-            <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-stamp-amber" aria-hidden />
-            <p className="text-[12.5px] leading-5 text-ink-soft">
-              Some online features are temporarily unavailable. You can still move around the app.
-            </p>
-          </div>
-        ) : null}
 
         {attention ? (
           <section className="mt-7">
@@ -182,11 +180,7 @@ function HomePage() {
               const Icon = solution.icon;
               const isTax = solution.slug === "taxsnap";
               const isLease = solution.slug === "leasecheck";
-              const accent = isTax
-                ? "var(--stamp-red)"
-                : isLease
-                  ? "var(--teal)"
-                  : "var(--line)";
+              const accent = isTax ? "var(--stamp-red)" : isLease ? "var(--teal)" : "var(--line)";
 
               return (
                 <Link
@@ -241,7 +235,9 @@ function HomePage() {
                 <Upload size={18} aria-hidden />
               </span>
               <span>
-                <span className="block text-[14px] font-semibold text-ink">Not sure which tool?</span>
+                <span className="block text-[14px] font-semibold text-ink">
+                  Not sure which tool?
+                </span>
                 <span className="mt-0.5 block text-[12.5px] text-ink-soft">
                   Upload the document and Untangle will identify the supported specialist.
                 </span>
@@ -251,14 +247,57 @@ function HomePage() {
           </Link>
         </section>
 
-        {recent.length > 0 ? (
+        {accessPending ? (
+          <PageState
+            title="Checking your account…"
+            body="Loading your available features."
+            loading
+          />
+        ) : null}
+        {entitlementsError ? (
+          <PageState
+            title="Account features could not be loaded"
+            body="Try again to load your documents and reminders."
+            onRetry={() => void retryAccess()}
+          />
+        ) : null}
+        {entitlements?.vaultEnabled && documentsQuery.isPending ? (
+          <PageState
+            title="Loading recent documents…"
+            body="Checking where you left off."
+            loading
+          />
+        ) : null}
+        {entitlements?.vaultEnabled && documentsQuery.error ? (
+          <PageState
+            title="Recent documents could not be loaded"
+            body="Your documents are still saved. Try again."
+            onRetry={() => void documentsQuery.refetch()}
+          />
+        ) : null}
+        {entitlements?.remindersEnabled && remindersQuery.error ? (
+          <PageState
+            title="Reminders could not be loaded"
+            body="Try again to check important dates."
+            onRetry={() => void remindersQuery.refetch()}
+          />
+        ) : null}
+        {entitlements?.vaultEnabled && documentsQuery.isSuccess && recent.length === 0 ? (
+          <PageState
+            title="No documents yet"
+            body="Start with a specialist above. Your saved analyses will appear here."
+          />
+        ) : null}
+        {entitlements?.vaultEnabled && recent.length > 0 ? (
           <section className="mt-9">
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
                   Recent documents
                 </p>
-                <h2 className="mt-1 text-[19px] font-semibold text-ink">Continue where you left off</h2>
+                <h2 className="mt-1 text-[19px] font-semibold text-ink">
+                  Continue where you left off
+                </h2>
               </div>
               <Link to="/vault" className="min-h-11 py-3 text-[13px] font-semibold text-teal">
                 All documents

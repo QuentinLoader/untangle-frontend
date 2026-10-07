@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { PortfolioFooter } from "./PortfolioFooter";
 import { StatusBadge } from "./ResultPrimitives";
 
 export type WorkspaceNavItem = {
@@ -67,7 +68,7 @@ export function ResultWorkspace({
                   <li key={item.id}>
                     <a
                       href={"#" + item.id}
-                      className="block rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-soft transition-colors hover:bg-white hover:text-ink"
+                      className="flex min-h-11 items-center rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-soft transition-colors hover:bg-white hover:text-ink"
                     >
                       {item.label}
                     </a>
@@ -78,6 +79,9 @@ export function ResultWorkspace({
           </aside>
 
           <main className="min-w-0">
+            {trustNote !== "Untangle South Africa is an AddVision product." ? (
+              <p className="mb-4 text-[12px] leading-5 text-ink-soft xl:hidden">{trustNote}</p>
+            ) : null}
             <div
               className="mb-6 flex gap-2 overflow-x-auto pb-2 lg:hidden"
               aria-label="Result sections"
@@ -86,7 +90,7 @@ export function ResultWorkspace({
                 <a
                   key={item.id}
                   href={"#" + item.id}
-                  className="shrink-0 rounded-full border border-line bg-white px-3 py-2 text-[12.5px] font-semibold text-ink-soft"
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-line bg-white px-3 py-2 text-[12.5px] font-semibold text-ink-soft"
                 >
                   {item.label}
                 </a>
@@ -109,6 +113,7 @@ export function ResultWorkspace({
           </aside>
         </div>
       </div>
+      <PortfolioFooter />
     </div>
   );
 }

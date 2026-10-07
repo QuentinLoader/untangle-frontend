@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Bell, FolderClosed, House, UserRound } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { BrandMark } from "@/components/untangle/BrandMark";
+import { PortfolioFooter } from "./PortfolioFooter";
 
 type AppSection = "Home" | "Documents" | "Reminders" | "Account";
 
@@ -22,10 +23,10 @@ export function AppShell({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-paper text-ink">
+    <div className="flex min-h-screen flex-col bg-paper pb-[calc(64px+env(safe-area-inset-bottom))] text-ink lg:pb-0">
       <header className="sticky top-0 z-40 border-b border-line/80 bg-paper/95 backdrop-blur">
         <div className="mx-auto flex min-h-[72px] max-w-[1280px] items-center gap-4 px-4 sm:px-6 lg:px-8">
-          <Link to="/home" className="flex min-w-0 items-center gap-2.5">
+          <Link to="/home" className="flex min-h-11 min-w-0 items-center gap-2.5">
             <BrandMark size={26} />
             <span className="min-w-0">
               <span className="block truncate text-[17px] font-semibold leading-tight text-ink">
@@ -44,7 +45,7 @@ export function AppShell({
                 <Link
                   key={item.label}
                   to={item.to}
-                  className={`rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors ${
+                  className={`inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors ${
                     selected
                       ? "bg-white text-ink"
                       : "text-ink-soft hover:bg-white/70 hover:text-ink"
@@ -59,16 +60,17 @@ export function AppShell({
 
           <Link
             to="/upgrade"
-            className="ml-auto inline-flex min-h-10 items-center rounded-full border border-line bg-white px-4 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-paper-2"
+            className="ml-auto inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-paper-2"
           >
             {planLabel}
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1280px] px-4 pb-[104px] pt-6 sm:px-6 lg:px-8 lg:pb-12 lg:pt-8">
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pb-12 lg:pt-8">
         {children}
       </main>
+      <PortfolioFooter />
 
       <nav
         className="fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"

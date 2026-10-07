@@ -328,6 +328,7 @@ export function LeaseResultV2({
   const endingTerms = (guide.keyTerms ?? []).filter((item) =>
     containsAny(item.label + " " + item.value, ENDING_WORDS),
   );
+  const keyTerms = (guide.keyTerms ?? []).filter((item) => !endingTerms.includes(item));
 
   const topAttention = guide.clausesToCheck
     .slice()
@@ -348,6 +349,9 @@ export function LeaseResultV2({
     { id: "summary", label: "Summary" },
     { id: "meaning", label: "What this means" },
     ...(allMoneyRows.length > 0 ? [{ id: "money", label: "Money" }] : []),
+    ...(guide.importantDates.length > 0 || keyTerms.length > 0
+      ? [{ id: "dates-terms", label: "Dates & terms" }]
+      : []),
     ...(guide.tenantResponsibilities.length > 0 || guide.landlordResponsibilities.length > 0
       ? [{ id: "responsibilities", label: "Responsibilities" }]
       : []),
@@ -494,6 +498,21 @@ export function LeaseResultV2({
                 </ul>
               </div>
             ) : null}
+          </ResultSection>
+        ) : null}
+
+        {guide.importantDates.length > 0 || keyTerms.length > 0 ? (
+          <ResultSection
+            id="dates-terms"
+            title="Dates & key terms"
+            intro="Details confirmed in your agreement."
+          >
+            <FactRows
+              rows={[...guide.importantDates, ...keyTerms].map((item) => ({
+                label: item.label,
+                value: item.value,
+              }))}
+            />
           </ResultSection>
         ) : null}
 
