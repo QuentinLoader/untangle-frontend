@@ -1,7 +1,16 @@
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { FileQuestion, FileText, Globe, Search } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  ArrowLeft,
+  Check,
+  FileQuestion,
+  FileText,
+  Globe,
+  LockKeyhole,
+  Search,
+  ShieldCheck,
+} from "lucide-react";
 import {
   getDocumentStatus,
   friendlyDocumentError,
@@ -11,43 +20,153 @@ import {
   type DocumentFailureCode,
   type DocumentProcessingStatus,
 } from "@/lib/documents";
+import { findSolution, type Solution } from "@/lib/solutions";
+
+type ProcessingSearch = { solution?: string };
 
 export const Route = createFileRoute("/processing/$documentId")({
+  validateSearch: (search: Record<string, unknown>): ProcessingSearch => {
+    const solution = typeof search["solution"] === "string" ? search["solution"] : undefined;
+    return solution ? { solution } : {};
+  },
   head: () => ({
     meta: [
-      { title: "Reading your document — Untangle" },
+      { title: "Reading your document — Untangle South Africa" },
       {
         name: "description",
-        content: "Untangle is reading your document and extracting what matters.",
-      },
-      { property: "og:title", content: "Reading your document — Untangle" },
-      {
-        property: "og:description",
-        content: "Untangle is reading your document and extracting what matters.",
+        content: "Untangle South Africa is securely reading and checking your document.",
       },
     ],
   }),
   component: withAuth(Processing),
 });
 
-const STEPS: { label: string; statuses: DocumentProcessingStatus[] }[] = [
-  { label: "Reading document", statuses: ["QUEUED"] },
-  { label: "Identifying important information", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
-  { label: "Understanding the terms", statuses: ["EXTRACTING"] },
-  {
-    label: "Checking important clauses",
-    statuses: ["VALIDATING_RESULT", "MATCHING_RULES"],
-  },
-  { label: "Preparing your answer", statuses: ["COMPLETED"] },
+type Step = { label: string; statuses: DocumentProcessingStatus[] };
+
+const GENERIC_STEPS: Step[] = [
+  { label: "Reading the document", statuses: ["QUEUED"] },
+  { label: "Identifying what it is", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
+  { label: "Finding the important details", statuses: ["EXTRACTING"] },
+  { label: "Checking the result", statuses: ["VALIDATING_RESULT", "MATCHING_RULES"] },
+  { label: "Preparing your explanation", statuses: ["COMPLETED"] },
 ];
 
-/** Number of consecutive polling failures tolerated before surfacing an error. */
+const TAX_STEPS: Step[] = [
+  { label: "Preparing the SARS document", statuses: ["QUEUED"] },
+  { label: "Identifying the notice or assessment", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
+  { label: "Reading dates, amounts and requests", statuses: ["EXTRACTING"] },
+  { label: "Checking the important details", statuses: ["VALIDATING_RESULT", "MATCHING_RULES"] },
+  { label: "Preparing your TaxSnap answer", statuses: ["COMPLETED"] },
+];
+
+const LEASE_STEPS: Step[] = [
+  { label: "Preparing the agreement", statuses: ["QUEUED"] },
+  { label: "Identifying the agreement and document role", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
+  { label: "Reading money, dates and responsibilities", statuses: ["EXTRACTING"] },
+  { label: "Checking important terms and protections", statuses: ["VALIDATING_RESULT", "MATCHING_RULES"] },
+  { label: "Preparing your LeaseCheck answer", statuses: ["COMPLETED"] },
+];
+
 const MAX_CONSECUTIVE_POLL_FAILURES = 3;
+
+function solutionFromDetectedModule(module: string | null): Solution | undefined {
+  if (module === "TAX") return findSolution("taxsnap");
+  if (module === "LEASE") return findSolution("leasecheck");
+  return undefined;
+}
+
+function stepsFor(solution?: Solution): Step[] {
+  if (solution?.slug === "taxsnap") return TAX_STEPS;
+  if (solution?.slug === "leasecheck") return LEASE_STEPS;
+  return GENERIC_STEPS;
+}
+
+function copyFor(status: DocumentProcessingStatus | null, solution?: Solution) {
+  if (!status) {
+    return {
+      title: "Checking your document…",
+      body: "We’re confirming where it belongs before the specialist analysis begins.",
+    };
+  }
+
+  if (solution?.slug === "taxsnap") {
+    const taxCopy: Partial<Record<DocumentProcessingStatus, { title: string; body: string }>> = {
+      QUEUED: {
+        title: "Preparing your SARS document",
+        body: "TaxSnap is getting the document ready for analysis.",
+      },
+      DETECTING_MODULE: {
+        title: "Identifying the SARS document",
+        body: "We’re working out what kind of letter, notice or assessment you received.",
+      },
+      CLASSIFYING: {
+        title: "Checking the document type",
+        body: "TaxSnap is placing it in the right SARS or tax category.",
+      },
+      EXTRACTING: {
+        title: "Reading what matters",
+        body: "We’re finding important dates, amounts, requests and other key details.",
+      },
+      VALIDATING_RESULT: {
+        title: "Checking the important details",
+        body: "TaxSnap is checking the extracted information before showing it to you.",
+      },
+      MATCHING_RULES: {
+        title: "Checking what the notice requires",
+        body: "The document is being matched to the approved guidance used by TaxSnap.",
+      },
+      COMPLETED: {
+        title: "Your TaxSnap result is ready",
+        body: "We’re opening the plain-language explanation now.",
+      },
+    };
+    return taxCopy[status] ?? processingCopy(status);
+  }
+
+  if (solution?.slug === "leasecheck") {
+    const leaseCopy: Partial<Record<DocumentProcessingStatus, { title: string; body: string }>> = {
+      QUEUED: {
+        title: "Preparing your agreement",
+        body: "LeaseCheck is getting the document ready for analysis.",
+      },
+      DETECTING_MODULE: {
+        title: "Identifying the agreement",
+        body: "We’re working out what type of agreement or lease-related document this is.",
+      },
+      CLASSIFYING: {
+        title: "Understanding the document’s role",
+        body: "LeaseCheck is checking whether this is the main agreement, an amendment, a notice or another related document.",
+      },
+      EXTRACTING: {
+        title: "Reading the terms that matter",
+        body: "We’re finding money, dates, responsibilities and important clauses.",
+      },
+      VALIDATING_RESULT: {
+        title: "Checking the important terms",
+        body: "LeaseCheck is checking the extracted information before explaining it.",
+      },
+      MATCHING_RULES: {
+        title: "Checking applicable protections",
+        body: "Approved legal guidance is applied only where the agreement type and facts support it.",
+      },
+      COMPLETED: {
+        title: "Your LeaseCheck result is ready",
+        body: "We’re opening the plain-language explanation now.",
+      },
+    };
+    return leaseCopy[status] ?? processingCopy(status);
+  }
+
+  return processingCopy(status);
+}
 
 function Processing() {
   const { documentId } = Route.useParams();
+  const { solution: requestedSolutionSlug } = Route.useSearch();
   const navigate = useNavigate();
+
   const [status, setStatus] = useState<DocumentProcessingStatus | null>(null);
+  const [detectedModule, setDetectedModule] = useState<string | null>(null);
   const [detectedDocumentType, setDetectedDocumentType] = useState<string | null>(null);
   const [failureCode, setFailureCode] = useState<DocumentFailureCode | null>(null);
   const [failureMessage, setFailureMessage] = useState<string | null>(null);
@@ -55,12 +174,17 @@ function Processing() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const stoppedRef = useRef(false);
 
+  const requestedSolution = requestedSolutionSlug ? findSolution(requestedSolutionSlug) : undefined;
+  const detectedSolution = solutionFromDetectedModule(detectedModule);
+  const solution = detectedSolution ?? requestedSolution;
+  const steps = stepsFor(solution);
+  const copy = copyFor(status, solution);
+
   useEffect(() => {
     const startedAt = Date.now();
     const timer = window.setInterval(() => {
       setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
     }, 1000);
-
     return () => window.clearInterval(timer);
   }, []);
 
@@ -73,29 +197,36 @@ function Processing() {
       try {
         const response = await getDocumentStatus(documentId);
         if (stoppedRef.current) return;
+
         failures = 0;
         const docStatus = response.data.status;
         const next = docStatus.processingStatus;
+
         setStatus(next);
+        setDetectedModule(docStatus.detectedModule ?? null);
         setDetectedDocumentType(docStatus.detectedDocumentType ?? null);
         setFailureCode((docStatus.failureCode as DocumentFailureCode | null) ?? null);
         setFailureMessage(docStatus.failureMessage ?? null);
         setQueryError(null);
+
         if (isTerminalProcessingStatus(next)) {
           stoppedRef.current = true;
           if (next === "COMPLETED") {
-            void navigate({ to: "/result", search: { documentId, from: "upload" as const } });
+            void navigate({
+              to: "/result",
+              search: { documentId, from: "upload" as const },
+            });
           }
           return;
         }
       } catch (err) {
         if (stoppedRef.current) return;
         failures += 1;
-        // Keep the last known good status; only surface persistent failures.
         if (failures >= MAX_CONSECUTIVE_POLL_FAILURES) {
           setQueryError(friendlyDocumentError(err));
         }
       }
+
       timer = setTimeout(() => void poll(), 3000);
     };
 
@@ -112,10 +243,6 @@ function Processing() {
   const backendFailed = status === "FAILED" || status === "CANCELLED";
   const showProcessingError = backendFailed || queryError !== null;
 
-  const copy = status
-    ? processingCopy(status)
-    : { title: "Checking document status…", body: "One moment while we look this up." };
-
   const order: DocumentProcessingStatus[] = [
     "QUEUED",
     "DETECTING_MODULE",
@@ -126,63 +253,88 @@ function Processing() {
     "COMPLETED",
   ];
   const currentIndex = status ? order.indexOf(status) : -1;
+  const SpecialistIcon = solution?.icon ?? FileText;
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-7">
-        <header className="flex items-center justify-center pt-2">
-          <h1 className="font-display text-[17px] font-semibold text-ink">
-            Analysing your document
-          </h1>
-        </header>
+    <div className="min-h-screen bg-paper text-ink">
+      <header className="border-b border-line/80 bg-paper">
+        <div className="mx-auto flex min-h-[72px] max-w-[1180px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+          <Link
+            to="/home"
+            aria-label="Back to Home"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-ink transition-colors hover:bg-white"
+          >
+            <ArrowLeft size={19} aria-hidden />
+          </Link>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[15px] font-semibold text-ink">
+              {solution?.name ?? "Untangle South Africa"}
+            </p>
+            <p className="truncate text-[11.5px] text-ink-soft">
+              {solution ? "Part of Untangle South Africa" : "Understanding your document"}
+            </p>
+          </div>
+          <span
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-teal"
+            style={{ backgroundColor: solution?.tint ?? "var(--paper-2)" }}
+            aria-hidden
+          >
+            <SpecialistIcon size={18} strokeWidth={1.9} />
+          </span>
+        </div>
+      </header>
 
-        <div className="flex flex-1 flex-col items-center justify-center pb-16">
+      <main className="mx-auto grid min-h-[calc(100vh-72px)] max-w-[1180px] gap-10 px-5 py-8 sm:px-7 lg:grid-cols-[minmax(0,720px)_320px] lg:gap-14 lg:px-8 lg:py-10">
+        <section className="min-w-0">
           {needsReview ? (
             <NeedsReviewState
               failureCode={failureCode}
               detectedDocumentType={detectedDocumentType}
               failureMessage={failureMessage}
+              solutionSlug={solution?.slug}
             />
           ) : (
             <>
-              <ActivityRing active={!backendFailed} />
-
-              <h2
-                className="mt-7 text-center font-display text-[22px] font-semibold leading-snug text-ink"
-                aria-live="polite"
-              >
-                {copy.title}
-              </h2>
-              <p className="mt-2 max-w-[300px] text-center text-[13.5px] leading-relaxed text-ink-soft">
-                {copy.body}
-              </p>
-              {!backendFailed && !isLoading && (
-                <div className="mt-3 flex flex-col items-center gap-2 text-center">
-                  <div
-                    className="inline-flex min-h-7 items-center gap-2 rounded-full bg-teal/10 px-3 text-[12px] font-medium text-teal"
-                    role="status"
+              <div className="flex flex-col items-start sm:flex-row sm:items-center sm:gap-7">
+                <ActivityRing active={!backendFailed} />
+                <div className="mt-6 min-w-0 sm:mt-0">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.07em] text-teal">
+                    Analysing your document
+                  </p>
+                  <h1
+                    className="mt-2 max-w-xl text-[28px] font-semibold leading-[1.16] tracking-[-0.03em] text-ink sm:text-[34px]"
                     aria-live="polite"
                   >
-                    <span className="relative flex h-2 w-2" aria-hidden>
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal opacity-50 motion-reduce:animate-none" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-teal" />
-                    </span>
-                    {formatElapsedTime(elapsedSeconds)}
-                  </div>
-                  <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
-                    Keep this screen open. Your result will appear as soon as it is ready.
-                  </p>
-                  {elapsedSeconds >= 45 && (
-                    <p className="max-w-[300px] text-[12px] leading-relaxed text-ink-soft">
-                      Detailed documents can take a little longer. Analysis is continuing normally.
-                    </p>
-                  )}
-                </div>
-              )}
+                    {copy.title}
+                  </h1>
+                  <p className="mt-3 max-w-xl text-[14.5px] leading-7 text-ink-soft">{copy.body}</p>
 
-              <div className="mt-9 w-full max-w-[300px] space-y-4">
-                {STEPS.map((step) => {
-                  const indices = step.statuses.map((s) => order.indexOf(s));
+                  {!backendFailed && !isLoading ? (
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <span
+                        className="inline-flex min-h-8 items-center gap-2 rounded-full bg-teal/10 px-3 text-[12px] font-medium text-teal"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <span className="relative flex h-2 w-2" aria-hidden>
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal opacity-50 motion-reduce:animate-none" />
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-teal" />
+                        </span>
+                        {formatElapsedTime(elapsedSeconds)}
+                      </span>
+                      {detectedDocumentType ? (
+                        <span className="text-[12px] text-ink-soft">
+                          {toTitleCase(detectedDocumentType)}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="mt-9 max-w-2xl border-y border-line bg-white px-4 py-2 sm:px-5">
+                {steps.map((step) => {
+                  const indices = step.statuses.map((item) => order.indexOf(item));
                   const stepIndex = Math.max(...indices);
                   const stepMinIndex = Math.min(...indices);
                   const done = currentIndex > stepIndex && currentIndex >= 0;
@@ -191,53 +343,135 @@ function Processing() {
                     currentIndex >= stepMinIndex &&
                     currentIndex <= stepIndex &&
                     currentIndex >= 0;
+
                   return (
-                    <StepRow key={step.label} label={step.label} done={done} active={active} />
+                    <StepRow
+                      key={step.label}
+                      label={step.label}
+                      done={done}
+                      active={active}
+                    />
                   );
                 })}
               </div>
 
-              {!backendFailed && !isLoading && (
-                <p className="mt-7 max-w-[300px] text-center text-[12px] leading-relaxed text-ink-soft">
-                  Your document is processed securely and only you can see it.{" "}
+              {!backendFailed && !isLoading ? (
+                <div className="mt-6 max-w-2xl">
+                  <p className="text-[13px] leading-6 text-ink-soft">
+                    Keep this screen open and your result will appear as soon as it is ready.
+                    {elapsedSeconds >= 45
+                      ? " Detailed documents can take longer; the analysis is still continuing."
+                      : ""}
+                  </p>
+                </div>
+              ) : null}
+
+              {showProcessingError ? (
+                <div className="mt-6 max-w-2xl border-l-4 border-stamp-red bg-red-50 px-4 py-3" role="alert">
+                  <p className="text-[13.5px] font-semibold text-ink">We could not finish this step</p>
+                  <p className="mt-1 text-[13px] leading-5 text-ink-soft">
+                    {backendFailed
+                      ? copy.body
+                      : (queryError ?? "We could not check this document. Please try again.")}
+                  </p>
+                </div>
+              ) : null}
+            </>
+          )}
+        </section>
+
+        {!needsReview ? (
+          <aside className="min-w-0">
+            <div className="space-y-4 lg:sticky lg:top-8">
+              <section className="rounded-[16px] border border-line bg-white p-5">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+                  What we are doing
+                </p>
+                <div className="mt-4 space-y-4">
+                  <ContextItem
+                    icon={<FileText size={17} />}
+                    title="Reading the original document"
+                    body="The analysis uses the uploaded document, not a generic description of it."
+                  />
+                  <ContextItem
+                    icon={<Check size={17} />}
+                    title="Checking before showing"
+                    body="Important extracted details are validated before the result is presented."
+                  />
+                  <ContextItem
+                    icon={<ShieldCheck size={17} />}
+                    title="Using the right specialist context"
+                    body={
+                      solution?.slug === "taxsnap"
+                        ? "TaxSnap keeps the SARS document, guidance and your next action separate."
+                        : solution?.slug === "leasecheck"
+                          ? "LeaseCheck distinguishes agreement facts, practical meaning and applicable legal guidance."
+                          : "Untangle identifies the supported specialist experience before presenting a result."
+                    }
+                  />
+                </div>
+              </section>
+
+              <section className="rounded-[16px] border border-line bg-white p-5">
+                <div className="flex gap-3">
+                  <LockKeyhole size={18} className="mt-0.5 shrink-0 text-teal" aria-hidden />
+                  <div>
+                    <p className="text-[13.5px] font-semibold text-ink">Private to your account</p>
+                    <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
+                      Your document and result stay behind your authenticated Untangle account.
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-4 border-t border-line pt-4 text-[11.5px] leading-5 text-ink-soft">
+                  Untangle South Africa is an AddVision product.{" "}
                   <Link to="/terms" className="font-medium text-teal underline underline-offset-2">
                     Terms &amp; privacy
                   </Link>
                 </p>
-              )}
+              </section>
+            </div>
+          </aside>
+        ) : null}
+      </main>
+    </div>
+  );
+}
 
-              {showProcessingError && (
-                <p
-                  className="mt-6 max-w-[280px] text-center text-[13px] text-stamp-red"
-                  role="alert"
-                >
-                  {backendFailed
-                    ? copy.body
-                    : (queryError ?? "We could not check this document. Please try again.")}
-                </p>
-              )}
-            </>
-          )}
-        </div>
+function ContextItem({
+  icon,
+  title,
+  body,
+}: {
+  icon: ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="grid grid-cols-[24px_minmax(0,1fr)] gap-3">
+      <span className="mt-0.5 text-teal" aria-hidden>{icon}</span>
+      <div>
+        <p className="text-[13.5px] font-semibold text-ink">{title}</p>
+        <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">{body}</p>
       </div>
     </div>
   );
 }
 
-function NeedsReviewNav() {
+function NeedsReviewNav({ solutionSlug }: { solutionSlug?: string }) {
   return (
-    <div className="mt-8 flex w-full max-w-[280px] flex-col gap-3">
+    <div className="mt-8 flex w-full max-w-[360px] flex-col gap-3 sm:flex-row">
       <Link
-        to="/"
-        className="flex h-12 items-center justify-center rounded-full bg-teal text-[15px] font-semibold text-white transition-opacity active:opacity-80"
+        to="/home"
+        className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl bg-teal px-4 text-[14px] font-semibold text-white"
       >
         Back to Home
       </Link>
       <Link
         to="/upload"
-        className="flex h-12 items-center justify-center rounded-full border border-line bg-white text-[15px] font-semibold text-ink transition-colors active:bg-paper-2"
+        search={solutionSlug ? { solution: solutionSlug } : {}}
+        className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-line bg-white px-4 text-[14px] font-semibold text-ink"
       >
-        Upload another document
+        Upload another
       </Link>
     </div>
   );
@@ -247,121 +481,85 @@ function NeedsReviewState({
   failureCode,
   detectedDocumentType,
   failureMessage,
+  solutionSlug,
 }: {
   failureCode: DocumentFailureCode | null;
   detectedDocumentType: string | null;
   failureMessage: string | null;
+  solutionSlug?: string;
 }) {
   const readableDocumentType = detectedDocumentType ? toTitleCase(detectedDocumentType) : null;
 
+  const state = reviewState(failureCode, readableDocumentType);
+
+  return (
+    <div className="max-w-2xl">
+      <div className="flex h-[60px] w-[60px] items-center justify-center rounded-full bg-stamp-amber/15 text-stamp-amber">
+        {state.icon}
+      </div>
+      <p className="mt-6 text-[12px] font-semibold uppercase tracking-[0.06em] text-stamp-amber">
+        Needs a closer look
+      </p>
+      <h1 className="mt-2 text-[28px] font-semibold leading-[1.18] tracking-[-0.03em] text-ink">
+        {state.title}
+      </h1>
+      <p className="mt-3 max-w-xl text-[14.5px] leading-7 text-ink-soft">{state.body}</p>
+
+      {readableDocumentType ? (
+        <div className="mt-5 border-l-2 border-line pl-4">
+          <p className="text-[12px] font-semibold text-ink-soft">Document identified as</p>
+          <p className="mt-1 text-[14px] font-semibold text-ink">{readableDocumentType}</p>
+        </div>
+      ) : null}
+
+      {failureMessage ? (
+        <p className="mt-5 max-w-xl text-[12.5px] leading-5 text-ink-soft" role="status">
+          {failureMessage}
+        </p>
+      ) : null}
+
+      <NeedsReviewNav solutionSlug={solutionSlug} />
+    </div>
+  );
+}
+
+function reviewState(
+  failureCode: DocumentFailureCode | null,
+  readableDocumentType: string | null,
+): { title: string; body: string; icon: ReactNode } {
   switch (failureCode) {
     case "DOCUMENT_NOT_SUPPORTED":
-      return (
-        <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-stamp-amber">
-            <FileText size={26} strokeWidth={1.8} aria-hidden />
-          </div>
-          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
-            This document isn't supported yet
-          </h2>
-          {readableDocumentType && (
-            <p className="mt-4 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
-              Untangle identified it as:
-              <br />
-              <span className="font-medium text-ink">{readableDocumentType}</span>
-            </p>
-          )}
-          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
-            Untangle currently supports TaxSnap documents in this version.
-          </p>
-          {failureMessage && (
-            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
-              {failureMessage}
-            </p>
-          )}
-          <NeedsReviewNav />
-        </div>
-      );
+      return {
+        title: "This document is not supported yet",
+        body: readableDocumentType
+          ? "Untangle could identify the document, but this document type is not currently supported for analysis."
+          : "Untangle could not route this document to a supported specialist analysis.",
+        icon: <FileText size={25} strokeWidth={1.8} aria-hidden />,
+      };
     case "MODULE_NOT_ACTIVE":
-      return (
-        <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-teal/10 text-teal">
-            <Search size={26} strokeWidth={1.8} aria-hidden />
-          </div>
-          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
-            We recognised this document
-          </h2>
-          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
-            This Untangle module isn't available yet.
-          </p>
-          {failureMessage && (
-            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
-              {failureMessage}
-            </p>
-          )}
-          <NeedsReviewNav />
-        </div>
-      );
+      return {
+        title: "We recognised the document, but this specialist tool is not active",
+        body: "The document belongs to an Untangle product that is not currently available for customer analysis.",
+        icon: <Search size={25} strokeWidth={1.8} aria-hidden />,
+      };
     case "JURISDICTION_NOT_SUPPORTED":
-      return (
-        <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-stamp-amber">
-            <Globe size={26} strokeWidth={1.8} aria-hidden />
-          </div>
-          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
-            This document is outside the current TaxSnap scope
-          </h2>
-          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
-            Untangle currently supports South African tax documents.
-          </p>
-          {failureMessage && (
-            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
-              {failureMessage}
-            </p>
-          )}
-          <NeedsReviewNav />
-        </div>
-      );
+      return {
+        title: "This document is outside the current South African scope",
+        body: "Untangle South Africa currently supports the document and legal/tax contexts defined for its South African specialist products.",
+        icon: <Globe size={25} strokeWidth={1.8} aria-hidden />,
+      };
     case "MODULE_DETECTION_LOW_CONFIDENCE":
-      return (
-        <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-stamp-amber">
-            <FileQuestion size={26} strokeWidth={1.8} aria-hidden />
-          </div>
-          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
-            We couldn't identify this document confidently
-          </h2>
-          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
-            Please check the document and try again.
-          </p>
-          {failureMessage && (
-            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
-              {failureMessage}
-            </p>
-          )}
-          <NeedsReviewNav />
-        </div>
-      );
+      return {
+        title: "We could not identify this document confidently",
+        body: "Please check that the document is clear and complete, then try uploading it again.",
+        icon: <FileQuestion size={25} strokeWidth={1.8} aria-hidden />,
+      };
     default:
-      return (
-        <div className="flex flex-col items-center text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-stamp-amber/15 text-stamp-amber">
-            <FileText size={26} strokeWidth={1.8} aria-hidden />
-          </div>
-          <h2 className="mt-6 text-center font-display text-[20px] font-semibold leading-snug text-ink">
-            This one needs a closer look
-          </h2>
-          <p className="mt-3 max-w-[280px] text-center text-[13px] leading-relaxed text-ink-soft">
-            Some details could not be confirmed automatically.
-          </p>
-          {failureMessage && (
-            <p className="mt-6 max-w-[280px] text-center text-[12px] text-ink-soft" role="status">
-              {failureMessage}
-            </p>
-          )}
-          <NeedsReviewNav />
-        </div>
-      );
+      return {
+        title: "This document needs a closer look",
+        body: "Some important details could not be confirmed automatically, so Untangle has stopped rather than guessing.",
+        icon: <FileQuestion size={25} strokeWidth={1.8} aria-hidden />,
+      };
   }
 }
 
@@ -372,10 +570,9 @@ function formatElapsedTime(seconds: number) {
   return `${minutes} min ${secs} s elapsed`;
 }
 
-/** Continuous activity indicator — intentionally does not imply measured progress. */
 function ActivityRing({ active }: { active: boolean }) {
   return (
-    <div className="relative grid h-[136px] w-[136px] place-items-center">
+    <div className="relative grid h-[112px] w-[112px] shrink-0 place-items-center sm:h-[124px] sm:w-[124px]">
       <svg
         viewBox="0 0 120 120"
         className={`h-full w-full -rotate-90 ${active ? "animate-spin motion-reduce:animate-none" : ""}`}
@@ -400,22 +597,22 @@ function ActivityRing({ active }: { active: boolean }) {
 
 function StepRow({ label, done, active }: { label: string; done: boolean; active?: boolean }) {
   return (
-    <div className="flex items-center gap-3.5">
+    <div className="flex min-h-[54px] items-center gap-3.5 border-t border-line/70 first:border-t-0">
       <div
         className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-300 ${
           done
             ? "border-teal bg-teal"
             : active
               ? "animate-pulse border-teal bg-teal/10"
-              : "border-teal bg-transparent"
+              : "border-line bg-white"
         }`}
       >
-        {done && <span className="text-[13px] font-bold text-white">✓</span>}
-        {!done && active && <span className="h-2 w-2 rounded-full bg-teal" />}
+        {done ? <span className="text-[13px] font-bold text-white">✓</span> : null}
+        {!done && active ? <span className="h-2 w-2 rounded-full bg-teal" /> : null}
       </div>
       <span
         className={`text-[14px] transition-colors duration-300 ${
-          done ? "font-medium text-ink" : active ? "font-medium text-ink" : "text-ink-soft"
+          done || active ? "font-medium text-ink" : "text-ink-soft"
         }`}
       >
         {label}
