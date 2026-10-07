@@ -19,8 +19,8 @@ type BillingSearch = { status: string | undefined; attemptId: string | undefined
 
 export const Route = createFileRoute("/billing")({
   validateSearch: (search: Record<string, unknown>): BillingSearch => ({
-    status: typeof search['status'] === "string" ? search['status'] : undefined,
-    attemptId: typeof search['attemptId'] === "string" ? search['attemptId'] : undefined,
+    status: typeof search["status"] === "string" ? search["status"] : undefined,
+    attemptId: typeof search["attemptId"] === "string" ? search["attemptId"] : undefined,
   }),
   head: () => ({
     meta: [
@@ -197,7 +197,9 @@ function BillingReturnPage() {
             </>
           )}
 
-          <SecondaryButton onClick={() => navigate({ to: "/home" })}>Back to Untangle</SecondaryButton>
+          <SecondaryButton onClick={() => navigate({ to: "/home" })}>
+            Back to Untangle
+          </SecondaryButton>
         </div>
       </div>
     </AppShell>

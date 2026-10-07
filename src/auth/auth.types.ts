@@ -2,11 +2,7 @@ import type { Session, User } from "@supabase/supabase-js";
 
 export type UntangleUserRole = "USER" | "ADMIN";
 
-export type UntangleUserStatus =
-  | "ACTIVE"
-  | "SUSPENDED"
-  | "DELETION_PENDING"
-  | "DELETED";
+export type UntangleUserStatus = "ACTIVE" | "SUSPENDED" | "DELETION_PENDING" | "DELETED";
 
 export type UntangleUser = {
   id: string;

@@ -152,9 +152,12 @@ export async function registerMessagingServiceWorker(
     appId: web.appId,
   });
   try {
-    return await navigator.serviceWorker.register(`/firebase-messaging-sw.js?${params.toString()}`, {
-      scope: "/",
-    });
+    return await navigator.serviceWorker.register(
+      `/firebase-messaging-sw.js?${params.toString()}`,
+      {
+        scope: "/",
+      },
+    );
   } catch {
     return null;
   }
@@ -183,7 +186,7 @@ export async function listenToForegroundMessages(
     onReminder({
       title: "Untangle reminder",
       body: "You have a document deadline reminder.",
-      documentId: data['documentId'],
+      documentId: data["documentId"],
     });
   });
 }

@@ -45,7 +45,9 @@ export function AppShell({
                   key={item.label}
                   to={item.to}
                   className={`rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors ${
-                    selected ? "bg-white text-ink" : "text-ink-soft hover:bg-white/70 hover:text-ink"
+                    selected
+                      ? "bg-white text-ink"
+                      : "text-ink-soft hover:bg-white/70 hover:text-ink"
                   }`}
                   aria-current={selected ? "page" : undefined}
                 >
@@ -68,7 +70,10 @@ export function AppShell({
         {children}
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Primary">
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+        aria-label="Primary"
+      >
         <div className="mx-auto flex h-[64px] max-w-md items-stretch px-2">
           {NAV.map((item) => {
             const selected = active === item.label;

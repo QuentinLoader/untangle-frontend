@@ -32,7 +32,6 @@ export type Reminder = {
   document?: ReminderDocument | null;
 };
 
-
 export type CreateReminderRequest = {
   documentId: string;
   label: string;
@@ -200,4 +199,3 @@ export function reminderView(reminder: Reminder): ReminderView {
     effectiveDate: due,
   };
 }
-

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as LandingRouteImport } from './routes/landing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -25,6 +26,7 @@ import { Route as UpgradeRouteImport } from './routes/upgrade'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as ProcessingDocumentIdRouteImport } from './routes/processing.$documentId'
+import { Route as PrototypeLeasecheckV2RouteImport } from './routes/prototype.leasecheck-v2'
 import { Route as SolutionsSlugRouteImport } from './routes/solutions.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -40,6 +42,11 @@ const BillingRoute = BillingRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LandingRoute = LandingRouteImport.update({
@@ -107,6 +114,11 @@ const ProcessingDocumentIdRoute = ProcessingDocumentIdRouteImport.update({
   path: '/processing/$documentId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrototypeLeasecheckV2Route = PrototypeLeasecheckV2RouteImport.update({
+  id: '/prototype/leasecheck-v2',
+  path: '/prototype/leasecheck-v2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolutionsSlugRoute = SolutionsSlugRouteImport.update({
   id: '/solutions/$slug',
   path: '/solutions/$slug',
@@ -117,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/billing': typeof BillingRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/home': typeof HomeRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
@@ -130,12 +143,14 @@ export interface FileRoutesByFullPath {
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
+  '/prototype/leasecheck-v2': typeof PrototypeLeasecheckV2Route
   '/solutions/$slug': typeof SolutionsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/billing': typeof BillingRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/home': typeof HomeRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
@@ -149,6 +164,7 @@ export interface FileRoutesByTo {
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
+  '/prototype/leasecheck-v2': typeof PrototypeLeasecheckV2Route
   '/solutions/$slug': typeof SolutionsSlugRoute
 }
 export interface FileRoutesById {
@@ -156,6 +172,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/billing': typeof BillingRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/home': typeof HomeRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
@@ -169,6 +186,7 @@ export interface FileRoutesById {
   '/upload': typeof UploadRoute
   '/vault': typeof VaultRoute
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
+  '/prototype/leasecheck-v2': typeof PrototypeLeasecheckV2Route
   '/solutions/$slug': typeof SolutionsSlugRoute
 }
 export interface FileRouteTypes {
@@ -177,6 +195,7 @@ export interface FileRouteTypes {
     | '/'
     | '/billing'
     | '/forgot-password'
+    | '/home'
     | '/landing'
     | '/login'
     | '/profile'
@@ -190,12 +209,14 @@ export interface FileRouteTypes {
     | '/upload'
     | '/vault'
     | '/processing/$documentId'
+    | '/prototype/leasecheck-v2'
     | '/solutions/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/billing'
     | '/forgot-password'
+    | '/home'
     | '/landing'
     | '/login'
     | '/profile'
@@ -209,12 +230,14 @@ export interface FileRouteTypes {
     | '/upload'
     | '/vault'
     | '/processing/$documentId'
+    | '/prototype/leasecheck-v2'
     | '/solutions/$slug'
   id:
     | '__root__'
     | '/'
     | '/billing'
     | '/forgot-password'
+    | '/home'
     | '/landing'
     | '/login'
     | '/profile'
@@ -228,6 +251,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/vault'
     | '/processing/$documentId'
+    | '/prototype/leasecheck-v2'
     | '/solutions/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -235,6 +259,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BillingRoute: typeof BillingRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HomeRoute: typeof HomeRoute
   LandingRoute: typeof LandingRoute
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
@@ -248,6 +273,7 @@ export interface RootRouteChildren {
   UploadRoute: typeof UploadRoute
   VaultRoute: typeof VaultRoute
   ProcessingDocumentIdRoute: typeof ProcessingDocumentIdRoute
+  PrototypeLeasecheckV2Route: typeof PrototypeLeasecheckV2Route
   SolutionsSlugRoute: typeof SolutionsSlugRoute
 }
 
@@ -272,6 +298,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/landing': {
@@ -365,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProcessingDocumentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/prototype/leasecheck-v2': {
+      id: '/prototype/leasecheck-v2'
+      path: '/prototype/leasecheck-v2'
+      fullPath: '/prototype/leasecheck-v2'
+      preLoaderRoute: typeof PrototypeLeasecheckV2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solutions/$slug': {
       id: '/solutions/$slug'
       path: '/solutions/$slug'
@@ -379,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BillingRoute: BillingRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HomeRoute: HomeRoute,
   LandingRoute: LandingRoute,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
@@ -392,6 +433,7 @@ const rootRouteChildren: RootRouteChildren = {
   UploadRoute: UploadRoute,
   VaultRoute: VaultRoute,
   ProcessingDocumentIdRoute: ProcessingDocumentIdRoute,
+  PrototypeLeasecheckV2Route: PrototypeLeasecheckV2Route,
   SolutionsSlugRoute: SolutionsSlugRoute,
 }
 export const routeTree = rootRouteImport

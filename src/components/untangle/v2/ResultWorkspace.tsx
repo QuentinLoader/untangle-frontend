@@ -78,7 +78,10 @@ export function ResultWorkspace({
           </aside>
 
           <main className="min-w-0">
-            <div className="mb-6 flex gap-2 overflow-x-auto pb-2 lg:hidden" aria-label="Result sections">
+            <div
+              className="mb-6 flex gap-2 overflow-x-auto pb-2 lg:hidden"
+              aria-label="Result sections"
+            >
               {navItems.map((item) => (
                 <a
                   key={item.id}

@@ -1,13 +1,7 @@
 import { useRef, useState } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Camera,
-  FileText,
-  FolderOpen,
-  Upload as UploadIcon,
-} from "lucide-react";
+import { ArrowLeft, Camera, FileText, FolderOpen, Upload as UploadIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 import { BottomTabBar } from "@/components/untangle/BottomTabBar";
@@ -349,8 +343,6 @@ function Upload() {
             {error}
           </p>
         )}
-
-
 
         {planUsageLine && !entitlements?.isPlus ? (
           <p className="mt-5 text-[12.5px] text-ink-soft">{planUsageLine}</p>

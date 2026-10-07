@@ -15,10 +15,14 @@ export const Route = createFileRoute("/signup")({
       { title: "Create your account — Untangle" },
       {
         name: "description",
-        content: "Create a free Untangle account to have official letters explained in plain English.",
+        content:
+          "Create a free Untangle account to have official letters explained in plain English.",
       },
       { property: "og:title", content: "Create your account — Untangle" },
-      { property: "og:description", content: "Free Untangle account — official letters, explained." },
+      {
+        property: "og:description",
+        content: "Free Untangle account — official letters, explained.",
+      },
     ],
   }),
   component: SignupPage,
@@ -47,11 +51,11 @@ function SignupPage() {
 
   const validate = () => {
     const next: Record<string, string> = {};
-    if (!name.trim()) next['name'] = "Tell us your name so we can greet you properly.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next['email'] = "Enter a valid email address.";
-    if (password.length < 8) next['password'] = "Use at least 8 characters.";
-    if (password !== confirm) next['confirm'] = "Passwords do not match.";
-    if (!accepted) next['terms'] = "Please accept the Terms and Privacy Policy.";
+    if (!name.trim()) next["name"] = "Tell us your name so we can greet you properly.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next["email"] = "Enter a valid email address.";
+    if (password.length < 8) next["password"] = "Use at least 8 characters.";
+    if (password !== confirm) next["confirm"] = "Passwords do not match.";
+    if (!accepted) next["terms"] = "Please accept the Terms and Privacy Policy.";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -62,7 +66,11 @@ function SignupPage() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const { needsEmailConfirmation } = await signUpWithPassword(email.trim(), password, name.trim());
+      const { needsEmailConfirmation } = await signUpWithPassword(
+        email.trim(),
+        password,
+        name.trim(),
+      );
       if (needsEmailConfirmation) setCheckEmail(true);
     } catch (err) {
       setError(friendlyAuthError(err));
@@ -100,7 +108,7 @@ function SignupPage() {
           placeholder="e.g. Quentin Loader"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          {...(errors['name'] ? { error: errors['name'] } : {})}
+          {...(errors["name"] ? { error: errors["name"] } : {})}
         />
         <Field
           id="email"
@@ -111,7 +119,7 @@ function SignupPage() {
           placeholder="you@example.co.za"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          {...(errors['email'] ? { error: errors['email'] } : {})}
+          {...(errors["email"] ? { error: errors["email"] } : {})}
         />
         <Field
           id="password"
@@ -121,7 +129,7 @@ function SignupPage() {
           placeholder="At least 8 characters"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          {...(errors['password'] ? { error: errors['password'] } : {})}
+          {...(errors["password"] ? { error: errors["password"] } : {})}
         />
         <Field
           id="confirm"
@@ -131,7 +139,7 @@ function SignupPage() {
           placeholder="Repeat your password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          {...(errors['confirm'] ? { error: errors['confirm'] } : {})}
+          {...(errors["confirm"] ? { error: errors["confirm"] } : {})}
         />
 
         <div>
@@ -150,8 +158,8 @@ function SignupPage() {
               .
             </span>
           </label>
-          {errors['terms'] ? (
-            <p className="mt-1.5 text-[12px] text-stamp-red">{errors['terms']}</p>
+          {errors["terms"] ? (
+            <p className="mt-1.5 text-[12px] text-stamp-red">{errors["terms"]}</p>
           ) : null}
         </div>
 

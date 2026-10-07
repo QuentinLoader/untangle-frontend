@@ -57,7 +57,11 @@ function ResetPasswordPage() {
   };
 
   if (loading) {
-    return <AuthShell title="One moment" subtitle="Checking your reset link…">{null}</AuthShell>;
+    return (
+      <AuthShell title="One moment" subtitle="Checking your reset link…">
+        {null}
+      </AuthShell>
+    );
   }
 
   if (!session) {
