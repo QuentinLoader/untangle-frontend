@@ -1,15 +1,24 @@
 import { useRef, useState } from "react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Camera, FileText, FolderOpen, Upload as UploadIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Camera,
+  CheckCircle2,
+  FileText,
+  FolderOpen,
+  LockKeyhole,
+  Upload as UploadIcon,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { AppShell } from "@/components/untangle/v2/AppShell";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
-import { BottomTabBar } from "@/components/untangle/BottomTabBar";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { usageLine } from "@/lib/entitlements";
 import { ApiError } from "@/lib/api-client";
-import { findSolution } from "@/lib/solutions";
+import { findSolution, SOLUTION_LIST } from "@/lib/solutions";
 import {
   MAX_UPLOAD_BYTES,
   SUPPORTED_MIME_TYPES,
@@ -34,16 +43,10 @@ export const Route = createFileRoute("/upload")({
   },
   head: () => ({
     meta: [
-      { title: "Upload a document — Untangle" },
+      { title: "Upload a document — Untangle South Africa" },
       {
         name: "description",
-        content:
-          "Upload a South African tax letter, residential lease, insurance policy or employment document to have it explained.",
-      },
-      { property: "og:title", content: "Upload a document — Untangle" },
-      {
-        property: "og:description",
-        content: "Upload your document and get it explained in plain English.",
+        content: "Upload an important South African document securely for specialist analysis.",
       },
     ],
   }),
@@ -56,29 +59,28 @@ function Upload() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { solution: solutionSlug } = Route.useSearch();
-  const solution = solutionSlug ? findSolution(solutionSlug) : undefined;
-  const operationalSolution = solution?.operational ? solution : undefined;
+  const selectedSolution = solutionSlug ? findSolution(solutionSlug) : undefined;
+  const operationalSolution = selectedSolution?.operational ? selectedSolution : undefined;
   const { entitlements } = useEntitlements();
+
   const analysesUsedUp =
     entitlements !== null &&
     !entitlements.unlimitedAnalyses &&
     entitlements.remainingAnalyses !== null &&
     entitlements.remainingAnalyses <= 0;
   const planUsageLine = entitlements ? usageLine(entitlements) : null;
+
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // File object + clientRequestId live in memory only.
   const selectedFileRef = useRef<File | null>(null);
   const clientRequestIdRef = useRef<string | null>(null);
+  const s3UploadedRef = useRef(false);
 
   const [pending, setPending] = useState<PendingDocumentUpload | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<DirectUploadStatus>("idle");
   const [uploadProgressMessage, setUploadProgressMessage] = useState<string | null>(null);
-  // True once the file bytes are in storage; lets a retry skip straight to verification.
-  const s3UploadedRef = useRef(false);
 
   const prepare = async (file: File) => {
     if (busy || analysesUsedUp) return;
@@ -98,15 +100,16 @@ function Upload() {
       return;
     }
 
-    // Reuse the id when retrying the same file; new file gets a new id.
     const sameFile =
       selectedFileRef.current &&
       selectedFileRef.current.name === file.name &&
       selectedFileRef.current.size === file.size &&
       selectedFileRef.current.lastModified === file.lastModified;
+
     if (!sameFile || !clientRequestIdRef.current) {
       clientRequestIdRef.current = crypto.randomUUID();
     }
+
     selectedFileRef.current = file;
     const clientRequestId = clientRequestIdRef.current;
 
@@ -140,35 +143,39 @@ function Upload() {
       uploadStatus === "requesting-url" ||
       uploadStatus === "uploading" ||
       uploadStatus === "verifying"
-    )
+    ) {
       return;
+    }
 
     setError(null);
 
     try {
       if (!s3UploadedRef.current) {
-        // Always request a fresh signed URL; it is used immediately and never stored.
         setUploadStatus("requesting-url");
-        setUploadProgressMessage("Preparing a secure upload…");
+        setUploadProgressMessage("Preparing secure upload…");
         const signed = await requestUploadUrl(pending.documentId);
+
         setUploadStatus("uploading");
-        setUploadProgressMessage("Sending your document securely…");
+        setUploadProgressMessage("Uploading your document securely…");
         await uploadFileToSignedUrl(signed.data.upload, pending.file);
         s3UploadedRef.current = true;
       }
 
       setUploadStatus("verifying");
-      setUploadProgressMessage("Verifying upload…");
-      // No body: the backend verifies the stored object itself.
+      setUploadProgressMessage("Checking the uploaded file…");
       const completed = await completeUpload(pending.documentId);
       const doc = completed.data.document;
+
       setUploadStatus("queued");
-      // A new document exists on the backend: refresh Home and Documents listings.
       void queryClient.invalidateQueries({ queryKey: ["documents"] });
       setUploadProgressMessage(null);
-      navigate({ to: "/processing/$documentId", params: { documentId: doc.id } });
+
+      navigate({
+        to: "/processing/$documentId",
+        params: { documentId: doc.id },
+        search: operationalSolution ? { solution: operationalSolution.slug } : {},
+      });
     } catch (err) {
-      // Object missing in storage means the bytes must be sent again.
       if (err instanceof ApiError && err.code === "UPLOADED_OBJECT_NOT_FOUND") {
         s3UploadedRef.current = false;
       }
@@ -188,43 +195,84 @@ function Upload() {
     uploadStatus === "requesting-url" ||
     uploadStatus === "uploading" ||
     uploadStatus === "verifying";
+
   const uploadLabel =
     uploadStatus === "requesting-url"
-      ? "Preparing secure upload…"
+      ? "Preparing…"
       : uploadStatus === "uploading"
-        ? "Uploading securely…"
+        ? "Uploading…"
         : uploadStatus === "verifying"
-          ? "Verifying upload…"
+          ? "Checking upload…"
           : uploadStatus === "queued"
-            ? "Queued for processing"
+            ? "Ready"
             : uploadStatus === "failed"
-              ? "Try upload again"
+              ? "Try again"
               : "Continue";
 
-  const title = operationalSolution ? operationalSolution.uploadTitle : "Upload a document";
-  const hint = operationalSolution
-    ? operationalSolution.uploadHint
-    : "Untangle will work out which supported product the document belongs to.";
+  const isTax = operationalSolution?.slug === "taxsnap";
+  const isLease = operationalSolution?.slug === "leasecheck";
+  const accent = isTax ? "var(--stamp-red)" : isLease ? "var(--teal)" : "var(--teal)";
+  const title = isTax
+    ? "Upload your SARS document"
+    : isLease
+      ? "Upload your agreement"
+      : "Upload a document";
+  const intro = isTax
+    ? "Use the original letter, notice or assessment."
+    : isLease
+      ? "Use the agreement or lease-related notice you want to understand."
+      : "You don’t need to know which specialist tool it belongs to.";
+
+  const SpecialistIcon = operationalSolution?.icon ?? FileText;
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper pb-[104px]">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-6">
-        <Link
-          to="/"
-          aria-label="Go back"
-          className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-ink transition-colors active:bg-paper-2"
-        >
-          <ArrowLeft size={20} aria-hidden />
-        </Link>
+    <AppShell active="Home" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+      <div className="mx-auto w-full max-w-[760px]">
+        {operationalSolution ? (
+          <Link
+            to="/solutions/$slug"
+            params={{ slug: operationalSolution.slug }}
+            className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-[13px] font-semibold text-ink-soft transition-colors hover:bg-white hover:text-ink"
+          >
+            <ArrowLeft size={18} aria-hidden />
+            {operationalSolution.name}
+          </Link>
+        ) : (
+          <Link
+            to="/home"
+            className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-[13px] font-semibold text-ink-soft transition-colors hover:bg-white hover:text-ink"
+          >
+            <ArrowLeft size={18} aria-hidden />
+            Home
+          </Link>
+        )}
 
-        <header className="mt-3">
-          {operationalSolution ? (
-            <p className="text-[13px] font-semibold text-teal">{operationalSolution.name}</p>
-          ) : null}
-          <h1 className="mt-1 font-display text-[24px] font-semibold leading-tight text-ink">
+        <header className="mt-5 border-l-[3px] pl-4" style={{ borderLeftColor: accent }}>
+          <div className="flex items-center gap-3">
+            <span
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+              style={{
+                backgroundColor: operationalSolution?.tint ?? "var(--paper-2)",
+                color: accent,
+              }}
+              aria-hidden
+            >
+              <SpecialistIcon size={18} strokeWidth={1.9} />
+            </span>
+            <div>
+              <p className="text-[13.5px] font-semibold text-ink">
+                {operationalSolution?.name ?? "Untangle South Africa"}
+              </p>
+              {operationalSolution ? (
+                <p className="mt-0.5 text-[11.5px] text-ink-soft">Part of Untangle South Africa</p>
+              ) : null}
+            </div>
+          </div>
+
+          <h1 className="mt-5 text-[29px] font-semibold leading-[1.16] tracking-[-0.035em] text-ink sm:text-[36px]">
             {title}
           </h1>
-          <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-soft">{hint}</p>
+          <p className="mt-2 text-[14px] leading-6 text-ink-soft">{intro}</p>
         </header>
 
         <input
@@ -244,111 +292,122 @@ function Upload() {
         />
 
         {analysesUsedUp && !pending ? (
-          <div className="mt-6">
+          <div className="mt-7">
             <UpgradePrompt
               title="Free analyses used"
               message="You've used your free analyses for this month. Untangle Plus gives you more."
             />
           </div>
         ) : pending ? (
-          <div className="mt-6">
-            <div className="flex items-center gap-3 rounded-2xl border border-line/70 bg-white px-4 py-4">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-teal-dim text-teal">
-                <FileText size={20} strokeWidth={1.9} aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[15px] font-semibold text-ink">
-                  {pending.originalFilename}
+          <section className="mt-7">
+            <div className="border-y border-line bg-white px-4 py-4 sm:px-5">
+              <div className="flex items-start gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-paper-2 text-teal">
+                  <FileText size={18} aria-hidden />
                 </span>
-                <span className="mt-0.5 block text-[12.5px] text-ink-soft">
-                  {formatFileSize(pending.sizeBytes)} ·{" "}
-                  {uploadStatus === "queued" ? "Upload verified" : "Ready to upload"}
+                <span className="min-w-0 flex-1">
+                  <span className="block break-words text-[14.5px] font-semibold text-ink">
+                    {pending.originalFilename}
+                  </span>
+                  <span className="mt-1 block text-[12px] text-ink-soft">
+                    {formatFileSize(pending.sizeBytes)}
+                  </span>
                 </span>
-              </span>
+                <CheckCircle2 size={18} className="mt-1 shrink-0 text-teal" aria-hidden />
+              </div>
             </div>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <PrimaryButton
                 onClick={() => void startUpload()}
                 disabled={uploadInFlight}
-                className={uploadInFlight ? "opacity-60" : ""}
+                className="sm:max-w-[220px]"
               >
                 {uploadLabel}
               </PrimaryButton>
               <SecondaryButton
                 onClick={() => fileInputRef.current?.click()}
                 disabled={busy || uploadInFlight}
+                className="sm:max-w-[220px]"
               >
-                Choose a different file
+                Choose another file
               </SecondaryButton>
             </div>
-          </div>
+          </section>
         ) : (
-          <div className="mt-6">
-            <div className="rounded-3xl border-2 border-dashed border-teal/35 bg-white px-5 py-7">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={busy}
-                className="flex w-full flex-col items-center rounded-2xl px-2 py-2 text-center transition-colors active:bg-teal-dim/40 disabled:opacity-60"
-              >
-                <span className="grid h-14 w-14 place-items-center rounded-full bg-teal-dim text-teal">
-                  <UploadIcon size={24} strokeWidth={1.9} aria-hidden />
-                </span>
-                <span className="mt-4 text-[16px] font-semibold text-ink">
-                  Tap to upload your document
-                </span>
-                <span className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
-                  PDF, JPG, PNG, HEIC or TIFF · up to 25 MB
-                </span>
-              </button>
-
-              <div className="my-5 flex items-center gap-3">
-                <span className="h-px flex-1 bg-line" aria-hidden />
-                <span className="text-[12.5px] text-ink-soft">or</span>
-                <span className="h-px flex-1 bg-line" aria-hidden />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={busy}
-                className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border border-line bg-white text-[15px] font-semibold text-ink transition-colors active:bg-paper-2 disabled:opacity-60"
-              >
-                <FolderOpen size={18} aria-hidden />
-                Choose a file
-              </button>
-            </div>
+          <section className="mt-7">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={busy}
+              className="group flex min-h-[220px] w-full flex-col items-center justify-center border-2 border-dashed border-line bg-white px-6 py-8 text-center transition-colors hover:border-teal/45 hover:bg-[#fbfdfb] disabled:opacity-60"
+            >
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-teal-dim text-teal">
+                <UploadIcon size={24} strokeWidth={1.9} aria-hidden />
+              </span>
+              <span className="mt-4 text-[17px] font-semibold text-ink">Choose your document</span>
+              <span className="mt-1.5 text-[12.5px] text-ink-soft">
+                PDF, JPG, PNG, HEIC or TIFF · up to 25 MB
+              </span>
+              <span className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-teal px-4 text-[14px] font-semibold text-white">
+                Browse files
+                <FolderOpen size={16} aria-hidden />
+              </span>
+            </button>
 
             <button
               type="button"
               onClick={() => cameraInputRef.current?.click()}
               disabled={busy}
-              className="mt-3 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border border-line bg-white text-[15px] font-semibold text-ink transition-colors active:bg-paper-2 disabled:opacity-60"
+              className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 text-[14px] font-semibold text-ink transition-colors hover:bg-paper-2 disabled:opacity-60 sm:w-auto"
             >
-              <Camera size={18} aria-hidden />
+              <Camera size={17} aria-hidden />
               {busy ? "Preparing…" : "Take a photo instead"}
             </button>
+          </section>
+        )}
+
+        {(busy || uploadProgressMessage) ? (
+          <p className="mt-4 text-[13px] text-ink-soft" role="status">
+            {busy ? "Preparing your document…" : uploadProgressMessage}
+          </p>
+        ) : null}
+
+        {error ? (
+          <div className="mt-5 border-l-2 border-stamp-red bg-red-50/70 px-4 py-3" role="alert">
+            <p className="text-[13px] font-semibold text-ink">We could not continue</p>
+            <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">{error}</p>
           </div>
-        )}
+        ) : null}
 
-        {(busy || uploadProgressMessage) && (
-          <p className="mt-4 text-center text-[13px] text-ink-soft" role="status">
-            {busy ? "Preparing document…" : uploadProgressMessage}
-          </p>
-        )}
-
-        {error && (
-          <p className="mt-4 text-center text-[13px] text-stamp-red" role="alert">
-            {error}
-          </p>
-        )}
+        <div className="mt-5 flex items-start gap-2 text-[12px] leading-5 text-ink-soft">
+          <LockKeyhole size={15} className="mt-0.5 shrink-0 text-teal" aria-hidden />
+          <p>Your document is private to your authenticated Untangle account.</p>
+        </div>
 
         {planUsageLine && !entitlements?.isPlus ? (
-          <p className="mt-5 text-[12.5px] text-ink-soft">{planUsageLine}</p>
+          <p className="mt-3 text-[12px] text-ink-soft">{planUsageLine}</p>
+        ) : null}
+
+        {!operationalSolution && !pending ? (
+          <div className="mt-8 border-t border-line pt-5">
+            <p className="text-[12px] text-ink-soft">Or start with a specialist tool</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SOLUTION_LIST.filter((item) => item.operational).map((item) => (
+                <Link
+                  key={item.slug}
+                  to="/solutions/$slug"
+                  params={{ slug: item.slug }}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-white px-3.5 text-[13px] font-semibold text-ink transition-colors hover:bg-paper-2"
+                >
+                  {item.name}
+                  <ArrowRight size={14} aria-hidden />
+                </Link>
+              ))}
+            </div>
+          </div>
         ) : null}
       </div>
-      <BottomTabBar active="Home" />
-    </div>
+    </AppShell>
   );
 }

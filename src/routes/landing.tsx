@@ -96,6 +96,17 @@ export function LandingPage() {
   const scrollToHow = () =>
     document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
 
+  // Never render the public landing experience while auth is unresolved or a
+  // valid signed-in session is already present. This prevents the public hero
+  // from flashing before an authenticated redirect completes.
+  if (loading || session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-paper" aria-busy="true">
+        <div className="h-7 w-7 animate-spin rounded-full border-2 border-line border-t-teal" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-paper text-ink">
       {/* HEADER */}
