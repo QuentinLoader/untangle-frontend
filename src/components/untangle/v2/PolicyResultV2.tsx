@@ -9,7 +9,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import {
-  AskPrompt,
   EvidenceDisclosure,
   FactRows,
   KeyMetric,
@@ -329,18 +328,21 @@ export function PolicyResultV2() {
           intro="Every material finding should stay traceable to the policy document that supports it."
         >
           <EvidenceDisclosure
+            sourceLabel="What the policy says"
             source="Current policy schedule"
             location="Page 2"
             excerpt="Life Cover R2,000,000; Critical Illness Cover R750,000; Funeral Benefit — Not selected."
             meaning="This schedule confirms the purchased cover and the explicitly unselected funeral benefit used above."
           />
           <EvidenceDisclosure
+            sourceLabel="What the policy says"
             source="Policy wording"
             location="Page 14 · Clause 12.4"
             excerpt="The benefit is subject to the conditions and exclusions set out in this section."
             meaning="This wording can support a clause reference, but it does not by itself prove that every benefit described in the wording was purchased."
           />
           <EvidenceDisclosure
+            sourceLabel="What the policy says"
             source="Claim decision"
             location="Page 1"
             excerpt="We have declined the claim because the stated policy condition was not met."
@@ -366,10 +368,19 @@ export function PolicyResultV2() {
           </div>
 
           <div className="mt-4 grid gap-2">
-            <AskPrompt>Is income protection definitely included in my policy?</AskPrompt>
-            <AskPrompt>Why did the insurer say my claim was rejected?</AskPrompt>
-            <AskPrompt>Which clause did the insurer rely on?</AskPrompt>
-            <AskPrompt>What review route does the approved rule say is available?</AskPrompt>
+            {[
+              "Is income protection definitely included in my policy?",
+              "Why did the insurer say my claim was rejected?",
+              "Which clause did the insurer rely on?",
+              "What review route does the approved rule say is available?",
+            ].map((prompt) => (
+              <div
+                key={prompt}
+                className="rounded-xl border border-line bg-white px-4 py-3 text-[13.5px] font-medium text-ink"
+              >
+                {prompt}
+              </div>
+            ))}
           </div>
         </ResultSection>
 
