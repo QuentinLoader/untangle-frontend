@@ -1,14 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Check,
-  FileText,
-  LockKeyhole,
-  Receipt,
-  ShieldCheck,
-  WalletCards,
-} from "lucide-react";
+import { ArrowRight, FileText, LockKeyhole, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/auth/useAuth";
 import { PublicSiteShell } from "@/components/untangle/public/PublicSiteShell";
 import { SOLUTION_LIST } from "@/lib/solutions";
@@ -271,7 +263,7 @@ function TrustItem({
   title,
   body,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   body: string;
 }) {
