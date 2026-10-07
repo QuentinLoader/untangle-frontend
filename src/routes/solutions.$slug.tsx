@@ -5,6 +5,7 @@ import {
   LeaseCheckEntry,
   TaxSnapEntry,
 } from "@/components/untangle/v2/SpecialistEntryPage";
+import { PolicyCheckEntry } from "@/components/untangle/v2/PolicyCheckEntry";
 import { findSolution, SOLUTIONS } from "@/lib/solutions";
 
 export const Route = createFileRoute("/solutions/$slug")({
@@ -41,6 +42,10 @@ function SolutionDetail() {
 
   if (solution.slug === "leasecheck") {
     return <LeaseCheckEntry solution={solution} />;
+  }
+
+  if (solution.slug === "policycheck") {
+    return <PolicyCheckEntry solution={solution} />;
   }
 
   return <GenericSolutionEntry solution={solution} />;
