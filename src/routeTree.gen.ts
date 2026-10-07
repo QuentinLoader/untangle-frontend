@@ -30,6 +30,7 @@ import { Route as VaultRouteImport } from './routes/vault'
 import { Route as ProcessingDocumentIdRouteImport } from './routes/processing.$documentId'
 import { Route as PrototypeLeasecheckV2RouteImport } from './routes/prototype.leasecheck-v2'
 import { Route as PrototypePolicycheckV2RouteImport } from './routes/prototype.policycheck-v2'
+import { Route as PrototypeWorkcheckV2RouteImport } from './routes/prototype.workcheck-v2'
 import { Route as SolutionsSlugRouteImport } from './routes/solutions.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -137,6 +138,11 @@ const PrototypePolicycheckV2Route = PrototypePolicycheckV2RouteImport.update({
   path: '/prototype/policycheck-v2',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrototypeWorkcheckV2Route = PrototypeWorkcheckV2RouteImport.update({
+  id: '/prototype/workcheck-v2',
+  path: '/prototype/workcheck-v2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolutionsSlugRoute = SolutionsSlugRouteImport.update({
   id: '/solutions/$slug',
   path: '/solutions/$slug',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
   '/prototype/leasecheck-v2': typeof PrototypeLeasecheckV2Route
   '/prototype/policycheck-v2': typeof PrototypePolicycheckV2Route
+  '/prototype/workcheck-v2': typeof PrototypeWorkcheckV2Route
   '/solutions/$slug': typeof SolutionsSlugRoute
 }
 export interface FileRoutesByTo {
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
   '/prototype/leasecheck-v2': typeof PrototypeLeasecheckV2Route
   '/prototype/policycheck-v2': typeof PrototypePolicycheckV2Route
+  '/prototype/workcheck-v2': typeof PrototypeWorkcheckV2Route
   '/solutions/$slug': typeof SolutionsSlugRoute
 }
 export interface FileRoutesById {
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/processing/$documentId': typeof ProcessingDocumentIdRoute
   '/prototype/leasecheck-v2': typeof PrototypeLeasecheckV2Route
   '/prototype/policycheck-v2': typeof PrototypePolicycheckV2Route
+  '/prototype/workcheck-v2': typeof PrototypeWorkcheckV2Route
   '/solutions/$slug': typeof SolutionsSlugRoute
 }
 export interface FileRouteTypes {
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/processing/$documentId'
     | '/prototype/leasecheck-v2'
     | '/prototype/policycheck-v2'
+    | '/prototype/workcheck-v2'
     | '/solutions/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/processing/$documentId'
     | '/prototype/leasecheck-v2'
     | '/prototype/policycheck-v2'
+    | '/prototype/workcheck-v2'
     | '/solutions/$slug'
   id:
     | '__root__'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/processing/$documentId'
     | '/prototype/leasecheck-v2'
     | '/prototype/policycheck-v2'
+    | '/prototype/workcheck-v2'
     | '/solutions/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -313,6 +325,7 @@ export interface RootRouteChildren {
   ProcessingDocumentIdRoute: typeof ProcessingDocumentIdRoute
   PrototypeLeasecheckV2Route: typeof PrototypeLeasecheckV2Route
   PrototypePolicycheckV2Route: typeof PrototypePolicycheckV2Route
+  PrototypeWorkcheckV2Route: typeof PrototypeWorkcheckV2Route
   SolutionsSlugRoute: typeof SolutionsSlugRoute
 }
 
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrototypePolicycheckV2RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/prototype/workcheck-v2': {
+      id: '/prototype/workcheck-v2'
+      path: '/prototype/workcheck-v2'
+      fullPath: '/prototype/workcheck-v2'
+      preLoaderRoute: typeof PrototypeWorkcheckV2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solutions/$slug': {
       id: '/solutions/$slug'
       path: '/solutions/$slug'
@@ -497,6 +517,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProcessingDocumentIdRoute: ProcessingDocumentIdRoute,
   PrototypeLeasecheckV2Route: PrototypeLeasecheckV2Route,
   PrototypePolicycheckV2Route: PrototypePolicycheckV2Route,
+  PrototypeWorkcheckV2Route: PrototypeWorkcheckV2Route,
   SolutionsSlugRoute: SolutionsSlugRoute,
 }
 export const routeTree = rootRouteImport

@@ -14,6 +14,8 @@ import { Route as Home } from "../src/routes/home";
 import { Route as Upload } from "../src/routes/upload";
 import { Route as Vault } from "../src/routes/vault";
 import { Route as Policy } from "../src/routes/prototype.policycheck-v2";
+import { Route as Work } from "../src/routes/prototype.workcheck-v2";
+import { workDemos } from "../src/lib/workcheck-demo";
 import { Route as Result } from "../src/routes/result";
 import { documentId, leaseResult, taxResult } from "./fixtures/results";
 import type { AuthContextValue } from "../src/auth/auth.types";
@@ -87,7 +89,9 @@ async function page(
           ? Vault
           : path === "/result"
             ? Result
-            : Policy;
+            : path === "/prototype/workcheck-v2"
+              ? Work
+              : Policy;
   const routes = [route.update({ id: path, path, getParentRoute: () => root })];
   const router = createRouter({
     routeTree: root.addChildren(routes),
@@ -100,6 +104,34 @@ async function page(
 }
 
 describe("Authenticated customer pages", () => {
+  test("WorkCheck demo keeps gross pay, missing policy and source evidence visible", async () => {
+    const html = await page("/prototype/workcheck-v2");
+    for (const text of [
+      "WorkCheck",
+      "Synthetic demo",
+      "R18,500 gross",
+      "Take-home pay",
+      "workplace policy",
+      "Page 2",
+      "AddVision",
+    ])
+      expect(html).toContain(text);
+    expect(html).not.toContain("Email me");
+  });
+  test("WorkCheck prototype is protected when signed out", async () => {
+    const html = await page("/prototype/workcheck-v2", { signedOut: true });
+    expect(html).not.toContain("R18,500");
+    expect(html).not.toContain("Choose a demo");
+  });
+  test("each WorkCheck explanation points to an existing source", () => {
+    for (const demo of workDemos) {
+      for (const point of demo.points)
+        expect(demo.evidence.some((source) => source.id === point.source)).toBe(true);
+    }
+    const notice = workDemos.find((demo) => demo.id === "hearing")!;
+    expect(notice.summary).toContain("allegation, not a finding");
+    expect(notice.missing.join(" ")).toContain("no deadline has been calculated");
+  });
   test("all products stay accessible from the dashboard", async () => {
     const html = await page("/home");
     for (const name of [
