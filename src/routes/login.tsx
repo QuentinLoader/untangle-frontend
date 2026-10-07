@@ -12,14 +12,20 @@ export const Route = createFileRoute("/login")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in — Untangle" },
-      { name: "description", content: "Sign in to Untangle to see your documents and deadlines." },
-      { property: "og:title", content: "Sign in — Untangle" },
-      { property: "og:description", content: "Sign in to Untangle to see your documents." },
+      { title: "Sign in — Untangle South Africa" },
+      { name: "description", content: "Sign in to your Untangle South Africa account." },
+      { property: "og:title", content: "Sign in — Untangle South Africa" },
+      { property: "og:description", content: "Sign in to your Untangle South Africa account." },
     ],
   }),
   component: LoginPage,
 });
+
+function contextFromRedirect(redirect?: string) {
+  if (redirect?.includes("taxsnap")) return "Continue to TaxSnap";
+  if (redirect?.includes("leasecheck")) return "Continue to LeaseCheck";
+  return undefined;
+}
 
 function LoginPage() {
   const { signInWithPassword, signInWithMagicLink, session, loading } = useAuth();
@@ -35,7 +41,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (!loading && session) {
-      navigate({ to: (redirect as never) ?? "/", replace: true });
+      navigate({ to: (redirect as never) ?? "/home", replace: true });
     }
   }, [loading, session, navigate, redirect]);
 
@@ -80,8 +86,22 @@ function LoginPage() {
     }
   };
 
+  if (loading || session) {
+    return (
+      <AuthShell title="One moment" subtitle="Checking your account…" contextLabel={contextFromRedirect(redirect)}>
+        <div className="h-1 w-full overflow-hidden bg-paper-2">
+          <div className="h-full w-1/2 animate-pulse bg-teal" />
+        </div>
+      </AuthShell>
+    );
+  }
+
   return (
-    <AuthShell title="Welcome back" subtitle="Sign in to see your documents, deadlines and vault.">
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to your documents, reminders and results."
+      contextLabel={contextFromRedirect(redirect)}
+    >
       <form onSubmit={onSubmit} className="space-y-4">
         {error ? <FormError message={error} /> : null}
         {notice ? <FormNotice message={notice} /> : null}
@@ -102,7 +122,7 @@ function LoginPage() {
           label="Password"
           type="password"
           autoComplete="current-password"
-          placeholder="••••••••"
+          placeholder="Your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           {...(fieldErrors.password ? { error: fieldErrors.password } : {})}
@@ -111,19 +131,26 @@ function LoginPage() {
         <PrimaryButton type="submit" disabled={submitting}>
           {submitting ? "Signing in…" : "Sign in"}
         </PrimaryButton>
+
+        <div className="flex items-center gap-3 py-1">
+          <span className="h-px flex-1 bg-line" />
+          <span className="text-[11px] text-ink-soft">or</span>
+          <span className="h-px flex-1 bg-line" />
+        </div>
+
         <SecondaryButton type="button" onClick={onMagicLink} disabled={submitting}>
-          Email me a magic link
+          Email me a secure sign-in link
         </SecondaryButton>
       </form>
 
-      <div className="mt-6 flex flex-col items-center gap-2 text-[13px]">
+      <div className="mt-6 space-y-3 text-center text-[13px]">
         <Link to="/forgot-password" className="font-medium text-teal">
           Forgot password?
         </Link>
         <p className="text-ink-soft">
           New here?{" "}
-          <Link to="/signup" search={{ redirect }} className="font-medium text-teal">
-            Create an account
+          <Link to="/signup" search={{ redirect }} className="font-semibold text-teal">
+            Create a free account
           </Link>
         </p>
       </div>
