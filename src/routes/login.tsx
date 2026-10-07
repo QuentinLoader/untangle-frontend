@@ -122,7 +122,7 @@ function LoginPage() {
         </Link>
         <p className="text-ink-soft">
           New here?{" "}
-          <Link to="/signup" className="font-medium text-teal">
+          <Link to="/signup" search={{ redirect }} className="font-medium text-teal">
             Create an account
           </Link>
         </p>
