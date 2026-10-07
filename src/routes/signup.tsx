@@ -85,7 +85,7 @@ function SignupPage() {
         title="Check your email"
         subtitle={`We sent a confirmation link to ${email}. Open it to activate your Untangle account.`}
       >
-        <Link to="/login" className="text-[13px] font-medium text-teal">
+        <Link to="/login" search={{ redirect }} className="text-[13px] font-medium text-teal">
           Back to sign in
         </Link>
       </AuthShell>
@@ -170,7 +170,7 @@ function SignupPage() {
 
       <p className="mt-6 text-center text-[13px] text-ink-soft">
         Already have an account?{" "}
-        <Link to="/login" className="font-medium text-teal">
+        <Link to="/login" search={{ redirect }} className="font-medium text-teal">
           Sign in
         </Link>
       </p>
