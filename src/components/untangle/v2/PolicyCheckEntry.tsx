@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
@@ -113,7 +114,7 @@ function Point({
   title,
   detail,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   detail: string;
 }) {
