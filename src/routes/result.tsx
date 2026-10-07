@@ -17,6 +17,7 @@ import {
 import { AskSectionPlaceholder, ResultSectionNav } from "@/components/untangle/ResultSectionNav";
 import { LeaseAskSection } from "@/components/untangle/LeaseAskSection";
 import { LeaseResultV2 } from "@/components/untangle/v2/LeaseResultV2";
+import { TaxResultV2 } from "@/components/untangle/v2/TaxResultV2";
 import {
   AskComingSoonButton,
   Disclosure,
@@ -123,6 +124,10 @@ function Result() {
 
   if (result && isLeaseResult(result)) {
     return <LeaseResultV2 result={result} documentId={documentId} back={back} />;
+  }
+
+  if (result) {
+    return <TaxResultV2 result={result} documentId={documentId} back={back} />;
   }
 
   return (
