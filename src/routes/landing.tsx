@@ -14,7 +14,10 @@ export const Route = createFileRoute("/landing")({
         content:
           "Understand SARS letters, agreements, insurance documents and employment paperwork in plain language with Untangle South Africa.",
       },
-      { property: "og:title", content: "Untangle South Africa — Important documents, explained clearly" },
+      {
+        property: "og:title",
+        content: "Untangle South Africa — Important documents, explained clearly",
+      },
       {
         property: "og:description",
         content: "Understand the paperwork. Know what matters. Know what to do next.",
@@ -165,9 +168,17 @@ export function LandingPage() {
 
               <ol className="mt-6 space-y-5">
                 {[
-                  ["1", "Choose the specialist tool", "TaxSnap and LeaseCheck are available now; more tools will join the portfolio later."],
+                  [
+                    "1",
+                    "Choose the specialist tool",
+                    "TaxSnap and LeaseCheck are available now; more tools will join the portfolio later.",
+                  ],
                   ["2", "Upload the document", "Use the original PDF, image or a clear photo."],
-                  ["3", "See what matters", "Untangle gives you the 30-second answer first, then the practical meaning and full evidence."],
+                  [
+                    "3",
+                    "See what matters",
+                    "Untangle gives you the 30-second answer first, then the practical meaning and full evidence.",
+                  ],
                 ].map(([number, title, detail]) => (
                   <li key={number} className="grid grid-cols-[30px_minmax(0,1fr)] gap-3">
                     <span className="grid h-7 w-7 place-items-center rounded-full bg-teal text-[12px] font-semibold text-white">
@@ -215,9 +226,12 @@ export function LandingPage() {
                 <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
                   Start free
                 </p>
-                <h2 className="mt-2 text-[24px] font-semibold text-ink">3 successful analyses per month</h2>
+                <h2 className="mt-2 text-[24px] font-semibold text-ink">
+                  3 successful analyses per month
+                </h2>
                 <p className="mt-2 text-[13px] leading-6 text-ink-soft">
-                  Create an account and use the available specialist tools before deciding whether you need more.
+                  Create an account and use the available specialist tools before deciding whether
+                  you need more.
                 </p>
               </div>
 
@@ -227,7 +241,8 @@ export function LandingPage() {
                 </p>
                 <h2 className="mt-2 text-[24px] font-semibold text-ink">R79 / month</h2>
                 <p className="mt-2 text-[13px] leading-6 text-ink-soft">
-                  More analyses plus portfolio features such as Vault/history and reminders where supported.
+                  More analyses plus portfolio features such as Vault/history and reminders where
+                  supported.
                 </p>
               </div>
             </div>
@@ -258,18 +273,12 @@ export function LandingPage() {
   );
 }
 
-function TrustItem({
-  icon,
-  title,
-  body,
-}: {
-  icon: ReactNode;
-  title: string;
-  body: string;
-}) {
+function TrustItem({ icon, title, body }: { icon: ReactNode; title: string; body: string }) {
   return (
     <div className="grid grid-cols-[26px_minmax(0,1fr)] gap-3">
-      <span className="mt-0.5 text-teal" aria-hidden>{icon}</span>
+      <span className="mt-0.5 text-teal" aria-hidden>
+        {icon}
+      </span>
       <div>
         <p className="text-[14px] font-semibold text-ink">{title}</p>
         <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">{body}</p>

@@ -88,7 +88,11 @@ function LoginPage() {
 
   if (loading || session) {
     return (
-      <AuthShell title="One moment" subtitle="Checking your account…" contextLabel={contextFromRedirect(redirect)}>
+      <AuthShell
+        title="One moment"
+        subtitle="Checking your account…"
+        contextLabel={contextFromRedirect(redirect)}
+      >
         <div className="h-1 w-full overflow-hidden bg-paper-2">
           <div className="h-full w-1/2 animate-pulse bg-teal" />
         </div>

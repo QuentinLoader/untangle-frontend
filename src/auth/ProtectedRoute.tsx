@@ -16,15 +16,16 @@ function AuthLoading() {
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const location = useRouterState({ select: (s) => s.location });
+  const pathname = location.pathname;
   const redirected = useRef(false);
 
   useEffect(() => {
     if (loading || session || redirected.current) return;
     if (pathname.startsWith("/login")) return;
     redirected.current = true;
-    navigate({ to: "/login", search: { redirect: pathname }, replace: true });
-  }, [loading, session, navigate, pathname]);
+    navigate({ to: "/login", search: { redirect: location.href }, replace: true });
+  }, [loading, session, navigate, pathname, location.href]);
 
   if (loading || !session) return <AuthLoading />;
   return <>{children}</>;
@@ -33,6 +34,10 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 /** Wraps a route component so it only renders for authenticated users. */
 export function withAuth<P extends object>(Component: (props: P) => ReactNode) {
   return function Guarded(props: P) {
-    return <ProtectedRoute>{Component(props)}</ProtectedRoute>;
+    return (
+      <ProtectedRoute>
+        <Component {...props} />
+      </ProtectedRoute>
+    );
   };
 }

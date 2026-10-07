@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Bell, CreditCard, LogOut, Pencil, ShieldCheck } from "lucide-react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { AppShell } from "@/components/untangle/v2/AppShell";
+import { PageState } from "@/components/untangle/v2/PageState";
 import { useAuth } from "@/auth/useAuth";
 import { usePushReminders } from "@/hooks/usePushReminders";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -31,7 +32,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1 border-t border-line/80 py-3.5 first:border-t-0 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-5">
       <span className="text-[12.5px] font-medium text-ink-soft">{label}</span>
-      <span className="break-words text-[13.5px] font-semibold text-ink sm:text-right">{value}</span>
+      <span className="break-words text-[13.5px] font-semibold text-ink sm:text-right">
+        {value}
+      </span>
     </div>
   );
 }
@@ -67,7 +70,9 @@ function NameRow({ value, onSave }: { value: string; onSave: (name: string) => P
       <div className="grid gap-1 border-t border-line/80 py-3.5 sm:grid-cols-[120px_minmax(0,1fr)] sm:items-center sm:gap-5">
         <span className="text-[12.5px] font-medium text-ink-soft">Name</span>
         <span className="flex min-w-0 items-center gap-2 sm:justify-end">
-          <span className="truncate text-[13.5px] font-semibold text-ink">{value || "Not set"}</span>
+          <span className="truncate text-[13.5px] font-semibold text-ink">
+            {value || "Not set"}
+          </span>
           <button
             type="button"
             onClick={() => {
@@ -123,13 +128,15 @@ function NameRow({ value, onSave }: { value: string; onSave: (name: string) => P
 }
 
 function PlanSection() {
-  const { entitlements, isPending, error } = useEntitlements();
+  const { entitlements, isPending, error, refetch } = useEntitlements();
 
   return (
     <section>
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">Plan</p>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+            Plan
+          </p>
           <h2 className="mt-1 text-[19px] font-semibold text-ink">Your access</h2>
         </div>
         <Link
@@ -145,18 +152,24 @@ function PlanSection() {
         {isPending ? (
           <p className="text-[13px] text-ink-soft">Checking your plan…</p>
         ) : error ? (
-          <p className="text-[13px] text-ink-soft">{friendlyEntitlementError(error)}</p>
+          <PageState
+            title="Your plan could not be loaded"
+            body={friendlyEntitlementError(error)}
+            onRetry={() => void refetch()}
+          />
         ) : entitlements ? (
           <>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[18px] font-semibold text-ink">{entitlements.planLabel}</p>
                 {usageLine(entitlements) ? (
-                  <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">{usageLine(entitlements)}</p>
+                  <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
+                    {usageLine(entitlements)}
+                  </p>
                 ) : null}
               </div>
               <span className="rounded-full bg-teal-dim px-2.5 py-1 text-[10.5px] font-semibold text-teal">
-                {entitlements.isPlus ? entitlements.subscriptionStatus ?? "Active" : "Free"}
+                {entitlements.isPlus ? (entitlements.subscriptionStatus ?? "Active") : "Free"}
               </span>
             </div>
 
@@ -197,7 +210,10 @@ function PushSection() {
         {error ? <p className="mt-2 text-[12px] text-stamp-red">{error}</p> : null}
 
         {state === "requires-plus" ? (
-          <Link to="/upgrade" className="mt-3 inline-flex min-h-11 items-center text-[12.5px] font-semibold text-teal">
+          <Link
+            to="/upgrade"
+            className="mt-3 inline-flex min-h-11 items-center text-[12.5px] font-semibold text-teal"
+          >
             View Untangle Plus
           </Link>
         ) : null}
@@ -229,7 +245,7 @@ function Account() {
   };
 
   return (
-    <AppShell active="Account" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+    <AppShell active="Account" planLabel={entitlements?.planLabel ?? "Account"}>
       <div className="mx-auto w-full max-w-[920px]">
         <header>
           <h1 className="text-[30px] font-semibold tracking-[-0.03em] text-ink">Account</h1>

@@ -12,17 +12,16 @@ import {
   Receipt,
   Users,
 } from "lucide-react";
-import { BottomTabBar } from "@/components/untangle/BottomTabBar";
+import { AppShell } from "./AppShell";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import type { Solution } from "@/lib/solutions";
 
 function PageFrame({ children }: { children: ReactNode }) {
+  const { entitlements } = useEntitlements();
   return (
-    <div className="min-h-screen bg-paper pb-[104px] text-ink">
-      <main className="mx-auto w-full max-w-[980px] px-5 pb-12 pt-6 sm:px-7 lg:px-8 lg:pt-8">
-        {children}
-      </main>
-      <BottomTabBar active="Home" />
-    </div>
+    <AppShell active="Home" planLabel={entitlements?.planLabel ?? "Account"}>
+      <div className="mx-auto w-full max-w-[980px]">{children}</div>
+    </AppShell>
   );
 }
 
@@ -50,7 +49,10 @@ function ProductIdentity({
 }) {
   const Icon = solution.icon;
   return (
-    <div className="mt-5 flex items-start gap-3 border-l-[3px] pl-4" style={{ borderLeftColor: accent }}>
+    <div
+      className="mt-5 flex items-start gap-3 border-l-[3px] pl-4"
+      style={{ borderLeftColor: accent }}
+    >
       <span
         className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
         style={{ backgroundColor: solution.tint, color: accent }}
@@ -60,20 +62,16 @@ function ProductIdentity({
       </span>
       <div>
         <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-ink">{solution.name}</h1>
-        <p className="mt-0.5 text-[12px] font-medium text-ink-soft">Part of Untangle South Africa</p>
+        <p className="mt-0.5 text-[12px] font-medium text-ink-soft">
+          Part of Untangle South Africa
+        </p>
         <p className="mt-1 text-[12.5px] text-ink-soft">{subtitle}</p>
       </div>
     </div>
   );
 }
 
-function PrimaryAction({
-  onClick,
-  children,
-}: {
-  onClick: () => void;
-  children: ReactNode;
-}) {
+function PrimaryAction({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
@@ -95,7 +93,9 @@ function SimplePoints({
     <div className="mt-7 divide-y divide-line/80 border-y border-line/80">
       {items.map((item) => (
         <div key={item.title} className="grid grid-cols-[26px_minmax(0,1fr)] gap-3 py-4">
-          <span className="mt-0.5 text-teal" aria-hidden>{item.icon}</span>
+          <span className="mt-0.5 text-teal" aria-hidden>
+            {item.icon}
+          </span>
           <div>
             <p className="text-[14px] font-semibold text-ink">{item.title}</p>
             <p className="mt-1 text-[13px] leading-5 text-ink-soft">{item.detail}</p>
@@ -157,7 +157,8 @@ export function TaxSnapEntry({ solution }: { solution: Solution }) {
             {
               icon: <AlertTriangle size={17} />,
               title: "What happens next",
-              detail: "You’ll see the practical consequence if the document says action is required.",
+              detail:
+                "You’ll see the practical consequence if the document says action is required.",
             },
           ]}
         />
@@ -187,10 +188,12 @@ export function LeaseCheckEntry({ solution }: { solution: Solution }) {
 
         <section className="mt-8">
           <h2 className="max-w-3xl text-[30px] font-semibold leading-[1.15] tracking-[-0.035em] text-ink sm:text-[38px]">
-            Understand the agreement before you sign — or know where you stand if something has changed.
+            Understand the agreement before you sign — or know where you stand if something has
+            changed.
           </h2>
           <p className="mt-4 max-w-2xl text-[15px] leading-7 text-ink-soft">
-            We’ll explain the money, responsibilities, important clauses and what happens if things go wrong.
+            We’ll explain the money, responsibilities, important clauses and what happens if things
+            go wrong.
           </p>
 
           {available ? (
@@ -227,7 +230,8 @@ export function LeaseCheckEntry({ solution }: { solution: Solution }) {
             {
               icon: <CircleDollarSign size={17} />,
               title: "Money and total commitment",
-              detail: "Payments, fees and end-of-term amounts are surfaced when the result confirms them.",
+              detail:
+                "Payments, fees and end-of-term amounts are surfaced when the result confirms them.",
             },
             {
               icon: <Users size={17} />,
@@ -237,7 +241,8 @@ export function LeaseCheckEntry({ solution }: { solution: Solution }) {
             {
               icon: <FileText size={17} />,
               title: "Clauses and consequences",
-              detail: "Important terms, ending/default consequences and applicable protections are explained clearly.",
+              detail:
+                "Important terms, ending/default consequences and applicable protections are explained clearly.",
             },
           ]}
         />
@@ -274,7 +279,8 @@ export function GenericSolutionEntry({ solution }: { solution: Solution }) {
           <div className="mt-6 border-l-2 border-line bg-white px-4 py-3">
             <p className="text-[14px] font-semibold text-ink">Coming soon</p>
             <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
-              {solution.name} is part of Untangle South Africa but is not available for customer analysis yet.
+              {solution.name} is part of Untangle South Africa but is not available for customer
+              analysis yet.
             </p>
           </div>
         </section>

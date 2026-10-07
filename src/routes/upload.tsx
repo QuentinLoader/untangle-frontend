@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/untangle/v2/AppShell";
+import { PageState } from "@/components/untangle/v2/PageState";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -61,7 +62,14 @@ function Upload() {
   const { solution: solutionSlug } = Route.useSearch();
   const selectedSolution = solutionSlug ? findSolution(solutionSlug) : undefined;
   const operationalSolution = selectedSolution?.operational ? selectedSolution : undefined;
-  const { entitlements } = useEntitlements();
+  const {
+    entitlements,
+    isPending: accessPending,
+    error: accessError,
+    refetch: retryAccess,
+  } = useEntitlements();
+  const unavailable = Boolean(solutionSlug && !selectedSolution?.operational);
+  const uploadBlocked = unavailable || accessPending || Boolean(accessError) || !entitlements;
 
   const analysesUsedUp =
     entitlements !== null &&
@@ -83,7 +91,7 @@ function Upload() {
   const [uploadProgressMessage, setUploadProgressMessage] = useState<string | null>(null);
 
   const prepare = async (file: File) => {
-    if (busy || analysesUsedUp) return;
+    if (busy || analysesUsedUp || uploadBlocked) return;
     setError(null);
     setPending(null);
     setUploadStatus("idle");
@@ -138,7 +146,7 @@ function Upload() {
   };
 
   const startUpload = async () => {
-    if (!pending) return;
+    if (!pending || uploadBlocked || analysesUsedUp) return;
     if (
       uploadStatus === "requesting-url" ||
       uploadStatus === "uploading" ||
@@ -226,7 +234,7 @@ function Upload() {
   const SpecialistIcon = operationalSolution?.icon ?? FileText;
 
   return (
-    <AppShell active="Home" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+    <AppShell active="Home" planLabel={entitlements?.planLabel ?? "Account"}>
       <div className="mx-auto w-full max-w-[760px]">
         {operationalSolution ? (
           <Link
@@ -291,7 +299,27 @@ function Upload() {
           className="hidden"
         />
 
-        {analysesUsedUp && !pending ? (
+        {unavailable ? (
+          <PageState
+            title={
+              selectedSolution ? selectedSolution.name + " is not available yet" : "Unknown product"
+            }
+            body="Choose an available product to start an analysis."
+            home
+          />
+        ) : accessPending ? (
+          <PageState
+            title="Checking your account…"
+            body="Confirming your available analyses before upload."
+            loading
+          />
+        ) : accessError || !entitlements ? (
+          <PageState
+            title="We could not check your account"
+            body="Try again before choosing a document."
+            onRetry={() => void retryAccess()}
+          />
+        ) : analysesUsedUp && !pending ? (
           <div className="mt-7">
             <UpgradePrompt
               title="Free analyses used"
@@ -320,14 +348,14 @@ function Upload() {
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <PrimaryButton
                 onClick={() => void startUpload()}
-                disabled={uploadInFlight}
+                disabled={uploadInFlight || uploadBlocked || analysesUsedUp}
                 className="sm:max-w-[220px]"
               >
                 {uploadLabel}
               </PrimaryButton>
               <SecondaryButton
                 onClick={() => fileInputRef.current?.click()}
-                disabled={busy || uploadInFlight}
+                disabled={busy || uploadInFlight || uploadBlocked}
                 className="sm:max-w-[220px]"
               >
                 Choose another file
@@ -339,7 +367,7 @@ function Upload() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={busy}
+              disabled={busy || uploadBlocked}
               className="group flex min-h-[220px] w-full flex-col items-center justify-center border-2 border-dashed border-line bg-white px-6 py-8 text-center transition-colors hover:border-teal/45 hover:bg-[#fbfdfb] disabled:opacity-60"
             >
               <span className="grid h-14 w-14 place-items-center rounded-full bg-teal-dim text-teal">
@@ -358,7 +386,7 @@ function Upload() {
             <button
               type="button"
               onClick={() => cameraInputRef.current?.click()}
-              disabled={busy}
+              disabled={busy || uploadBlocked}
               className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 text-[14px] font-semibold text-ink transition-colors hover:bg-paper-2 disabled:opacity-60 sm:w-auto"
             >
               <Camera size={17} aria-hidden />
@@ -367,7 +395,7 @@ function Upload() {
           </section>
         )}
 
-        {(busy || uploadProgressMessage) ? (
+        {busy || uploadProgressMessage ? (
           <p className="mt-4 text-[13px] text-ink-soft" role="status">
             {busy ? "Preparing your document…" : uploadProgressMessage}
           </p>

@@ -1,13 +1,9 @@
+import { AppShell } from "@/components/untangle/v2/AppShell";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  ArrowLeft,
-  FileQuestion,
-  FileText,
-  Globe,
-  Search,
-} from "lucide-react";
+import { ArrowLeft, FileQuestion, FileText, Globe, Search } from "lucide-react";
 import {
   getDocumentStatus,
   friendlyDocumentError,
@@ -58,9 +54,15 @@ const TAX_STEPS: Step[] = [
 
 const LEASE_STEPS: Step[] = [
   { label: "Preparing the agreement", statuses: ["QUEUED"] },
-  { label: "Identifying the agreement and document role", statuses: ["DETECTING_MODULE", "CLASSIFYING"] },
+  {
+    label: "Identifying the agreement and document role",
+    statuses: ["DETECTING_MODULE", "CLASSIFYING"],
+  },
   { label: "Reading money, dates and responsibilities", statuses: ["EXTRACTING"] },
-  { label: "Checking important terms and protections", statuses: ["VALIDATING_RESULT", "MATCHING_RULES"] },
+  {
+    label: "Checking important terms and protections",
+    statuses: ["VALIDATING_RESULT", "MATCHING_RULES"],
+  },
   { label: "Preparing your LeaseCheck answer", statuses: ["COMPLETED"] },
 ];
 
@@ -158,6 +160,7 @@ function copyFor(status: DocumentProcessingStatus | null, solution?: Solution) {
 }
 
 function Processing() {
+  const { entitlements } = useEntitlements();
   const { documentId } = Route.useParams();
   const { solution: requestedSolutionSlug } = Route.useSearch();
   const navigate = useNavigate();
@@ -255,8 +258,8 @@ function Processing() {
   const accent = isTax ? "var(--stamp-red)" : "var(--teal)";
 
   return (
-    <div className="min-h-screen bg-paper text-ink">
-      <header className="border-b border-line/80 bg-paper">
+    <AppShell active="Documents" planLabel={entitlements?.planLabel ?? "Account"}>
+      <div className="border-b border-line/80 bg-paper">
         <div className="mx-auto flex min-h-[72px] max-w-[860px] items-center gap-3 px-4 sm:px-6">
           <Link
             to="/home"
@@ -281,9 +284,9 @@ function Processing() {
             <SpecialistIcon size={18} strokeWidth={1.9} />
           </span>
         </div>
-      </header>
+      </div>
 
-      <main className="mx-auto w-full max-w-[860px] px-5 py-8 sm:px-7 sm:py-10">
+      <div className="mx-auto w-full max-w-[860px] py-8 sm:py-10">
         {needsReview ? (
           <NeedsReviewState
             failureCode={failureCode}
@@ -382,12 +385,12 @@ function Processing() {
             ) : null}
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
-function NeedsReviewNav({ solutionSlug }: { solutionSlug?: string }) {
+function NeedsReviewNav({ solutionSlug }: { solutionSlug?: string | undefined }) {
   return (
     <div className="mt-8 flex w-full max-w-[360px] flex-col gap-3 sm:flex-row">
       <Link
@@ -416,7 +419,7 @@ function NeedsReviewState({
   failureCode: DocumentFailureCode | null;
   detectedDocumentType: string | null;
   failureMessage: string | null;
-  solutionSlug?: string;
+  solutionSlug?: string | undefined;
 }) {
   const readableDocumentType = detectedDocumentType ? toTitleCase(detectedDocumentType) : null;
   const state = reviewState(failureCode, readableDocumentType);
@@ -541,7 +544,11 @@ function StepRow({
         className="flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-full border-2"
         style={{
           borderColor: done || active ? accent : "var(--line)",
-          backgroundColor: done ? accent : active ? "color-mix(in srgb, " + accent + " 10%, white)" : "white",
+          backgroundColor: done
+            ? accent
+            : active
+              ? "color-mix(in srgb, " + accent + " 10%, white)"
+              : "white",
         }}
       >
         {done ? <span className="text-[12px] font-bold text-white">✓</span> : null}
@@ -549,7 +556,11 @@ function StepRow({
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: accent }} />
         ) : null}
       </div>
-      <span className={done || active ? "text-[13.5px] font-medium text-ink" : "text-[13.5px] text-ink-soft"}>
+      <span
+        className={
+          done || active ? "text-[13.5px] font-medium text-ink" : "text-[13.5px] text-ink-soft"
+        }
+      >
         {label}
       </span>
     </div>

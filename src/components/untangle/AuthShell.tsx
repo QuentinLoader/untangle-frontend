@@ -11,7 +11,7 @@ export function AuthShell({
   title: string;
   subtitle: string;
   children: ReactNode;
-  contextLabel?: string;
+  contextLabel?: string | undefined;
 }) {
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -20,7 +20,9 @@ export function AuthShell({
           <Link to="/" className="flex items-center gap-2.5">
             <BrandMark size={27} />
             <span>
-              <span className="block text-[16.5px] font-semibold leading-tight text-ink">Untangle</span>
+              <span className="block text-[16.5px] font-semibold leading-tight text-ink">
+                Untangle
+              </span>
               <span className="block text-[11.5px] leading-tight text-ink-soft">South Africa</span>
             </span>
           </Link>
@@ -75,7 +77,10 @@ export function Field({ label, error, id, ...rest }: FieldProps) {
 
 export function FormError({ message }: { message: string }) {
   return (
-    <div role="alert" className="border-l-2 border-stamp-red bg-tint-red/70 px-3.5 py-3 text-[12.5px] leading-5 text-stamp-red">
+    <div
+      role="alert"
+      className="border-l-2 border-stamp-red bg-tint-red/70 px-3.5 py-3 text-[12.5px] leading-5 text-stamp-red"
+    >
       {message}
     </div>
   );
@@ -83,7 +88,10 @@ export function FormError({ message }: { message: string }) {
 
 export function FormNotice({ message }: { message: string }) {
   return (
-    <div role="status" className="border-l-2 border-teal bg-teal-dim/70 px-3.5 py-3 text-[12.5px] leading-5 text-teal">
+    <div
+      role="status"
+      className="border-l-2 border-teal bg-teal-dim/70 px-3.5 py-3 text-[12.5px] leading-5 text-teal"
+    >
       {message}
     </div>
   );
