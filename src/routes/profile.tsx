@@ -15,7 +15,10 @@ export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
       { title: "Account — Untangle" },
-      { name: "description", content: "Your Untangle account, plan, billing and notification settings." },
+      {
+        name: "description",
+        content: "Your Untangle account, plan, billing and notification settings.",
+      },
       { property: "og:title", content: "Account — Untangle" },
       {
         property: "og:description",
@@ -77,7 +80,10 @@ function PlanSection() {
     <BlockCard
       title="Plan & billing"
       action={
-        <Link to="/upgrade" className="inline-flex items-center gap-1 text-[12px] font-bold text-teal">
+        <Link
+          to="/upgrade"
+          className="inline-flex items-center gap-1 text-[12px] font-bold text-teal"
+        >
           <CreditCard size={13} aria-hidden />
           View
         </Link>
@@ -94,7 +100,9 @@ function PlanSection() {
             <Row label="Status" value={entitlements.subscriptionStatus.replaceAll("_", " ")} />
           ) : null}
           {usageLine(entitlements) ? (
-            <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{usageLine(entitlements)}</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+              {usageLine(entitlements)}
+            </p>
           ) : null}
           {entitlements.retentionDays !== null ? (
             <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">

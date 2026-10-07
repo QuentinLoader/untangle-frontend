@@ -22,7 +22,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 export const Route = createFileRoute("/reminder")({
   validateSearch: (search: Record<string, unknown>): ReminderSearch => {
-    const value = typeof search['documentId'] === "string" ? search['documentId'] : "";
+    const value = typeof search["documentId"] === "string" ? search["documentId"] : "";
     return { documentId: UUID_RE.test(value) ? value : "" };
   },
   head: () => ({
@@ -64,8 +64,7 @@ function ReminderPage() {
   });
 
   const result = data?.data.result;
-  const candidates =
-    result && "reminderCandidates" in result ? result.reminderCandidates : [];
+  const candidates = result && "reminderCandidates" in result ? result.reminderCandidates : [];
 
   const mutation = useMutation({
     mutationFn: createReminder,
@@ -124,8 +123,8 @@ function ReminderPage() {
             </div>
             <h2 className="mt-6 text-[22px] font-semibold text-ink">Reminder set</h2>
             <p className="mt-2 max-w-[270px] text-[13px] leading-relaxed text-ink-soft">
-              We'll nudge you before {formatReminderDate(created.dueDate)} so it doesn't sneak up
-              on you.
+              We'll nudge you before {formatReminderDate(created.dueDate)} so it doesn't sneak up on
+              you.
             </p>
             <span className="mt-4 rounded-full bg-teal-dim px-3 py-1.5 font-mono text-[11px] font-bold text-teal">
               {created.label}
@@ -164,10 +163,7 @@ function ReminderPage() {
               <BlockCard title="Deadlines from this document">
                 <div className="space-y-3">
                   {candidates.map((candidate) => (
-                    <div
-                      key={candidate.id}
-                      className="flex items-center justify-between gap-3"
-                    >
+                    <div key={candidate.id} className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[13.5px] font-semibold text-ink">{candidate.label}</p>
                         <p className="font-mono text-[11px] uppercase tracking-[0.04em] text-ink-soft">
@@ -199,8 +195,8 @@ function ReminderPage() {
             >
               {candidates.length === 0 && (
                 <p className="mb-3 text-[12.5px] leading-relaxed text-ink-soft">
-                  No deadline was found in the validated facts from this document. You can still
-                  set a reminder using a date of your own.
+                  No deadline was found in the validated facts from this document. You can still set
+                  a reminder using a date of your own.
                 </p>
               )}
               <label className="block text-[12px] font-semibold text-ink" htmlFor="reminder-label">

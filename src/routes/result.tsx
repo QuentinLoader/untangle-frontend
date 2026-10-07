@@ -7,11 +7,7 @@ import {
   type DocumentResult,
   type LeaseDocumentResult,
 } from "@/lib/documents";
-import {
-  parseResultOrigin,
-  resultBackTarget,
-  type ResultOrigin,
-} from "@/lib/navigation";
+import { parseResultOrigin, resultBackTarget, type ResultOrigin } from "@/lib/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";

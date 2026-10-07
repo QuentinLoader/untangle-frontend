@@ -92,7 +92,6 @@ export function LandingPage() {
     if (!loading && session) navigate({ to: "/", replace: true });
   }, [loading, session, navigate]);
 
-
   const toUpload = () => navigate({ to: "/upload", search: {} });
   const scrollToHow = () =>
     document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });

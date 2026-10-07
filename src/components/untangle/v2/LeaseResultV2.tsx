@@ -9,10 +9,7 @@ import {
   ResultSection,
   StatusBadge,
 } from "@/components/untangle/v2/ResultPrimitives";
-import {
-  ResultWorkspace,
-  type WorkspaceNavItem,
-} from "@/components/untangle/v2/ResultWorkspace";
+import { ResultWorkspace, type WorkspaceNavItem } from "@/components/untangle/v2/ResultWorkspace";
 import {
   formatResultAmount,
   type LeaseDocumentResult,
@@ -51,7 +48,10 @@ const PROBLEM_WORDS = [
 ];
 
 function normalize(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function containsAny(value: string, words: string[]): boolean {
@@ -68,7 +68,8 @@ function friendlyFieldLabel(fieldKey: string): string {
 
 function financialPriority(label: string): number {
   const value = normalize(label);
-  if (value.includes("monthly") && (value.includes("payment") || value.includes("instalment"))) return 1;
+  if (value.includes("monthly") && (value.includes("payment") || value.includes("instalment")))
+    return 1;
   if (value.includes("rent") && (value.includes("monthly") || value.includes("payment"))) return 1;
   if (value.includes("term") || value.includes("duration")) return 2;
   if (value.includes("total") && (value.includes("repay") || value.includes("payable"))) return 3;
@@ -108,7 +109,10 @@ function LeaseClause({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h3 className="text-[15px] font-semibold leading-6 text-ink">{clause.title}</h3>
         <span
-          className={"inline-flex min-h-7 items-center rounded-full border px-2.5 text-[11.5px] font-semibold " + severityClass(clause.severity)}
+          className={
+            "inline-flex min-h-7 items-center rounded-full border px-2.5 text-[11.5px] font-semibold " +
+            severityClass(clause.severity)
+          }
         >
           {attentionLabel(clause.severity)}
         </span>
@@ -136,7 +140,9 @@ function LeaseClause({
 
 function ResponsibilityList({ items }: { items: string[] }) {
   if (items.length === 0) {
-    return <p className="text-[13.5px] text-ink-soft">No responsibility was safely confirmed here.</p>;
+    return (
+      <p className="text-[13.5px] text-ink-soft">No responsibility was safely confirmed here.</p>
+    );
   }
 
   return (
@@ -151,13 +157,7 @@ function ResponsibilityList({ items }: { items: string[] }) {
   );
 }
 
-function ContextRail({
-  result,
-  documentId,
-}: {
-  result: LeaseDocumentResult;
-  documentId: string;
-}) {
+function ContextRail({ result, documentId }: { result: LeaseDocumentResult; documentId: string }) {
   const warnings = result.validationWarnings ?? [];
   const confidence = result.document.confidence;
   const hasDates = result.humanGuide.importantDates.length > 0;
@@ -168,16 +168,23 @@ function ContextRail({
         <div className="flex items-start gap-3">
           <FileText size={18} className="mt-0.5 shrink-0 text-teal" aria-hidden />
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-soft">Document</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+              Document
+            </p>
             <p className="mt-1 text-[14px] font-semibold leading-5 text-ink">
-              {result.document.documentTitle || result.humanGuide.whatThisIs || result.summary.headline}
+              {result.document.documentTitle ||
+                result.humanGuide.whatThisIs ||
+                result.summary.headline}
             </p>
             {result.document.detectedDocumentType ? (
-              <p className="mt-1 text-[12px] leading-5 text-ink-soft">{result.document.detectedDocumentType}</p>
+              <p className="mt-1 text-[12px] leading-5 text-ink-soft">
+                {result.document.detectedDocumentType}
+              </p>
             ) : null}
             {confidence ? (
               <p className="mt-2 text-[12px] text-ink-soft">
-                Confidence: <span className="font-semibold text-ink">{confidence.toLowerCase()}</span>
+                Confidence:{" "}
+                <span className="font-semibold text-ink">{confidence.toLowerCase()}</span>
               </p>
             ) : null}
           </div>
@@ -189,13 +196,20 @@ function ContextRail({
           <div className="flex items-start gap-3">
             <AlertTriangle size={18} className="mt-0.5 shrink-0 text-stamp-amber" aria-hidden />
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-amber-900">Check this</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-amber-900">
+                Check this
+              </p>
               <p className="mt-1 text-[13.5px] font-semibold leading-5 text-ink">
-                {warnings.length === 1 ? "One detail needs checking." : String(warnings.length) + " details need checking."}
+                {warnings.length === 1
+                  ? "One detail needs checking."
+                  : String(warnings.length) + " details need checking."}
               </p>
               <ul className="mt-2 space-y-1">
                 {warnings.slice(0, 3).map((warning) => (
-                  <li key={warning.fieldKey + warning.code} className="text-[12px] leading-5 text-ink-soft">
+                  <li
+                    key={warning.fieldKey + warning.code}
+                    className="text-[12px] leading-5 text-ink-soft"
+                  >
                     {friendlyFieldLabel(warning.fieldKey)}
                   </li>
                 ))}
@@ -256,7 +270,7 @@ export function LeaseResultV2({
     .sort((a, b) => financialPriority(a.label) - financialPriority(b.label));
 
   const metricLabels = new Set<string>();
-  const metrics: Array<{ label: string; value: string; note?: string }> = [];
+  const metrics: Array<{ label: string; value: string; note?: string | undefined }> = [];
 
   for (const item of financialItems) {
     const key = normalize(item.label);
@@ -278,7 +292,7 @@ export function LeaseResultV2({
     if (metrics.length >= 4) break;
   }
 
-  const allMoneyRows: Array<{ label: string; value: string; note?: string }> = [];
+  const allMoneyRows: Array<{ label: string; value: string; note?: string | undefined }> = [];
   const moneySeen = new Set<string>();
 
   for (const item of financialItems) {
@@ -324,9 +338,7 @@ export function LeaseResultV2({
     .slice(0, 3);
 
   const hasProtections =
-    result.yourRights.length > 0 ||
-    guide.legalNotes.length > 0 ||
-    guide.guidanceSources.length > 0;
+    result.yourRights.length > 0 || guide.legalNotes.length > 0 || guide.guidanceSources.length > 0;
 
   const hasEvidence =
     guide.clausesToCheck.some((clause) => clause.leaseText || clause.legalBasis) ||
@@ -419,9 +431,12 @@ export function LeaseResultV2({
               <div className="flex gap-3">
                 <AlertTriangle size={18} className="mt-0.5 shrink-0 text-stamp-amber" aria-hidden />
                 <div>
-                  <p className="text-[14px] font-semibold text-ink">Check these details against the original</p>
+                  <p className="text-[14px] font-semibold text-ink">
+                    Check these details against the original
+                  </p>
                   <p className="mt-1 text-[13px] leading-6 text-ink-soft">
-                    LeaseCheck could not safely confirm every important field. The detailed report marks the items that need checking.
+                    LeaseCheck could not safely confirm every important field. The detailed report
+                    marks the items that need checking.
                   </p>
                 </div>
               </div>
@@ -523,7 +538,9 @@ export function LeaseResultV2({
           >
             {endingTerms.length > 0 ? (
               <div className="mb-5">
-                <FactRows rows={endingTerms.map((item) => ({ label: item.label, value: item.value }))} />
+                <FactRows
+                  rows={endingTerms.map((item) => ({ label: item.label, value: item.value }))}
+                />
               </div>
             ) : null}
             <div>
@@ -559,7 +576,9 @@ export function LeaseResultV2({
                 {result.yourRights.map((right) => (
                   <div key={right.id} className="border-l-2 border-teal/30 pl-4">
                     <h3 className="text-[14.5px] font-semibold text-ink">{right.title}</h3>
-                    <p className="mt-2 text-[13.5px] leading-6 text-ink-soft">{right.explanation}</p>
+                    <p className="mt-2 text-[13.5px] leading-6 text-ink-soft">
+                      {right.explanation}
+                    </p>
                     {right.legalBasis ? (
                       <p className="mt-2 text-[12px] leading-5 text-ink-soft">{right.legalBasis}</p>
                     ) : null}
@@ -574,7 +593,9 @@ export function LeaseResultV2({
                   <ShieldCheck size={18} className="mt-0.5 shrink-0 text-teal" aria-hidden />
                   <ul className="space-y-2">
                     {guide.legalNotes.map((note) => (
-                      <li key={note} className="text-[13px] leading-5 text-ink-soft">{note}</li>
+                      <li key={note} className="text-[13px] leading-5 text-ink-soft">
+                        {note}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -618,7 +639,9 @@ export function LeaseResultV2({
                     key={clause.id}
                     source={documentLabel}
                     location={clause.title}
-                    excerpt={clause.leaseText || "No direct agreement quote was retained for this point."}
+                    excerpt={
+                      clause.leaseText || "No direct agreement quote was retained for this point."
+                    }
                     meaning={clause.explanation}
                   />
                 ))}

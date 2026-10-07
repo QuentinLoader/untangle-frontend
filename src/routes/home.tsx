@@ -138,15 +138,19 @@ function HomePage() {
               {name ? ", " + name : ""}
             </h1>
             <p className="mt-2 max-w-2xl text-[15.5px] leading-7 text-ink-soft">
-              Understand an important document, see what needs your attention and know what to do next.
+              Understand an important document, see what needs your attention and know what to do
+              next.
             </p>
           </section>
 
           {entitlementsError ? (
             <div className="mt-6 border-l-4 border-stamp-amber bg-amber-50 px-4 py-3">
-              <p className="text-[14px] font-semibold text-ink">We cannot reach the service right now</p>
+              <p className="text-[14px] font-semibold text-ink">
+                We cannot reach the service right now
+              </p>
               <p className="mt-1 text-[13px] leading-5 text-ink-soft">
-                You can still move around the app, but new documents and account features may be unavailable until the connection returns.
+                You can still move around the app, but new documents and account features may be
+                unavailable until the connection returns.
               </p>
             </div>
           ) : null}
@@ -158,7 +162,9 @@ function HomePage() {
                   <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-stamp-amber">
                     Needs your attention
                   </p>
-                  <h2 className="mt-1 text-[19px] font-semibold text-ink">{attention.reminder.label}</h2>
+                  <h2 className="mt-1 text-[19px] font-semibold text-ink">
+                    {attention.reminder.label}
+                  </h2>
                 </div>
                 <Clock size={20} className="shrink-0 text-stamp-amber" aria-hidden />
               </div>
@@ -171,7 +177,9 @@ function HomePage() {
                   <span className="block truncate text-[13.5px] font-medium text-ink">
                     {reminderDocumentTitle(attention.reminder)}
                   </span>
-                  <span className="mt-1 block text-[12.5px] text-ink-soft">{attention.statusLabel}</span>
+                  <span className="mt-1 block text-[12.5px] text-ink-soft">
+                    {attention.statusLabel}
+                  </span>
                 </span>
                 <ChevronRight size={18} className="shrink-0 text-ink-soft" aria-hidden />
               </button>
@@ -186,7 +194,8 @@ function HomePage() {
               <div className="min-w-0 flex-1">
                 <h2 className="text-[19px] font-semibold text-ink">Understand a document</h2>
                 <p className="mt-1.5 max-w-xl text-[14px] leading-6 text-ink-soft">
-                  Upload a document and Untangle will identify the supported specialist experience and explain what matters.
+                  Upload a document and Untangle will identify the supported specialist experience
+                  and explain what matters.
                 </p>
                 <Link
                   to="/upload"
@@ -206,7 +215,9 @@ function HomePage() {
                   <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
                     Your recent checks
                   </p>
-                  <h2 className="mt-1 text-[20px] font-semibold text-ink">Pick up where you left off</h2>
+                  <h2 className="mt-1 text-[20px] font-semibold text-ink">
+                    Pick up where you left off
+                  </h2>
                 </div>
                 <Link to="/vault" className="text-[13px] font-semibold text-teal">
                   All documents
@@ -228,7 +239,9 @@ function HomePage() {
             <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
               Specialist tools
             </p>
-            <h2 className="mt-1 text-[20px] font-semibold text-ink">Choose the problem you are dealing with</h2>
+            <h2 className="mt-1 text-[20px] font-semibold text-ink">
+              Choose the problem you are dealing with
+            </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {SOLUTION_LIST.map((solution) => {
                 const Icon = solution.icon;
@@ -271,7 +284,9 @@ function HomePage() {
               <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
                 Learn before you commit or respond
               </p>
-              <h2 className="mt-2 text-[18px] font-semibold text-ink">Small things can have a big impact</h2>
+              <h2 className="mt-2 text-[18px] font-semibold text-ink">
+                Small things can have a big impact
+              </h2>
               <div className="mt-4 space-y-4">
                 <div>
                   <p className="text-[14px] font-semibold text-ink">Balloon payments</p>
@@ -280,7 +295,9 @@ function HomePage() {
                   </p>
                 </div>
                 <div className="border-t border-line pt-4">
-                  <p className="text-[14px] font-semibold text-ink">Deadlines in official notices</p>
+                  <p className="text-[14px] font-semibold text-ink">
+                    Deadlines in official notices
+                  </p>
                   <p className="mt-1 text-[13px] leading-5 text-ink-soft">
                     The important date is not always the date printed at the top of the letter.
                   </p>
@@ -288,7 +305,8 @@ function HomePage() {
                 <div className="border-t border-line pt-4">
                   <p className="text-[14px] font-semibold text-ink">Insurance wording</p>
                   <p className="mt-1 text-[13px] leading-5 text-ink-soft">
-                    Benefits described in general wording are not always benefits you actually purchased.
+                    Benefits described in general wording are not always benefits you actually
+                    purchased.
                   </p>
                 </div>
               </div>

@@ -69,10 +69,7 @@ export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }
     enabled: !remindersLocked,
   });
 
-  const views = useMemo(
-    () => (data?.data.reminders ?? []).map(reminderView),
-    [data],
-  );
+  const views = useMemo(() => (data?.data.reminders ?? []).map(reminderView), [data]);
 
   const now = new Date();
   const active = views.filter((v) => v.state === "DUE" || v.state === "UPCOMING");
@@ -116,9 +113,7 @@ export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }
     group,
     items: rows
       .filter((v) => v.effectiveDate && groupFor(new Date(v.effectiveDate), now) === group)
-      .sort(
-        (a, b) => new Date(a.effectiveDate!).getTime() - new Date(b.effectiveDate!).getTime(),
-      ),
+      .sort((a, b) => new Date(a.effectiveDate!).getTime() - new Date(b.effectiveDate!).getTime()),
   })).filter((g) => tab === "upcoming" || g.items.length > 0);
 
   const undated = rows.filter((v) => !v.effectiveDate);
@@ -132,7 +127,9 @@ export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }
             type="button"
             onClick={() => setTab(value)}
             className={`inline-flex min-h-[44px] items-center rounded-full px-5 font-mono text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors active:scale-[0.97] ${
-              tab === value ? "bg-ink text-paper" : "border border-line bg-white text-ink-soft active:bg-paper-2"
+              tab === value
+                ? "bg-ink text-paper"
+                : "border border-line bg-white text-ink-soft active:bg-paper-2"
             }`}
           >
             {value === "upcoming" ? "Upcoming" : "Past"}

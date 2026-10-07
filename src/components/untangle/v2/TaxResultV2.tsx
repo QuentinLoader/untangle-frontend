@@ -7,15 +7,8 @@ import {
   ResultSection,
   StatusBadge,
 } from "@/components/untangle/v2/ResultPrimitives";
-import {
-  ResultWorkspace,
-  type WorkspaceNavItem,
-} from "@/components/untangle/v2/ResultWorkspace";
-import {
-  formatResultAmount,
-  formatResultDate,
-  type TaxDocumentResult,
-} from "@/lib/documents";
+import { ResultWorkspace, type WorkspaceNavItem } from "@/components/untangle/v2/ResultWorkspace";
+import { formatResultAmount, formatResultDate, type TaxDocumentResult } from "@/lib/documents";
 
 type BackTarget = { to: string; label: string };
 
@@ -49,13 +42,7 @@ function warningFieldLabel(fieldKey: string): string {
   return fieldKey.replaceAll("_", " ").toLowerCase();
 }
 
-function ContextRail({
-  result,
-  documentId,
-}: {
-  result: TaxDocumentResult;
-  documentId: string;
-}) {
+function ContextRail({ result, documentId }: { result: TaxDocumentResult; documentId: string }) {
   const warnings = result.validationWarnings ?? [];
   const reminder = result.reminderCandidates[0];
 
@@ -65,33 +52,47 @@ function ContextRail({
         <div className="flex items-start gap-3">
           <FileText size={18} className="mt-0.5 shrink-0 text-teal" aria-hidden />
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-soft">Document</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+              Document
+            </p>
             <p className="mt-1 text-[14px] font-semibold leading-5 text-ink">
-              {result.document.documentTitle || result.humanGuide?.whatThisIs || result.summary.headline}
+              {result.document.documentTitle ||
+                result.humanGuide?.whatThisIs ||
+                result.summary.headline}
             </p>
             <p className="mt-1 text-[12px] leading-5 text-ink-soft">{friendlyTaxArea(result)}</p>
             {result.document.confidence ? (
               <p className="mt-2 text-[12px] text-ink-soft">
-                Confidence: <span className="font-semibold text-ink">{result.document.confidence.toLowerCase()}</span>
+                Confidence:{" "}
+                <span className="font-semibold text-ink">
+                  {result.document.confidence.toLowerCase()}
+                </span>
               </p>
             ) : null}
           </div>
         </div>
       </div>
 
-      {warnings.length > 0 || result.document.confidence === "LOW" || result.document.confidence === "MEDIUM" ? (
+      {warnings.length > 0 ||
+      result.document.confidence === "LOW" ||
+      result.document.confidence === "MEDIUM" ? (
         <div className="rounded-[14px] border border-amber-200 bg-amber-50 p-4">
           <div className="flex items-start gap-3">
             <AlertTriangle size={18} className="mt-0.5 shrink-0 text-stamp-amber" aria-hidden />
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-amber-900">Check this</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-amber-900">
+                Check this
+              </p>
               <p className="mt-1 text-[13.5px] font-semibold leading-5 text-ink">
                 Compare important details with the original notice.
               </p>
               {warnings.length > 0 ? (
                 <ul className="mt-2 space-y-1">
                   {warnings.slice(0, 3).map((warning) => (
-                    <li key={warning.fieldKey + warning.code} className="text-[12px] leading-5 text-ink-soft">
+                    <li
+                      key={warning.fieldKey + warning.code}
+                      className="text-[12px] leading-5 text-ink-soft"
+                    >
                       {warningFieldLabel(warning.fieldKey)}
                     </li>
                   ))}
@@ -145,7 +146,7 @@ export function TaxResultV2({
   const guidanceSources = guide?.guidanceSources ?? [];
   const timeLimits = result.timeLimits ?? [];
 
-  const metrics: Array<{ label: string; value: string; note?: string }> = [];
+  const metrics: Array<{ label: string; value: string; note?: string | undefined }> = [];
 
   if (reminder) {
     metrics.push({
@@ -165,7 +166,9 @@ export function TaxResultV2({
     metrics.push({
       label: result.amounts[0].label,
       value: formatResultAmount(result.amounts[0].amountCents, result.amounts[0].currency),
-      note: result.amounts[0].isEstimate ? "Shown as an estimate in the validated result." : undefined,
+      note: result.amounts[0].isEstimate
+        ? "Shown as an estimate in the validated result."
+        : undefined,
     });
   }
 
@@ -211,7 +214,9 @@ export function TaxResultV2({
           <div className="flex flex-wrap gap-2">
             <StatusBadge>{friendlyTaxArea(result)}</StatusBadge>
             {result.summary.severity === "CRITICAL" || result.summary.severity === "URGENT" ? (
-              <StatusBadge tone="critical">{result.summary.severity === "CRITICAL" ? "Critical" : "Urgent"}</StatusBadge>
+              <StatusBadge tone="critical">
+                {result.summary.severity === "CRITICAL" ? "Critical" : "Urgent"}
+              </StatusBadge>
             ) : result.summary.severity === "ACTION_NEEDED" ? (
               <StatusBadge tone="attention">Action needed</StatusBadge>
             ) : null}
@@ -242,8 +247,12 @@ export function TaxResultV2({
 
           {actions[0] ? (
             <div className="mt-7 rounded-[14px] border border-line bg-paper px-4 py-4">
-              <p className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-ink-soft">What to do next</p>
-              <p className="mt-2 text-[15px] font-semibold leading-6 text-ink">{actions[0].title}</p>
+              <p className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
+                What to do next
+              </p>
+              <p className="mt-2 text-[15px] font-semibold leading-6 text-ink">
+                {actions[0].title}
+              </p>
               {actions[0].detail ? (
                 <p className="mt-1.5 text-[13.5px] leading-6 text-ink-soft">{actions[0].detail}</p>
               ) : null}
@@ -290,7 +299,9 @@ export function TaxResultV2({
                     </span>
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-[14.5px] font-semibold leading-6 text-ink">{step.title}</p>
+                        <p className="text-[14.5px] font-semibold leading-6 text-ink">
+                          {step.title}
+                        </p>
                         {step.optional ? (
                           <span className="rounded-full bg-paper-2 px-2 py-0.5 text-[10.5px] font-medium text-ink-soft">
                             If needed
@@ -347,9 +358,12 @@ export function TaxResultV2({
                   {timeLimits.map((limit) => (
                     <div key={limit.id} className="border-l-2 border-line pl-4">
                       <p className="text-[14px] font-semibold text-ink">{limit.label}</p>
-                      <p className="mt-1 text-[13.5px] leading-6 text-ink-soft">{limit.periodText}</p>
+                      <p className="mt-1 text-[13.5px] leading-6 text-ink-soft">
+                        {limit.periodText}
+                      </p>
                       <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
-                        Exact deadline not calculated. {limit.caution || "Confirm when this period starts before relying on it."}
+                        Exact deadline not calculated.{" "}
+                        {limit.caution || "Confirm when this period starts before relying on it."}
                       </p>
                     </div>
                   ))}
@@ -380,14 +394,25 @@ export function TaxResultV2({
           >
             <div className="space-y-5">
               {result.riskFlags.map((flag) => (
-                <div key={flag.id} className="border-l-4 border-stamp-amber bg-amber-50/70 px-4 py-4">
+                <div
+                  key={flag.id}
+                  className="border-l-4 border-stamp-amber bg-amber-50/70 px-4 py-4"
+                >
                   <div className="flex gap-3">
-                    <AlertTriangle size={18} className="mt-0.5 shrink-0 text-stamp-amber" aria-hidden />
+                    <AlertTriangle
+                      size={18}
+                      className="mt-0.5 shrink-0 text-stamp-amber"
+                      aria-hidden
+                    />
                     <div>
                       <p className="text-[14.5px] font-semibold text-ink">{flag.flag}</p>
-                      <p className="mt-1.5 text-[13.5px] leading-6 text-ink-soft">{flag.explanation}</p>
+                      <p className="mt-1.5 text-[13.5px] leading-6 text-ink-soft">
+                        {flag.explanation}
+                      </p>
                       {flag.legalBasis ? (
-                        <p className="mt-2 text-[12px] leading-5 text-ink-soft">{flag.legalBasis}</p>
+                        <p className="mt-2 text-[12px] leading-5 text-ink-soft">
+                          {flag.legalBasis}
+                        </p>
                       ) : null}
                     </div>
                   </div>
@@ -408,7 +433,9 @@ export function TaxResultV2({
                 <div key={right.id} className="border-l-2 border-teal/30 pl-4">
                   <h3 className="text-[14.5px] font-semibold text-ink">{right.right}</h3>
                   {right.howToExercise ? (
-                    <p className="mt-2 text-[13.5px] leading-6 text-ink-soft">{right.howToExercise}</p>
+                    <p className="mt-2 text-[13.5px] leading-6 text-ink-soft">
+                      {right.howToExercise}
+                    </p>
                   ) : null}
                   {right.legalBasis ? (
                     <p className="mt-2 text-[12px] leading-5 text-ink-soft">{right.legalBasis}</p>
@@ -430,7 +457,10 @@ export function TaxResultV2({
                 <h3 className="text-[14px] font-semibold text-ink">What you may need</h3>
                 <div className="mt-3 space-y-4">
                   {requiredItems.map((item) => (
-                    <div key={item.id} className="border-t border-line pt-4 first:border-t-0 first:pt-0">
+                    <div
+                      key={item.id}
+                      className="border-t border-line pt-4 first:border-t-0 first:pt-0"
+                    >
                       <p className="text-[14px] font-semibold text-ink">{item.name}</p>
                       {item.whatItIs ? (
                         <p className="mt-1 text-[13px] leading-5 text-ink-soft">{item.whatItIs}</p>
@@ -447,7 +477,11 @@ export function TaxResultV2({
             {guide?.sourceGap ? (
               <div className={requiredItems.length > 0 ? "mt-6 border-t border-line pt-5" : ""}>
                 <div className="flex gap-3">
-                  <AlertTriangle size={18} className="mt-0.5 shrink-0 text-stamp-amber" aria-hidden />
+                  <AlertTriangle
+                    size={18}
+                    className="mt-0.5 shrink-0 text-stamp-amber"
+                    aria-hidden
+                  />
                   <div>
                     <p className="text-[13.5px] font-semibold text-ink">Still needs checking</p>
                     <p className="mt-1 text-[13px] leading-5 text-ink-soft">{guide.sourceGap}</p>
@@ -457,7 +491,13 @@ export function TaxResultV2({
             ) : null}
 
             {guidanceSources.length > 0 ? (
-              <div className={requiredItems.length > 0 || guide?.sourceGap ? "mt-6 border-t border-line pt-5" : ""}>
+              <div
+                className={
+                  requiredItems.length > 0 || guide?.sourceGap
+                    ? "mt-6 border-t border-line pt-5"
+                    : ""
+                }
+              >
                 <div className="flex gap-3">
                   <ShieldCheck size={18} className="mt-0.5 shrink-0 text-teal" aria-hidden />
                   <div className="min-w-0 flex-1">

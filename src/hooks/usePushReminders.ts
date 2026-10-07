@@ -33,13 +33,7 @@ export function readPushFid(): string | null {
 }
 
 export type PushState =
-  | "loading"
-  | "unsupported"
-  | "not-configured"
-  | "requires-plus"
-  | "blocked"
-  | "off"
-  | "on";
+  "loading" | "unsupported" | "not-configured" | "requires-plus" | "blocked" | "off" | "on";
 
 export function usePushReminders() {
   const { entitlements, isPending: entitlementsPending } = useEntitlements();

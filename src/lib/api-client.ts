@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 import type { AuthMeResponse, UntangleUser } from "@/auth/auth.types";
 
-const API_BASE_URL = (import.meta.env['VITE_API_BASE_URL'] as string | undefined)?.replace(
+const API_BASE_URL = (import.meta.env["VITE_API_BASE_URL"] as string | undefined)?.replace(
   /\/$/,
   "",
 );
@@ -45,8 +45,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 
   const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 
-  const send = async () =>
-    fetch(url, { ...options, headers: await buildHeaders(options.headers) });
+  const send = async () => fetch(url, { ...options, headers: await buildHeaders(options.headers) });
 
   let response: Response;
   try {
