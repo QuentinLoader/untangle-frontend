@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -397,7 +398,7 @@ function QuickPoint({
   title,
   body,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   body: string;
 }) {
