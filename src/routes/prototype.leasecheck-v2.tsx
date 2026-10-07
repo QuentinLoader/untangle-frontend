@@ -1,14 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  AlertTriangle,
-  FileText,
-  MessageSquare,
-  ShieldCheck,
-  WalletCards,
-} from "lucide-react";
+import { AlertTriangle, FileText, MessageSquare, ShieldCheck, WalletCards } from "lucide-react";
 import { withAuth } from "@/auth/ProtectedRoute";
 import {
-  AskPrompt,
   BulletList,
   EvidenceDisclosure,
   FactRows,
@@ -17,14 +10,13 @@ import {
   ResultSection,
   StatusBadge,
 } from "@/components/untangle/v2/ResultPrimitives";
-import {
-  ResultWorkspace,
-  type WorkspaceNavItem,
-} from "@/components/untangle/v2/ResultWorkspace";
+import { type WorkspaceNavItem } from "@/components/untangle/v2/ResultWorkspace";
+import { PrototypeWorkspace } from "@/components/untangle/v2/PrototypeWorkspace";
 
 export const Route = createFileRoute("/prototype/leasecheck-v2")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "LeaseCheck V2 prototype — Untangle South Africa" },
       {
         name: "description",
@@ -52,7 +44,7 @@ const KEY_POINTS = [
   {
     title: "A large amount is still due at the end",
     detail:
-      "Your monthly payments do not clear the full agreement. A final balloon payment of R147,475.00 remains at the end of the term.",
+      "Your monthly payments do not clear the full agreement. You will need a plan for the final balloon payment.",
   },
   {
     title: "Ending early can still cost you money",
@@ -93,11 +85,13 @@ const YOUR_RESPONSIBILITIES = [
 const OTHER_PARTY_RESPONSIBILITIES = [
   {
     title: "Apply the agreement as written",
-    detail: "The credit provider must administer the agreement according to its recorded terms and applicable law.",
+    detail:
+      "The credit provider must administer the agreement according to its recorded terms and applicable law.",
   },
   {
     title: "Provide settlement information",
-    detail: "If you request an early settlement amount, the provider must give you the relevant settlement figure and process.",
+    detail:
+      "If you request an early settlement amount, the provider must give you the relevant settlement figure and process.",
   },
 ];
 
@@ -112,9 +106,7 @@ function ContextRail() {
               Document
             </p>
             <p className="mt-1 text-[14px] font-semibold text-ink">Vehicle finance agreement</p>
-            <p className="mt-1 font-mono text-[11px] leading-5 text-ink-soft">
-              DEMO-VEH-2026-001
-            </p>
+            <p className="mt-1 font-mono text-[11px] leading-5 text-ink-soft">DEMO-VEH-2026-001</p>
           </div>
         </div>
       </div>
@@ -127,7 +119,7 @@ function ContextRail() {
               Check this
             </p>
             <p className="mt-1 text-[13.5px] font-semibold leading-6 text-ink">
-              The final balloon is material.
+              Needs attention: the final balloon is material.
             </p>
             <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
               Make sure you know how you plan to pay or refinance it before signing.
@@ -144,10 +136,22 @@ function ContextRail() {
               Ask LeaseCheck
             </p>
             <p className="mt-1 text-[12.5px] leading-5 text-ink-soft">
-              Ask about the agreement once you need more detail. Answers must stay grounded in the document and checked rules.
+              Demo prompts are available below. Live answers are not connected in this prototype.
             </p>
+            <a href="#ask" className="mt-3 flex items-center text-[14px] font-semibold text-teal">
+              See Ask prompts
+            </a>
           </div>
         </div>
+      </div>
+      <div className="rounded-[14px] border border-line bg-white p-4">
+        <p className="text-[14px] font-semibold">Where did this come from?</p>
+        <p className="mt-2 text-[14px] leading-6 text-ink-soft">
+          Synthetic agreement wording · Page 3, financial schedule.
+        </p>
+        <a href="#evidence" className="mt-3 flex items-center text-[14px] font-semibold text-teal">
+          View document evidence
+        </a>
       </div>
     </>
   );
@@ -155,15 +159,7 @@ function ContextRail() {
 
 function LeaseCheckV2Prototype() {
   return (
-    <ResultWorkspace
-      productName="LeaseCheck"
-      portfolioLabel="Part of Untangle South Africa"
-      documentLabel="Synthetic vehicle finance agreement"
-      navItems={NAV_ITEMS}
-      context={<ContextRail />}
-      statusLabel="Demo result"
-      trustNote="Untangle South Africa is an AddVision product. This prototype uses synthetic demonstration information."
-    >
+    <PrototypeWorkspace navItems={NAV_ITEMS} context={<ContextRail />}>
       <div className="space-y-10">
         <ResultSection id="summary" title="Here’s what this agreement means for you">
           <div className="flex flex-wrap items-center gap-2">
@@ -172,11 +168,11 @@ function LeaseCheckV2Prototype() {
           </div>
 
           <p className="mt-5 max-w-2xl text-[16px] leading-7 text-ink-soft">
-            You are committing to a 72-month payment plan with a substantial final balloon payment.
+            You are committing to a long-term payment plan with a substantial final balloon payment.
             The monthly instalment is only one part of the total financial commitment.
           </p>
 
-          <div className="mt-6 border-y border-line lg:grid lg:grid-cols-4">
+          <div className="v2-key-metrics mt-6 border-y border-line">
             <KeyMetric label="Monthly payment" value="R9,649.47" />
             <KeyMetric label="Term" value="72 months" />
             <KeyMetric label="Total repayable" value="R842,236.84" />
@@ -184,7 +180,9 @@ function LeaseCheckV2Prototype() {
           </div>
 
           <div className="mt-7">
-            <h3 className="text-[16px] font-semibold text-ink">Before you sign, understand these three points</h3>
+            <h3 className="text-[16px] font-semibold text-ink">
+              Before you sign, understand these three points
+            </h3>
             <div className="mt-4">
               <BulletList items={KEY_POINTS} />
             </div>
@@ -206,15 +204,16 @@ function LeaseCheckV2Prototype() {
           <div className="space-y-6">
             <MeaningBlock title="Your real payment commitment">
               <p>
-                You will pay R9,649.47 each month for 72 months, but that does not fully settle the
-                agreement. The total amount shown as repayable is R842,236.84.
+                Your monthly payment is a recurring commitment, but it does not fully settle the
+                agreement. Plan for the ongoing payments and the final amount separately.
               </p>
             </MeaningBlock>
 
             <MeaningBlock title="The balloon payment matters" tone="attention">
               <p>
-                A final amount of R147,475.00 remains due at the end. You should understand now
-                whether you expect to pay it from savings, refinance it or use another arrangement.
+                The final balloon remains due after the monthly instalments. You should understand
+                now whether you expect to pay it from savings, refinance it or use another
+                arrangement.
               </p>
             </MeaningBlock>
 
@@ -238,11 +237,13 @@ function LeaseCheckV2Prototype() {
         <ResultSection
           id="money"
           title="Money"
-          intro="The important financial values are grouped here once so you can see the full commitment without hunting through the agreement."
+          intro="The fixed financial schedule adds the agreement fees to the headline amounts shown above."
         >
           <div className="flex items-center gap-2 pb-4">
             <WalletCards size={18} className="text-teal" aria-hidden />
-            <p className="text-[13px] font-medium text-ink-soft">Fixed synthetic values for UX review.</p>
+            <p className="text-[13px] font-medium text-ink-soft">
+              Fixed presentation fixtures; fees and totals have not been recalculated.
+            </p>
           </div>
           <FactRows rows={MONEY_ROWS} />
         </ResultSection>
@@ -279,7 +280,8 @@ function LeaseCheckV2Prototype() {
             <MeaningBlock title="Insurance requirement">
               <p>
                 The agreement requires appropriate insurance while finance remains outstanding.
-                Losing required cover could create a separate problem even if your instalments are up to date.
+                Losing required cover could create a separate problem even if your instalments are
+                up to date.
               </p>
             </MeaningBlock>
             <MeaningBlock title="Early settlement">
@@ -301,7 +303,10 @@ function LeaseCheckV2Prototype() {
               rows={[
                 { label: "Normal end", value: "Term completed and final amount settled" },
                 { label: "Early settlement", value: "Settlement amount requested and paid" },
-                { label: "Voluntary return", value: "Does not automatically mean nothing further is owed" },
+                {
+                  label: "Voluntary return",
+                  value: "Does not automatically mean nothing further is owed",
+                },
               ]}
             />
           </div>
@@ -312,7 +317,9 @@ function LeaseCheckV2Prototype() {
             <div className="flex items-start gap-3">
               <AlertTriangle size={18} className="mt-0.5 shrink-0 text-stamp-amber" aria-hidden />
               <div>
-                <h3 className="text-[15px] font-semibold text-ink">Do not ignore missed-payment notices</h3>
+                <h3 className="text-[15px] font-semibold text-ink">
+                  Do not ignore missed-payment notices
+                </h3>
                 <p className="mt-2 text-[14px] leading-6 text-ink-soft">
                   If you fall behind, the formal notice and enforcement process matters. The next
                   step depends on what the provider has sent and what stage the account has reached.
@@ -330,10 +337,13 @@ function LeaseCheckV2Prototype() {
           <div className="flex items-start gap-3 rounded-[14px] border border-line bg-paper px-4 py-4">
             <ShieldCheck size={19} className="mt-0.5 shrink-0 text-teal" aria-hidden />
             <div>
-              <p className="text-[14.5px] font-semibold text-ink">Checked guidance belongs here</p>
+              <p className="text-[14.5px] font-semibold text-ink">
+                Legal / rule context · Not confirmed in this demo
+              </p>
               <p className="mt-2 text-[14px] leading-6 text-ink-soft">
-                The production result would show only the legal protections that the validated
-                LeaseCheck rules safely determine apply to this agreement and these facts.
+                No checked legal guidance is supplied with this synthetic agreement. This section is
+                intentionally separate from the sample document wording and its plain-language
+                meaning.
               </p>
             </div>
           </div>
@@ -346,19 +356,19 @@ function LeaseCheckV2Prototype() {
         >
           <div className="divide-y divide-line">
             <EvidenceDisclosure
-              source="Vehicle finance agreement"
+              source="Synthetic vehicle finance agreement"
               location="Page 3 · Financial schedule"
               excerpt="A final balloon amount of R147,475.00 is payable at the end of the agreement term."
               meaning="The monthly instalments do not clear the full balance. A significant final amount remains."
             />
             <EvidenceDisclosure
-              source="Vehicle finance agreement"
+              source="Synthetic vehicle finance agreement"
               location="Page 5 · Insurance"
               excerpt="The consumer must maintain comprehensive insurance for the duration of the agreement."
               meaning="Insurance is an ongoing responsibility while the agreement remains in force."
             />
             <EvidenceDisclosure
-              source="Vehicle finance agreement"
+              source="Synthetic vehicle finance agreement"
               location="Page 7 · Default"
               excerpt="Failure to make payment may result in default and enforcement in accordance with applicable law."
               meaning="Missing payments can trigger formal default steps; enforcement is not just an informal collection process."
@@ -368,21 +378,28 @@ function LeaseCheckV2Prototype() {
 
         <ResultSection
           id="ask"
-          title="Ask LeaseCheck"
-          intro="Ask a focused question about this agreement. In production, answers must remain grounded in the uploaded document and approved rules."
+          title="Ask LeaseCheck about this agreement"
+          intro="Demo design state: these starter prompts do not submit questions or contact the live Ask service."
         >
           <div className="rounded-[16px] border border-line bg-paper p-4">
             <div className="grid gap-2">
-              <AskPrompt>What happens if I settle early?</AskPrompt>
-              <AskPrompt>Explain the balloon payment simply.</AskPrompt>
-              <AskPrompt>What am I responsible for if the vehicle is damaged?</AskPrompt>
+              <div className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink">
+                What happens if I settle early?
+              </div>
+              <div className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink">
+                Explain the balloon payment simply.
+              </div>
+              <div className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink">
+                What am I responsible for if the vehicle is damaged?
+              </div>
             </div>
             <p className="mt-4 text-[12.5px] leading-5 text-ink-soft">
-              Prototype only — these prompts are intentionally not connected to the live Ask endpoint.
+              Prototype only — these prompts are intentionally not connected to the live Ask
+              endpoint.
             </p>
           </div>
         </ResultSection>
       </div>
-    </ResultWorkspace>
+    </PrototypeWorkspace>
   );
 }
