@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { CalendarClock, ChevronRight } from "lucide-react";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import {
@@ -27,33 +28,22 @@ function groupFor(date: Date, now: Date): GroupName {
   return "Later";
 }
 
-function dayLabel(value: string): string {
+function dateLabel(value: string): string {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-ZA", { day: "numeric", month: "short" })
-    .format(date)
-    .toUpperCase();
+  if (Number.isNaN(date.getTime())) return "Date unavailable";
+  return new Intl.DateTimeFormat("en-ZA", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
-function yearLabel(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return String(date.getFullYear());
+function statusText(view: ReminderView): string {
+  if (view.state === "DUE") return "Due now";
+  if (view.state === "UPCOMING") return "Upcoming";
+  return view.statusLabel;
 }
 
-const STATUS_STYLE: Record<ReminderView["state"], string> = {
-  DUE: "bg-teal text-white",
-  UPCOMING: "bg-teal-dim text-teal",
-  PAST: "bg-paper-2 text-ink-soft",
-  CANCELLED: "bg-paper-2 text-ink-soft",
-  INACTIVE: "bg-paper-2 text-ink-soft",
-};
-
-/**
- * Reminders as a deadline timeline. Single source of truth: the ["reminders"]
- * query. Each reminder resolves to exactly one state so contradictory labels
- * (e.g. "Upcoming" next to "Reminder cancelled") can never render.
- */
 export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }) {
   const navigate = useNavigate();
   const { entitlements } = useEntitlements();
@@ -70,167 +60,158 @@ export function ReminderTimeline({ from = "reminders" }: { from?: ResultOrigin }
   });
 
   const views = useMemo(() => (data?.data.reminders ?? []).map(reminderView), [data]);
-
   const now = new Date();
-  const active = views.filter((v) => v.state === "DUE" || v.state === "UPCOMING");
-  const past = views.filter((v) => v.state !== "DUE" && v.state !== "UPCOMING");
+  const upcoming = views.filter((view) => view.state === "DUE" || view.state === "UPCOMING");
+  const past = views.filter((view) => view.state !== "DUE" && view.state !== "UPCOMING");
+  const rows = tab === "upcoming" ? upcoming : past;
 
-  if (remindersLocked)
+  if (remindersLocked) {
     return (
-      <div className="mt-6">
+      <div className="max-w-2xl">
         <UpgradePrompt
           title="Reminders are part of Plus"
-          message="Untangle Plus reminds you before a deadline from your documents arrives."
+          message="Untangle Plus keeps important dates from your documents together and lets you set reminders."
         />
       </div>
     );
+  }
 
-  if (isPending) return <p className="mt-8 text-[14px] text-ink-soft">Loading your reminders…</p>;
-  if (error)
-    return <p className="mt-8 text-[14px] text-ink-soft">{friendlyReminderError(error)}</p>;
+  if (isPending) {
+    return <p className="text-[13.5px] text-ink-soft">Loading your reminders…</p>;
+  }
 
-  if (views.length === 0)
+  if (error) {
+    return <p className="text-[13.5px] text-ink-soft">{friendlyReminderError(error)}</p>;
+  }
+
+  if (views.length === 0) {
     return (
-      <div className="mt-8 rounded-[16px] border border-dashed border-line bg-white/60 p-5">
-        <p className="text-[15px] font-bold text-ink">No reminders yet</p>
-        <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
-          When Untangle finds an important date, or when you add a reminder from a result, it will
-          appear here.
-        </p>
-        <button
-          type="button"
-          onClick={() => navigate({ to: "/upload" })}
-          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-[12px] bg-ink px-4 py-2.5 text-[13px] font-semibold text-paper"
-        >
-          Analyse a document
-        </button>
+      <div className="border-y border-line bg-white px-5 py-7">
+        <div className="flex items-start gap-3">
+          <CalendarClock size={20} className="mt-0.5 shrink-0 text-teal" aria-hidden />
+          <div>
+            <p className="text-[15px] font-semibold text-ink">No reminders yet</p>
+            <p className="mt-1 text-[13px] leading-5 text-ink-soft">
+              When a result includes an important date, you can add a reminder from that document.
+            </p>
+          </div>
+        </div>
       </div>
     );
-
-  const rows = tab === "upcoming" ? active : past;
+  }
 
   const grouped = GROUPS.map((group) => ({
     group,
     items: rows
-      .filter((v) => v.effectiveDate && groupFor(new Date(v.effectiveDate), now) === group)
-      .sort((a, b) => new Date(a.effectiveDate!).getTime() - new Date(b.effectiveDate!).getTime()),
-  })).filter((g) => tab === "upcoming" || g.items.length > 0);
+      .filter((view) => view.effectiveDate && groupFor(new Date(view.effectiveDate), now) === group)
+      .sort(
+        (a, b) =>
+          new Date(a.effectiveDate ?? 0).getTime() - new Date(b.effectiveDate ?? 0).getTime(),
+      ),
+  })).filter(({ items }) => items.length > 0);
 
-  const undated = rows.filter((v) => !v.effectiveDate);
+  const undated = rows.filter((view) => !view.effectiveDate);
 
   return (
-    <div className="mt-5">
-      <div className="flex gap-2">
-        {(["upcoming", "past"] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setTab(value)}
-            className={`inline-flex min-h-[44px] items-center rounded-full px-5 font-mono text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors active:scale-[0.97] ${
-              tab === value
-                ? "bg-ink text-paper"
-                : "border border-line bg-white text-ink-soft active:bg-paper-2"
-            }`}
-          >
-            {value === "upcoming" ? "Upcoming" : "Past"}
-          </button>
-        ))}
+    <div>
+      <div className="flex gap-2 border-b border-line">
+        {(["upcoming", "past"] as const).map((value) => {
+          const selected = tab === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTab(value)}
+              className={`min-h-[44px] border-b-2 px-1 text-[13px] font-semibold transition-colors ${
+                selected
+                  ? "border-teal text-ink"
+                  : "border-transparent text-ink-soft hover:text-ink"
+              }`}
+            >
+              {value === "upcoming" ? `Upcoming (${upcoming.length})` : `Past (${past.length})`}
+            </button>
+          );
+        })}
       </div>
 
       {rows.length === 0 ? (
-        <p className="mt-8 text-[14px] text-ink-soft">
-          {tab === "upcoming" ? "No upcoming reminders." : "Nothing in your reminder history yet."}
+        <p className="py-8 text-[13.5px] text-ink-soft">
+          {tab === "upcoming" ? "No upcoming reminders." : "No past reminders yet."}
         </p>
-      ) : null}
-
-      <div className="mt-6 space-y-7">
-        {grouped.map(({ group, items }) => (
-          <section key={group}>
-            <div className="flex items-center gap-3">
-              <h2 className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-ink-soft">
+      ) : (
+        <div className="mt-5 space-y-7">
+          {grouped.map(({ group, items }) => (
+            <section key={group}>
+              <h2 className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
                 {group}
               </h2>
-              <span className="h-px flex-1 bg-line" />
-            </div>
 
-            {items.length === 0 ? (
-              <p className="mt-3 text-[13px] text-ink-soft">No reminders {group.toLowerCase()}</p>
-            ) : (
-              <ul className="mt-3 space-y-4">
+              <div className="mt-2 border-y border-line bg-white">
                 {items.map((view) => (
-                  <li key={view.reminder.reminderId} className="flex gap-3">
-                    <div className="w-[54px] shrink-0 pt-[2px] text-right">
-                      <p className="font-mono text-[12px] font-bold leading-none text-ink">
-                        {dayLabel(view.effectiveDate!)}
-                      </p>
-                      <p className="mt-1 font-mono text-[10px] leading-none text-ink-soft">
-                        {yearLabel(view.effectiveDate!)}
-                      </p>
-                    </div>
-                    <div
-                      className={`flex-1 border-l-2 pl-4 ${
-                        view.state === "DUE" ? "border-teal" : "border-line"
-                      }`}
-                    >
-                      <p className="text-[15px] font-bold leading-snug text-ink">
+                  <button
+                    key={view.reminder.reminderId}
+                    type="button"
+                    onClick={() =>
+                      navigate({
+                        to: "/result",
+                        search: { documentId: view.reminder.documentId, from },
+                      })
+                    }
+                    className="grid min-h-[72px] w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-line/80 px-4 py-3.5 text-left first:border-t-0 hover:bg-paper-2/60"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[14px] font-semibold text-ink">
                         {view.reminder.label}
-                      </p>
-                      <p className="mt-[2px] text-[12px] text-ink-soft">
+                      </span>
+                      <span className="mt-0.5 block truncate text-[12px] text-ink-soft">
                         {reminderDocumentTitle(view.reminder)}
-                      </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-3">
-                        <span
-                          className={`rounded-full px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.08em] ${STATUS_STYLE[view.state]}`}
-                        >
-                          {view.statusLabel}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate({
-                              to: "/result",
-                              search: { documentId: view.reminder.documentId, from },
-                            })
-                          }
-                          className="inline-flex min-h-[44px] items-center rounded-[10px] px-2 text-[12.5px] font-semibold text-teal active:bg-teal-dim"
-                        >
-                          View document →
-                        </button>
-                      </div>
-                    </div>
-                  </li>
+                      </span>
+                      <span className="mt-1 block text-[12px] text-ink-soft">
+                        {view.effectiveDate ? dateLabel(view.effectiveDate) : "Date unavailable"} ·{" "}
+                        {statusText(view)}
+                      </span>
+                    </span>
+                    <ChevronRight size={18} className="shrink-0 text-ink-soft" aria-hidden />
+                  </button>
                 ))}
-              </ul>
-            )}
-          </section>
-        ))}
+              </div>
+            </section>
+          ))}
 
-        {undated.length > 0 ? (
-          <section>
-            <div className="flex items-center gap-3">
-              <h2 className="font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] text-ink-soft">
+          {undated.length > 0 ? (
+            <section>
+              <h2 className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
                 No date
               </h2>
-              <span className="h-px flex-1 bg-line" />
-            </div>
-            <ul className="mt-3 space-y-3">
-              {undated.map((view) => (
-                <li key={view.reminder.reminderId} className="border-l-2 border-line pl-4">
-                  <p className="text-[15px] font-bold text-ink">{view.reminder.label}</p>
-                  <p className="mt-[2px] text-[12px] text-ink-soft">
-                    {reminderDocumentTitle(view.reminder)}
-                  </p>
-                  <span
-                    className={`mt-2 inline-block rounded-full px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.08em] ${STATUS_STYLE[view.state]}`}
+              <div className="mt-2 border-y border-line bg-white">
+                {undated.map((view) => (
+                  <button
+                    key={view.reminder.reminderId}
+                    type="button"
+                    onClick={() =>
+                      navigate({
+                        to: "/result",
+                        search: { documentId: view.reminder.documentId, from },
+                      })
+                    }
+                    className="grid min-h-[68px] w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-line/80 px-4 py-3 text-left first:border-t-0 hover:bg-paper-2/60"
                   >
-                    {view.statusLabel}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-      </div>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[14px] font-semibold text-ink">
+                        {view.reminder.label}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[12px] text-ink-soft">
+                        {reminderDocumentTitle(view.reminder)} · {statusText(view)}
+                      </span>
+                    </span>
+                    <ChevronRight size={18} className="shrink-0 text-ink-soft" aria-hidden />
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }
