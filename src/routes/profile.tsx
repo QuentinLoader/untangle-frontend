@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CreditCard, LogOut, Pencil } from "lucide-react";
 import { withAuth } from "@/auth/ProtectedRoute";
-import { BottomTabBar } from "@/components/untangle/BottomTabBar";
+import { AppShell } from "@/components/untangle/v2/AppShell";
 import { BlockCard } from "@/components/untangle/BlockCard";
 import { SecondaryButton } from "@/components/untangle/Buttons";
 import { useAuth } from "@/auth/useAuth";
@@ -207,6 +207,7 @@ function NameRow({ value, onSave }: { value: string; onSave: (name: string) => P
 function Account() {
   const { user, profile, signOut, updateDisplayName } = useAuth();
   const navigate = useNavigate();
+  const { entitlements } = useEntitlements();
   const displayName = resolveDisplayName(profile, user) ?? "";
 
   const handleSignOut = async () => {
@@ -215,30 +216,33 @@ function Account() {
   };
 
   return (
-    <div className="min-h-screen bg-paper px-5 pt-8 pb-[110px]">
-      <div className="mx-auto max-w-md">
-        <h1 className="font-display text-[24px] font-semibold text-ink">Account</h1>
-        <p className="mt-1 text-[13px] text-ink-soft">Your details, plan, billing and reminder settings.</p>
+    <AppShell active="Account" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+      <div className="mx-auto w-full max-w-3xl">
+        <h1 className="text-[30px] font-semibold tracking-[-0.03em] text-ink">Account</h1>
+        <p className="mt-2 text-[14.5px] leading-6 text-ink-soft">
+          Your details, plan, billing and reminder settings.
+        </p>
 
-        <div className="mt-5 space-y-3">
-          <BlockCard title="Account details">
-            <Row label="Email" value={profile?.email ?? user?.email ?? "—"} />
-            <NameRow value={displayName} onSave={updateDisplayName} />
-          </BlockCard>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="space-y-4">
+            <BlockCard title="Account details">
+              <Row label="Email" value={profile?.email ?? user?.email ?? "—"} />
+              <NameRow value={displayName} onSave={updateDisplayName} />
+            </BlockCard>
+            <PushSection />
+          </div>
 
-          <PlanSection />
-          <PushSection />
-
-          <SecondaryButton onClick={handleSignOut}>
-            <span className="inline-flex items-center justify-center gap-2">
-              <LogOut size={16} aria-hidden />
-              Log out
-            </span>
-          </SecondaryButton>
+          <div className="space-y-4">
+            <PlanSection />
+            <SecondaryButton onClick={handleSignOut}>
+              <span className="inline-flex items-center justify-center gap-2">
+                <LogOut size={16} aria-hidden />
+                Log out
+              </span>
+            </SecondaryButton>
+          </div>
         </div>
       </div>
-
-      <BottomTabBar active="Account" />
-    </div>
+    </AppShell>
   );
 }

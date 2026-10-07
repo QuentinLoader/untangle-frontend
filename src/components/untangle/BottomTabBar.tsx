@@ -2,19 +2,17 @@ import { Link } from "@tanstack/react-router";
 import { Bell, FolderClosed, House, UserRound } from "lucide-react";
 
 /**
- * Four primary destinations. Analysis starts from a chosen product, so there is
- * no generic "Analyse" tab. The documents screen keeps the internal /vault
- * route but is called "Documents" everywhere the customer can see it.
+ * Shared mobile navigation. Specialist products are entry points and result
+ * experiences, not permanent primary tabs.
  */
 const TABS = [
-  { to: "/", label: "Home", icon: House },
+  { to: "/home", label: "Home", icon: House },
   { to: "/vault", label: "Documents", icon: FolderClosed },
   { to: "/reminders", label: "Reminders", icon: Bell },
   { to: "/profile", label: "Account", icon: UserRound },
 ] as const;
 
 type TabLabel = (typeof TABS)[number]["label"];
-/** Legacy labels still passed by some screens. */
 type LegacyLabel = "Profile" | "Vault" | "Analyse";
 
 const ALIASES: Record<LegacyLabel, TabLabel> = {

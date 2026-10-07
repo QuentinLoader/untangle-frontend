@@ -2,10 +2,10 @@ import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { withAuth } from "@/auth/ProtectedRoute";
-import { BottomTabBar } from "@/components/untangle/BottomTabBar";
+import { AppShell } from "@/components/untangle/v2/AppShell";
 import { BlockCard } from "@/components/untangle/BlockCard";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
-import { ENTITLEMENTS_QUERY_KEY } from "@/hooks/useEntitlements";
+import { ENTITLEMENTS_QUERY_KEY, useEntitlements } from "@/hooks/useEntitlements";
 import {
   friendlyBillingError,
   isAttemptCancelled,
@@ -48,6 +48,7 @@ const UUID_RE = /^[0-9a-fA-F-]{8,64}$/;
 function BillingReturnPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { entitlements } = useEntitlements();
   const { status, attemptId } = Route.useSearch();
   const [autoAttempts, setAutoAttempts] = useState(0);
 
@@ -169,9 +170,9 @@ function BillingReturnPage() {
     !!validAttemptId && !isAttemptComplete(result) && !isAttemptCancelled(result);
 
   return (
-    <div className="min-h-screen bg-paper px-5 pt-8 pb-[110px]">
-      <div className="mx-auto max-w-md">
-        <h1 className="font-display text-[21px] font-semibold text-ink">Your payment</h1>
+    <AppShell active="Account" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+      <div className="mx-auto w-full max-w-2xl">
+        <h1 className="text-[28px] tracking-[-0.03em] font-semibold text-ink">Your payment</h1>
         <p className="mt-1 text-[13px] text-ink-soft">
           Untangle confirms every payment before unlocking Plus.
         </p>
@@ -180,7 +181,7 @@ function BillingReturnPage() {
           {body}
 
           {isAttemptComplete(result) ? (
-            <PrimaryButton onClick={() => navigate({ to: "/" })}>
+            <PrimaryButton onClick={() => navigate({ to: "/home" })}>
               Continue to Untangle
             </PrimaryButton>
           ) : (
@@ -196,11 +197,9 @@ function BillingReturnPage() {
             </>
           )}
 
-          <SecondaryButton onClick={() => navigate({ to: "/" })}>Back to Untangle</SecondaryButton>
+          <SecondaryButton onClick={() => navigate({ to: "/home" })}>Back to Untangle</SecondaryButton>
         </div>
       </div>
-
-      <BottomTabBar active="Profile" />
-    </div>
+    </AppShell>
   );
 }

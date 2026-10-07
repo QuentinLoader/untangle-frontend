@@ -3,6 +3,7 @@ import { withAuth } from "@/auth/ProtectedRoute";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PrimaryButton, SecondaryButton } from "@/components/untangle/Buttons";
+import { AppShell } from "@/components/untangle/v2/AppShell";
 import { BlockCard } from "@/components/untangle/BlockCard";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -90,8 +91,8 @@ function ReminderPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-7 pb-8">
+    <AppShell active="Reminders" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
         <header className="flex items-center gap-3">
           <button
             onClick={() =>
@@ -104,7 +105,7 @@ function ReminderPage() {
           >
             <span className="text-[19px]">←</span>
           </button>
-          <h1 className="font-display text-[17px] font-semibold text-ink">
+          <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-ink">
             {created ? "Reminder set" : "Set a reminder"}
           </h1>
         </header>
@@ -121,7 +122,7 @@ function ReminderPage() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal">
               <span className="text-[30px] text-white">✓</span>
             </div>
-            <h2 className="mt-6 font-display text-[20px] font-semibold text-ink">Reminder set</h2>
+            <h2 className="mt-6 text-[22px] font-semibold text-ink">Reminder set</h2>
             <p className="mt-2 max-w-[270px] text-[13px] leading-relaxed text-ink-soft">
               We'll nudge you before {formatReminderDate(created.dueDate)} so it doesn't sneak up
               on you.
@@ -243,7 +244,7 @@ function ReminderPage() {
           </div>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }
 
