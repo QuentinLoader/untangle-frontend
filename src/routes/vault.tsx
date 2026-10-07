@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MoreVertical, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { BottomTabBar } from "@/components/untangle/BottomTabBar";
+import { AppShell } from "@/components/untangle/v2/AppShell";
 import { ScreenHeader } from "@/components/untangle/ScreenHeader";
 import { UpgradePrompt } from "@/components/untangle/UpgradePrompt";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -118,8 +118,8 @@ function Vault() {
     doc.processingStatus === "COMPLETED" || PROCESSING_STATUSES.has(doc.processingStatus);
 
   return (
-    <div className="min-h-screen bg-paper pb-[104px]">
-      <div className="mx-auto w-full max-w-md px-5 pt-8">
+    <AppShell active="Documents" planLabel={entitlements?.isPlus ? "Plus" : "Free"}>
+      <div className="mx-auto w-full max-w-4xl">
         <ScreenHeader title="Documents" subtitle="Everything you've uploaded to Untangle." />
 
         {vaultLocked ? (
@@ -307,8 +307,6 @@ function Vault() {
           </>
         )}
       </div>
-
-      <BottomTabBar active="Documents" />
-    </div>
+    </AppShell>
   );
 }
