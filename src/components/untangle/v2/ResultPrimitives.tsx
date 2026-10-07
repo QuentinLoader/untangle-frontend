@@ -141,11 +141,15 @@ export function EvidenceDisclosure({
   location,
   excerpt,
   meaning,
+  sourceLabel = "What the agreement says",
+  meaningLabel = "What this means",
 }: {
   source: string;
   location: string;
   excerpt: string;
   meaning: string;
+  sourceLabel?: string;
+  meaningLabel?: string;
 }) {
   return (
     <details className="group border-t border-line/80 py-4 first:border-t-0">
@@ -162,13 +166,13 @@ export function EvidenceDisclosure({
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div className="border-l-2 border-line pl-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
-            What the agreement says
+            {sourceLabel}
           </p>
           <p className="mt-2 text-[13.5px] leading-6 text-ink">“{excerpt}”</p>
         </div>
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-soft">
-            What this means
+            {meaningLabel}
           </p>
           <p className="mt-2 text-[13.5px] leading-6 text-ink-soft">{meaning}</p>
         </div>
